@@ -1,0 +1,169 @@
+# Hyperscript ::: Menu général de l'application
+# Version : 1.0
+# Date : 2026-11-09
+# Contenu : spécification initiale (séance TSC 2026-11-09), à partir du menu planoscript
+# (05_menu-EN.yaml v2.2) révisé selon les décisions actées (docs/conception/03_conception-FR.md
+# section 8, point 15). Pas de références aux règles de gestion (en cours de revue). Les entrées
+# grisées en MVP sont signalées dans les notes. Les raccourcis clavier sont conservés.
+
+menu:
+  name: Menu général
+  items:
+    - name: Fichiers
+      items:
+        - name: Nouveau projet...
+          shortcut: "Ctrl+N"
+          references: "FN005, SU001"
+        - name: Ouvrir...
+          shortcut: "Ctrl+O"
+          references: "FN006, SU001"
+        - name: Fermer
+          shortcut: "Ctrl+W"
+          references: "FN010, SU001"
+        - name: Enregistrer
+          shortcut: "Ctrl+S"
+          references: "FN008, SU001"
+        - name: Enregistrer sous...
+          shortcut: "Ctrl+Shift+S"
+          references: "FN009, SU001"
+        - type: separator
+        - name: Exporter la carte
+          references: "FN013, SU007"
+          note: "Grisée en MVP - l'export sur fichier est post-MVP ; l'aperçu in-app (espace de travail « Export », FN033) fait partie du MVP et n'est pas concerné par cette entrée"
+        - name: Importer une carte
+          references: "SU002"
+          note: "Grisée en MVP - importe une carte narrative préalablement exportée dans le projet courant (distinct de la non-migration des projets planoscript)"
+        - type: separator
+        - name: Projets récents...
+          dynamic: true
+          description: "Liste dynamique des derniers projets ouverts"
+          references: "FN007, SU001"
+          note: "Grisée en MVP"
+        - type: separator
+        - name: Quitter
+          shortcut: "Ctrl+Q"
+          references: "FN002, SU001"
+
+    - name: Édition
+      items:
+        - name: Annuler
+          shortcut: "Ctrl+Z"
+          note: "Grisé en MVP"
+        - name: Rétablir
+          shortcut: "Ctrl+Y"
+          note: "Grisé en MVP"
+        - type: separator
+        - name: Couper
+          shortcut: "Ctrl+X"
+          note: "Grisé en MVP"
+        - name: Copier
+          shortcut: "Ctrl+C"
+          note: "Grisé en MVP"
+        - name: Coller
+          shortcut: "Ctrl+V"
+          note: "Grisé en MVP"
+      note: "Toutes les entrées sont grisées en MVP. Les anciennes entrées « Historique » et « Supprimer » sont supprimées ; elles pourront être réajoutées après le MVP si besoin."
+
+    - name: Affichage
+      items:
+        - name: Parcours
+          dynamic: true
+          description: "Liste cochable : une entrée « Tous les parcours » en tête (cochée = filtre désactivé, état par défaut à l'ouverture d'un projet) plus une entrée par parcours de la carte ; cocher un parcours l'active et active le filtre de parcours"
+          references: "FN026, FN029, SU006"
+          note: "Le filtre s'applique à toutes les vues et n'est pas persisté entre les sessions"
+        - name: Zoom
+          items:
+            - name: Avant
+              shortcut: "Ctrl+="
+              note: "Grisé en MVP"
+            - name: Arrière
+              shortcut: "Ctrl+-"
+              note: "Grisé en MVP"
+            - name: Réinitialiser
+              shortcut: "Ctrl+0"
+              note: "Grisé en MVP"
+
+    - name: Projet
+      items:
+        - name: Vue
+          items:
+            - name: Parcours
+              note: "Stub - la vue est activée via la barre d'onglets ; vue principale"
+            - name: Agents
+              note: "Stub - vue activée via la barre d'onglets ; périmètre MVP des vues non acté au-delà de Parcours + Export"
+            - name: Relations
+              note: "Stub - vue activée via la barre d'onglets ; maquette à définir en phase de conception (FN036, SU012)"
+            - name: Export
+              note: "Stub - vue activée via la barre d'onglets ; fait partie du MVP minimal ; pourra être renommée ultérieurement"
+        - name: Agents
+          items:
+            - name: Nouveau...
+              references: "FN031, SU008"
+            - name: Éditer
+              references: "FN031, SU008"
+            - name: Copier
+              references: "FN031, SU008"
+              note: "« Copier » est le terme retenu pour la duplication sur tous les sous-menus"
+            - name: Supprimer
+              references: "FN031, SU008"
+            - name: Associer à un bloc...
+              references: "FN030, SU008"
+              note: "Crée/modifie les participations (agent présent dans un bloc) ; remplace l'ancienne formulation « Lier à un bloc »"
+        - name: Blocs narratifs
+          items:
+            - name: Nouveau...
+              items:
+                - name: Scène
+                - name: Pivot
+                - name: Condition
+                - name: Fin
+              references: "FN014, SU003"
+              note: "Début est volontairement absent de ce sous-menu : il est créé automatiquement avec la carte, unique, et non duplicable (règle de gestion à venir)"
+            - name: Éditer
+              references: "FN015, SU003"
+            - name: Copier
+              references: "FN016, SU003"
+            - name: Supprimer
+              references: "FN018, SU003"
+        - name: Transitions
+          items:
+            - name: Nouvelle...
+              references: "FN020, SU004"
+            - name: Éditer
+              references: "FN021, SU004"
+            - name: Supprimer
+              references: "FN022, SU004"
+        - name: Parcours
+          items:
+            - name: Nouveau...
+              references: "FN023, SU005"
+            - name: Éditer
+              references: "FN024, SU005"
+            - name: Copier
+              references: "FN025, SU005"
+            - name: Supprimer
+              references: "FN027, SU005"
+        - name: Relations
+          items:
+            - name: Nouvelle...
+              references: "FN034, SU011"
+            - name: Éditer
+              references: "FN034, SU011"
+            - name: Supprimer
+              references: "FN034, SU011"
+
+    - name: À propos
+      items:
+        - name: Historique des changements
+          references: "FN003"
+        - name: À propos d'Hyperscript
+          references: "FN004"
+
+  context_menu:
+    description: "Le menu contextuel doit rester aligné dynamiquement sur le menu applicatif, selon la vue active et les objets graphiques sélectionnés."
+
+  legend:
+    description: |
+      Les éléments marqués 'dynamic: true' sont générés dynamiquement depuis les données de l'application.
+      Les entrées grisées en MVP sont signalées dans les notes.
+      Les espaces de travail (vues) sont référencés par leur nom, sans numérotation : Parcours, Agents, Relations, Export.

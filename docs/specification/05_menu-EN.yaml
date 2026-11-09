@@ -1,0 +1,169 @@
+# Hyperscript ::: General Application Menu
+# Version : 1.0
+# Date : 2026-11-09
+# Content : initial specification (TSC session 2026-11-09), from the planoscript menu
+# (05_menu-EN.yaml v2.2) revised per the decisions taken (docs/conception/03_conception-FR.md
+# section 8, point 15). No business-rule references (under review). Entries greyed out in
+# the MVP are marked in the notes. Keyboard shortcuts are preserved from planoscript.
+
+menu:
+  name: General Menu
+  items:
+    - name: Files
+      items:
+        - name: New Project...
+          shortcut: "Ctrl+N"
+          references: "FN005, SU001"
+        - name: Open...
+          shortcut: "Ctrl+O"
+          references: "FN006, SU001"
+        - name: Close
+          shortcut: "Ctrl+W"
+          references: "FN010, SU001"
+        - name: Save
+          shortcut: "Ctrl+S"
+          references: "FN008, SU001"
+        - name: Save as...
+          shortcut: "Ctrl+Shift+S"
+          references: "FN009, SU001"
+        - type: separator
+        - name: Export Map
+          references: "FN013, SU007"
+          note: "Greyed out in the MVP - file export is post-MVP; the in-app preview (workspace \"Export\", FN033) is part of the MVP and is not concerned by this entry"
+        - name: Import Map
+          references: "SU002"
+          note: "Greyed out in the MVP - imports a narrative map previously exported into the current project (distinct from the non-migration of planoscript projects)"
+        - type: separator
+        - name: Recent Projects...
+          dynamic: true
+          description: "Dynamic list of recently opened projects"
+          references: "FN007, SU001"
+          note: "Greyed out in the MVP"
+        - type: separator
+        - name: Quit
+          shortcut: "Ctrl+Q"
+          references: "FN002, SU001"
+
+    - name: Edit
+      items:
+        - name: Undo
+          shortcut: "Ctrl+Z"
+          note: "Greyed out in the MVP"
+        - name: Redo
+          shortcut: "Ctrl+Y"
+          note: "Greyed out in the MVP"
+        - type: separator
+        - name: Cut
+          shortcut: "Ctrl+X"
+          note: "Greyed out in the MVP"
+        - name: Copy
+          shortcut: "Ctrl+C"
+          note: "Greyed out in the MVP"
+        - name: Paste
+          shortcut: "Ctrl+V"
+          note: "Greyed out in the MVP"
+      note: "All entries greyed out in the MVP. The former 'History' and 'Delete' entries are removed; they may be added after the MVP if needed."
+
+    - name: Display
+      items:
+        - name: Journey
+          dynamic: true
+          description: "Checkable list: an 'All journeys' entry on top (checked = filter disabled, default when a project is opened) plus one entry per journey of the narrative map; checking a journey activates it and the journey filter"
+          references: "FN026, FN029, SU006"
+          note: "The filter applies to all views and is not persisted between sessions"
+        - name: Zoom
+          items:
+            - name: In
+              shortcut: "Ctrl+="
+              note: "Greyed out in the MVP"
+            - name: Out
+              shortcut: "Ctrl+-"
+              note: "Greyed out in the MVP"
+            - name: Reset
+              shortcut: "Ctrl+0"
+              note: "Greyed out in the MVP"
+
+    - name: Project
+      items:
+        - name: View
+          items:
+            - name: Journeys
+              note: "Stub - the view is activated via the tab bar; main view"
+            - name: Agents
+              note: "Stub - view activated via the tab bar; MVP view scope not decided beyond Journeys + Export"
+            - name: Relationships
+              note: "Stub - view activated via the tab bar; mockup to be defined during the design phase (FN036, SU012)"
+            - name: Export
+              note: "Stub - view activated via the tab bar; part of the minimal MVP; may be renamed later"
+        - name: Agents
+          items:
+            - name: New...
+              references: "FN031, SU008"
+            - name: Edit
+              references: "FN031, SU008"
+            - name: Copy
+              references: "FN031, SU008"
+              note: "'Copy' is the term used for duplication on all submenus"
+            - name: Delete
+              references: "FN031, SU008"
+            - name: Associate with Block...
+              references: "FN030, SU008"
+              note: "Creates/edits participations (agent present in a block); replaces the former 'Link to Block' wording"
+        - name: Narrative Blocks
+          items:
+            - name: New...
+              items:
+                - name: Scene
+                - name: Pivot
+                - name: Condition
+                - name: Ending
+              references: "FN014, SU003"
+              note: "Start is deliberately absent from this submenu: it is created automatically with the map, unique, and cannot be duplicated (business rule to come)"
+            - name: Edit
+              references: "FN015, SU003"
+            - name: Copy
+              references: "FN016, SU003"
+            - name: Delete
+              references: "FN018, SU003"
+        - name: Transitions
+          items:
+            - name: New...
+              references: "FN020, SU004"
+            - name: Edit
+              references: "FN021, SU004"
+            - name: Delete
+              references: "FN022, SU004"
+        - name: Journeys
+          items:
+            - name: New...
+              references: "FN023, SU005"
+            - name: Edit
+              references: "FN024, SU005"
+            - name: Copy
+              references: "FN025, SU005"
+            - name: Delete
+              references: "FN027, SU005"
+        - name: Relationships
+          items:
+            - name: New...
+              references: "FN034, SU011"
+            - name: Edit
+              references: "FN034, SU011"
+            - name: Delete
+              references: "FN034, SU011"
+
+    - name: About
+      items:
+        - name: Change Log
+          references: "FN003"
+        - name: About Hyperscript
+          references: "FN004"
+
+  context_menu:
+    description: "The context menu must remain dynamically aligned with the application menu, according to the active view and the selected graphical objects."
+
+  legend:
+    description: |
+      Elements marked 'dynamic: true' are dynamically generated from application data.
+      Entries greyed out in the MVP are marked in the notes.
+      Workspaces (views) are referenced by name, without numbering: Journeys, Agents, Relationships, Export.

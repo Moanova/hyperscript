@@ -1,0 +1,515 @@
+{
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "name": "Hyperscript ::: Data Model",
+   "version": "0.1.0-alpha",
+   "description": "Hyperscript project data model: projects, narrative maps, narrative blocks, transitions, participations, agent-agent relationships and journeys.",
+   "type": "object",
+   "properties": {
+      "id": {
+         "type": "string",
+         "format": "uuid",
+         "description": "Unique project identifier"
+      },
+      "lb": {
+         "type": "string",
+         "description": "Project name"
+      },
+      "creation_date_time": {
+         "type": "string",
+         "format": "date-time",
+         "description": "Creation date and time"
+      },
+      "modification_date_time": {
+         "type": "string",
+         "format": "date-time",
+         "description": "Last modification date and time"
+      },
+      "agent": {
+         "type": "array",
+         "items": {
+            "$ref": "#/$defs/Agent"
+         },
+         "description": "Agents of the project (project level)"
+      },
+      "narrative_maps": {
+         "type": "array",
+         "items": {
+            "$ref": "#/$defs/Narrative_map"
+         },
+         "description": "Narrative maps of the project — MVP: a single map; the model supports N maps from the MVP (episodes/seasons axis)"
+      }
+   },
+   "required": [
+      "id",
+      "lb",
+      "creation_date_time"
+   ],
+   "$defs": {
+      "Narrative_map": {
+         "type": "object",
+         "category": "entity",
+         "properties": {
+            "id": {
+               "type": "string",
+               "format": "uuid",
+               "description": "Unique narrative map identifier"
+            },
+            "lb": {
+               "type": "string",
+               "description": "Narrative map name"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Creation date and time"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Last modification date and time"
+            },
+            "active_journey_id": {
+               "type": [
+                  "integer",
+                  "null"
+               ],
+               "description": "Identifier of the currently active journey (reference to Journey.id); null = default journey"
+            },
+            "block": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Block"
+               },
+               "description": "Narrative blocks of the map"
+            },
+            "transition": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Transition"
+               },
+               "description": "Transitions of the map (block → block)"
+            },
+            "participation": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Participation"
+               },
+               "description": "Participations of the map (agent present in a block)"
+            },
+            "relationship": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Relationship"
+               },
+               "description": "Agent-agent relationships of the map, anchored to a block"
+            },
+            "journey": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Journey"
+               },
+               "description": "Journeys of the narrative map"
+            },
+            "journey_node": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Journey_node"
+               },
+               "description": "Journey nodes (attachment of blocks to journeys)"
+            }
+         },
+         "required": [
+            "id",
+            "lb",
+            "creation_date_time"
+         ]
+      },
+      "Agent": {
+         "type": "object",
+         "category": "entity",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Unique agent identifier"
+            },
+            "lb": {
+               "type": "string",
+               "description": "Agent label"
+            },
+            "note": {
+               "type": "string",
+               "description": "Agent annotation"
+            },
+            "content": {
+               "type": "string",
+               "description": "Agent narrative content"
+            },
+            "typ": {
+               "type": "string",
+               "enum": [
+                  "Character",
+                  "Artefact"
+               ],
+               "default_value": "Character",
+               "description": "Agent type: Character or Artefact"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Creation date and time"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Last modification date and time"
+            }
+         },
+         "required": [
+            "id",
+            "lb",
+            "typ",
+            "creation_date_time"
+         ]
+      },
+      "Block": {
+         "type": "object",
+         "category": "entity",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Unique narrative block identifier"
+            },
+            "lb": {
+               "type": "string",
+               "description": "Block label"
+            },
+            "note": {
+               "type": "string",
+               "description": "Block annotation"
+            },
+            "content": {
+               "type": "string",
+               "description": "Block narrative content"
+            },
+            "typ": {
+               "type": "string",
+               "enum": [
+                  "Start",
+                  "Scene",
+                  "Pivot",
+                  "Condition",
+                  "End"
+               ],
+               "default_value": "Scene",
+               "description": "Block type: Start, Scene, Pivot, Condition, End — chosen at creation and immutable afterwards"
+            },
+            "condition": {
+               "type": "object",
+               "description": "Structured condition — only set for typ = Condition (sole carrier of the condition; no condition key on Transition)",
+               "properties": {
+                  "kind": {
+                     "type": "string",
+                     "enum": [
+                        "Choice",
+                        "Artefact",
+                        "Skill",
+                        "Flag"
+                     ],
+                     "description": "Kind of condition: choice / artefact / skill / flag"
+                  },
+                  "ref_agent_id": {
+                     "type": "integer",
+                     "description": "Reference to an Artefact agent (reference to Agent.id); null if none"
+                  },
+                  "label": {
+                     "type": "string",
+                     "description": "Condition label"
+                  }
+               }
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Creation date and time"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Last modification date and time"
+            }
+         },
+         "required": [
+            "id",
+            "lb",
+            "typ",
+            "creation_date_time"
+         ]
+      },
+      "Transition": {
+         "type": "object",
+         "category": "relationship",
+         "description": "Directed transition block → block; free chaining, cycles allowed (e.g. S1 → P1 → C1 → S1); no condition key",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Unique transition identifier"
+            },
+            "from_block_id": {
+               "type": "integer",
+               "description": "Source block identifier (reference to Block.id)"
+            },
+            "to_block_id": {
+               "type": "integer",
+               "description": "Target block identifier (reference to Block.id)"
+            },
+            "note": {
+               "type": "string",
+               "description": "Transition annotation"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Creation date and time"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Last modification date and time"
+            }
+         },
+         "required": [
+            "id",
+            "from_block_id",
+            "to_block_id",
+            "creation_date_time"
+         ]
+      },
+      "Participation": {
+         "type": "object",
+         "category": "relationship",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Unique participation identifier"
+            },
+            "block_id": {
+               "type": "integer",
+               "description": "Block identifier (reference to Block.id) — the agent is present in this block"
+            },
+            "agent_id": {
+               "type": "integer",
+               "description": "Agent identifier (reference to Agent.id)"
+            },
+            "note": {
+               "type": "string",
+               "description": "Participation annotation"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Creation date and time"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Last modification date and time"
+            }
+         },
+         "required": [
+            "id",
+            "block_id",
+            "agent_id",
+            "creation_date_time"
+         ]
+      },
+      "Relationship": {
+         "type": "object",
+         "category": "relationship",
+         "description": "Agent-agent relationship, directed and typed, anchored to a block; binary (agent_a_id, agent_b_id) until possible post-MVP evolution",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Unique relationship identifier"
+            },
+            "block_id": {
+               "type": "integer",
+               "description": "Anchor block identifier (reference to Block.id) — \"at this point of the story, relationship A —typ→ B holds\"; no clock_id, the rank is the block's rank in the journey"
+            },
+            "agent_a_id": {
+               "type": "integer",
+               "description": "First agent identifier (reference to Agent.id)"
+            },
+            "agent_b_id": {
+               "type": "integer",
+               "description": "Second agent identifier (reference to Agent.id)"
+            },
+            "typ": {
+               "type": "string",
+               "description": "Relationship type — read from the configuration file value list (MVP; author enrichment post-MVP)"
+            },
+            "note": {
+               "type": "string",
+               "description": "Relationship annotation"
+            },
+            "content": {
+               "type": "string",
+               "description": "Relationship narrative content"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Creation date and time"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Last modification date and time"
+            }
+         },
+         "required": [
+            "id",
+            "block_id",
+            "agent_a_id",
+            "agent_b_id",
+            "typ",
+            "creation_date_time"
+         ]
+      },
+      "Journey": {
+         "type": "object",
+         "category": "entity",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Unique journey identifier"
+            },
+            "lb": {
+               "type": "string",
+               "description": "Journey label"
+            },
+            "note": {
+               "type": "string",
+               "description": "Journey annotation"
+            },
+            "default": {
+               "type": "boolean",
+               "default_value": false,
+               "description": "Default journey flag"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Creation date and time"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Last modification date and time"
+            }
+         },
+         "required": [
+            "id",
+            "lb",
+            "default",
+            "creation_date_time"
+         ]
+      },
+      "Journey_node": {
+         "type": "object",
+         "category": "relationship",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Unique journey node identifier"
+            },
+            "journey_id": {
+               "type": "integer",
+               "description": "Journey identifier (reference to Journey.id)"
+            },
+            "block_id": {
+               "type": "integer",
+               "description": "Attached block identifier (reference to Block.id) — attachment is on blocks, not on transitions"
+            },
+            "sequence_order": {
+               "type": "integer",
+               "description": "Actual rank of the block in the journey sequence: DFS from the Start block over the journey's transitions, branches by increasing transition id, cycle memoization, deterministic fallback for unreachable blocks; recomputed on every graph change and at load"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Creation date and time"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Last modification date and time"
+            }
+         },
+         "required": [
+            "id",
+            "journey_id",
+            "block_id",
+            "sequence_order",
+            "creation_date_time"
+         ]
+      }
+   },
+   "cardinalities": [
+      {
+         "name": "participation_card",
+         "description": "0..n blocks are linked to 0..n agents (participation: agent present in a block)",
+         "from": "Block",
+         "to": "Agent",
+         "relationship": "Participation",
+         "cardinality": {
+            "from": "0..*",
+            "to": "0..*"
+         },
+         "directional_relationship": false
+      },
+      {
+         "name": "transition_card",
+         "description": "Free chaining block → block, cycles allowed; a single transition per ordered pair of blocks",
+         "from": "Block",
+         "to": "Block",
+         "relationship": "Transition",
+         "cardinality": {
+            "from": "0..*",
+            "to": "0..*"
+         },
+         "directional_relationship": true
+      },
+      {
+         "name": "journey_node_card",
+         "description": "0..n blocks are attached to 0..n journeys",
+         "from": "Block",
+         "to": "Journey",
+         "relationship": "Journey_node",
+         "cardinality": {
+            "from": "0..*",
+            "to": "0..*"
+         },
+         "directional_relationship": false
+      },
+      {
+         "name": "relationship_card",
+         "description": "A relationship is anchored to exactly one block and links exactly two agents; uniqueness (block, pair, type)",
+         "from": "Block",
+         "to": "Agent",
+         "relationship": "Relationship",
+         "cardinality": {
+            "from": "1",
+            "to": "0..*"
+         },
+         "directional_relationship": true
+      }
+   ],
+   "notes": [
+      "Cardinalities use this notation: 0..* (zero or more), 1..* (one or more), 0..1 (zero or one), 1 (exactly one).",
+      "Directional relationships have a source and a target.",
+      "Derived journey membership (never stored): a Transition belongs to a journey iff both its end blocks do; a Participation or a Relationship belongs to it iff its anchor block does.",
+      "Current state of an agent pair at a block = last Relationship anchored to a block of rank ≤ the block's rank in the journey (derived, never stored).",
+      "Deletion cascades: deleting an agent → its participations and relationships; a block → its transitions, participations, anchored relationships and journey nodes; a transition → the journey nodes referencing it.",
+      "No migration of existing planoscript projects (out of scope): JSON keys are defined freely for hyperscript."
+   ]
+}

@@ -1,0 +1,515 @@
+{
+   "$schema": "http://json-schema.org/draft-07/schema#",
+   "name": "Hyperscript ::: Modèle de données",
+   "version": "0.1.0-alpha",
+   "description": "Modèle de données des projets Hyperscript : projets, cartes narratives, blocs narratifs, transitions, participations, relations agent-agent et parcours.",
+   "type": "object",
+   "properties": {
+      "id": {
+         "type": "string",
+         "format": "uuid",
+         "description": "Identifiant unique du projet"
+      },
+      "lb": {
+         "type": "string",
+         "description": "Nom du projet"
+      },
+      "creation_date_time": {
+         "type": "string",
+         "format": "date-time",
+         "description": "Date et heure de création"
+      },
+      "modification_date_time": {
+         "type": "string",
+         "format": "date-time",
+         "description": "Date et heure de dernière modification"
+      },
+      "agent": {
+         "type": "array",
+         "items": {
+            "$ref": "#/$defs/Agent"
+         },
+         "description": "Agents du projet (niveau projet)"
+      },
+      "narrative_maps": {
+         "type": "array",
+         "items": {
+            "$ref": "#/$defs/Narrative_map"
+         },
+         "description": "Cartes narratives du projet — MVP : une seule carte ; le modèle prévoit N cartes dès le MVP (axe épisodes/saisons)"
+      }
+   },
+   "required": [
+      "id",
+      "lb",
+      "creation_date_time"
+   ],
+   "$defs": {
+      "Narrative_map": {
+         "type": "object",
+         "category": "entity",
+         "properties": {
+            "id": {
+               "type": "string",
+               "format": "uuid",
+               "description": "Identifiant unique de la carte narrative"
+            },
+            "lb": {
+               "type": "string",
+               "description": "Nom de la carte narrative"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de création"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de dernière modification"
+            },
+            "active_journey_id": {
+               "type": [
+                  "integer",
+                  "null"
+               ],
+               "description": "Identifiant du parcours actuellement actif (référence à Journey.id) ; null = parcours par défaut"
+            },
+            "block": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Block"
+               },
+               "description": "Blocs narratifs de la carte"
+            },
+            "transition": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Transition"
+               },
+               "description": "Transitions de la carte (bloc → bloc)"
+            },
+            "participation": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Participation"
+               },
+               "description": "Participations de la carte (agent présent dans un bloc)"
+            },
+            "relationship": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Relationship"
+               },
+               "description": "Relations agent-agent de la carte, ancrées à un bloc"
+            },
+            "journey": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Journey"
+               },
+               "description": "Parcours de la carte narrative"
+            },
+            "journey_node": {
+               "type": "array",
+               "items": {
+                  "$ref": "#/$defs/Journey_node"
+               },
+               "description": "Nœuds de parcours (rattachement des blocs aux parcours)"
+            }
+         },
+         "required": [
+            "id",
+            "lb",
+            "creation_date_time"
+         ]
+      },
+      "Agent": {
+         "type": "object",
+         "category": "entity",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Identifiant unique de l'agent"
+            },
+            "lb": {
+               "type": "string",
+               "description": "Libellé de l'agent"
+            },
+            "note": {
+               "type": "string",
+               "description": "Annotation de l'agent"
+            },
+            "content": {
+               "type": "string",
+               "description": "Contenu narratif de l'agent"
+            },
+            "typ": {
+               "type": "string",
+               "enum": [
+                  "Character",
+                  "Artefact"
+               ],
+               "default_value": "Character",
+               "description": "Type de l'agent : Personnage (Character) ou Artefact"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de création"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de dernière modification"
+            }
+         },
+         "required": [
+            "id",
+            "lb",
+            "typ",
+            "creation_date_time"
+         ]
+      },
+      "Block": {
+         "type": "object",
+         "category": "entity",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Identifiant unique du bloc narratif"
+            },
+            "lb": {
+               "type": "string",
+               "description": "Libellé du bloc"
+            },
+            "note": {
+               "type": "string",
+               "description": "Annotation du bloc"
+            },
+            "content": {
+               "type": "string",
+               "description": "Contenu narratif du bloc"
+            },
+            "typ": {
+               "type": "string",
+               "enum": [
+                  "Start",
+                  "Scene",
+                  "Pivot",
+                  "Condition",
+                  "End"
+               ],
+               "default_value": "Scene",
+               "description": "Type du bloc : Début (Start), Scène (Scene), Pivot, Condition, Fin (End) — choisi à la création et immuable ensuite"
+            },
+            "condition": {
+               "type": "object",
+               "description": "Condition structurée — renseignée uniquement pour typ = Condition (unique support de la condition ; pas de clé condition sur Transition)",
+               "properties": {
+                  "kind": {
+                     "type": "string",
+                     "enum": [
+                        "Choice",
+                        "Artefact",
+                        "Skill",
+                        "Flag"
+                     ],
+                     "description": "Nature de la condition : choix / artefact / compétence / flag"
+                  },
+                  "ref_agent_id": {
+                     "type": "integer",
+                     "description": "Référence vers un agent Artefact (référence à Agent.id) ; null si sans référence"
+                  },
+                  "label": {
+                     "type": "string",
+                     "description": "Libellé de la condition"
+                  }
+               }
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de création"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de dernière modification"
+            }
+         },
+         "required": [
+            "id",
+            "lb",
+            "typ",
+            "creation_date_time"
+         ]
+      },
+      "Transition": {
+         "type": "object",
+         "category": "relationship",
+         "description": "Transition dirigée bloc → bloc ; chaînage libre, cycles autorisés (ex. S1 → P1 → C1 → S1) ; pas de clé condition",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Identifiant unique de la transition"
+            },
+            "from_block_id": {
+               "type": "integer",
+               "description": "Identifiant du bloc source (référence à Block.id)"
+            },
+            "to_block_id": {
+               "type": "integer",
+               "description": "Identifiant du bloc cible (référence à Block.id)"
+            },
+            "note": {
+               "type": "string",
+               "description": "Annotation de la transition"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de création"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de dernière modification"
+            }
+         },
+         "required": [
+            "id",
+            "from_block_id",
+            "to_block_id",
+            "creation_date_time"
+         ]
+      },
+      "Participation": {
+         "type": "object",
+         "category": "relationship",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Identifiant unique de la participation"
+            },
+            "block_id": {
+               "type": "integer",
+               "description": "Identifiant du bloc (référence à Block.id) — l'agent est présent dans ce bloc"
+            },
+            "agent_id": {
+               "type": "integer",
+               "description": "Identifiant de l'agent (référence à Agent.id)"
+            },
+            "note": {
+               "type": "string",
+               "description": "Annotation de la participation"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de création"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de dernière modification"
+            }
+         },
+         "required": [
+            "id",
+            "block_id",
+            "agent_id",
+            "creation_date_time"
+         ]
+      },
+      "Relationship": {
+         "type": "object",
+         "category": "relationship",
+         "description": "Relation agent-agent, dirigée et typée, ancrée à un bloc ; binaire (agent_a_id, agent_b_id) jusqu'à éventuelle évolution hors MVP",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Identifiant unique de la relation"
+            },
+            "block_id": {
+               "type": "integer",
+               "description": "Identifiant du bloc d'ancrage (référence à Block.id) — « à ce moment du récit, la relation A —typ→ B est vraie » ; pas de clock_id, le rang est celui du bloc dans le parcours"
+            },
+            "agent_a_id": {
+               "type": "integer",
+               "description": "Identifiant du premier agent (référence à Agent.id)"
+            },
+            "agent_b_id": {
+               "type": "integer",
+               "description": "Identifiant du second agent (référence à Agent.id)"
+            },
+            "typ": {
+               "type": "string",
+               "description": "Type de la relation — lu dans la liste de valeurs du fichier de configuration (MVP ; enrichissement par l'auteur hors MVP)"
+            },
+            "note": {
+               "type": "string",
+               "description": "Annotation de la relation"
+            },
+            "content": {
+               "type": "string",
+               "description": "Contenu narratif de la relation"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de création"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de dernière modification"
+            }
+         },
+         "required": [
+            "id",
+            "block_id",
+            "agent_a_id",
+            "agent_b_id",
+            "typ",
+            "creation_date_time"
+         ]
+      },
+      "Journey": {
+         "type": "object",
+         "category": "entity",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Identifiant unique du parcours"
+            },
+            "lb": {
+               "type": "string",
+               "description": "Libellé du parcours"
+            },
+            "note": {
+               "type": "string",
+               "description": "Annotation du parcours"
+            },
+            "default": {
+               "type": "boolean",
+               "default_value": false,
+               "description": "Indicateur de parcours par défaut"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de création"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de dernière modification"
+            }
+         },
+         "required": [
+            "id",
+            "lb",
+            "default",
+            "creation_date_time"
+         ]
+      },
+      "Journey_node": {
+         "type": "object",
+         "category": "relationship",
+         "properties": {
+            "id": {
+               "type": "integer",
+               "description": "Identifiant unique du nœud de parcours"
+            },
+            "journey_id": {
+               "type": "integer",
+               "description": "Identifiant du parcours (référence à Journey.id)"
+            },
+            "block_id": {
+               "type": "integer",
+               "description": "Identifiant du bloc rattaché (référence à Block.id) — le rattachement se fait sur les blocs, pas sur les transitions"
+            },
+            "sequence_order": {
+               "type": "integer",
+               "description": "Rang réel du bloc dans la séquence du parcours : DFS depuis le bloc Début sur les transitions du parcours, branches explorées par id de transition croissant, mémoïsation des cycles, repli déterministe pour les blocs inatteignables ; recalculé à chaque modification du graphe et au chargement"
+            },
+            "creation_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de création"
+            },
+            "modification_date_time": {
+               "type": "string",
+               "format": "date-time",
+               "description": "Date et heure de dernière modification"
+            }
+         },
+         "required": [
+            "id",
+            "journey_id",
+            "block_id",
+            "sequence_order",
+            "creation_date_time"
+         ]
+      }
+   },
+   "cardinalities": [
+      {
+         "name": "participation_card",
+         "description": "0 ou n blocs sont liés à 0 ou n agents (participation : présence d'un agent dans un bloc)",
+         "from": "Block",
+         "to": "Agent",
+         "relationship": "Participation",
+         "cardinality": {
+            "from": "0..*",
+            "to": "0..*"
+         },
+         "directional_relationship": false
+      },
+      {
+         "name": "transition_card",
+         "description": "Chaînage libre bloc → bloc, cycles autorisés ; une seule transition par paire ordonnée de blocs",
+         "from": "Block",
+         "to": "Block",
+         "relationship": "Transition",
+         "cardinality": {
+            "from": "0..*",
+            "to": "0..*"
+         },
+         "directional_relationship": true
+      },
+      {
+         "name": "journey_node_card",
+         "description": "0 ou n blocs sont rattachés à 0 ou n parcours",
+         "from": "Block",
+         "to": "Journey",
+         "relationship": "Journey_node",
+         "cardinality": {
+            "from": "0..*",
+            "to": "0..*"
+         },
+         "directional_relationship": false
+      },
+      {
+         "name": "relationship_card",
+         "description": "Une relation est ancrée à exactement un bloc et relie exactement deux agents ; unicité (bloc, paire, typ)",
+         "from": "Block",
+         "to": "Agent",
+         "relationship": "Relationship",
+         "cardinality": {
+            "from": "1",
+            "to": "0..*"
+         },
+         "directional_relationship": true
+      }
+   ],
+   "notes": [
+      "Les cardinalités suivent cette notation : 0..* (zéro ou plusieurs), 1..* (un ou plusieurs), 0..1 (zéro ou un), 1 (exactement un).",
+      "Les relations directionnelles ont une source et une cible.",
+      "Appartenance à un parcours dérivée (jamais stockée) : une Transition appartient à un parcours ssi ses deux blocs extrémités y appartiennent ; une Participation ou une Relation y appartient ssi son bloc d'ancrage y appartient.",
+      "État courant d'une paire d'agents à un bloc = dernière Relation ancrée à un bloc de rang ≤ au rang du bloc dans le parcours (dérivé, jamais stocké).",
+      "Cascades de suppression : suppression d'un agent → ses participations et relations ; d'un bloc → ses transitions, participations, relations ancrées et nœuds de parcours ; d'une transition → les nœuds de parcours la référençant.",
+      "Pas de migration des projets planoscript existants (hors périmètre) : les clés JSON sont définies librement pour hyperscript."
+   ]
+}
