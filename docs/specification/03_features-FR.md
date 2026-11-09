@@ -24,9 +24,10 @@
 
 ## FN001 : Lancer l'application
 - **Description** : Lancer l'application.
-- **Références** : SU001 (accueil).
+- **Références** : SU001 (accueil) ; écran d'accueil décrit dans `04_interface` (§9).
 - **Comportement attendu** :
     - Au lancement, l'application affiche un écran d'accueil permettant notamment de créer un nouveau projet.
+    - Une seule instance de l'application peut tourner à la fois : si une instance est déjà en cours, un nouveau lancement se termine silencieusement (garde single-instance).
 
 ## FN002 : Quitter l'application
 - **Description** : Quitter l'application.

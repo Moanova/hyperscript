@@ -24,9 +24,10 @@
 
 ## FN001: Launch the application
 - **Description**: Launch the application.
-- **References**: SU001 (home screen).
+- **References**: SU001 (home screen); home screen specified in `04_interface` (§9).
 - **Expected behavior**:
     - At launch, the application displays a home screen allowing in particular to create a new project.
+    - Only one instance of the application can run at a time: if an instance is already running, a new launch exits silently (single-instance guard).
 
 ## FN002: Quit the application
 - **Description**: Quit the application.
