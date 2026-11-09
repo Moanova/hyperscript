@@ -1,0 +1,23 @@
+# Fichiers compilés et cache Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Dossiers et documents de travail
+.vscode/
+
+# Environnement virtuel
+.venv/
+
+# Distribution et paquetage
+build/
+dist/
+*.egg-info/
+
+# Fichiers de congiguration locales et secrets
+.env
+
+# système
+.DS_Store
+Thumbs.db
