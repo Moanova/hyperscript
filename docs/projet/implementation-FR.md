@@ -21,29 +21,29 @@
 ### 1. Gestion du projet et cycle de vie
 
 | RG | Résumé | Statut | Code (fichier · symbole) | Test unitaire | Notes |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | RG001 | Un projet est un document local (format JSON) contenant ses métadonnées, ses… | not-started | — | — | — |
 | RG002 | Un seul projet peut être ouvert dans l'application à tout moment. | not-started | — | — | — |
-| RG003 | Un projet nouvellement créé est un projet non enregistré : il existe en mémoire… | not-started | — | — | — |
+| RG003 | Un projet nouvellement créé est un projet non enregistré : il existe en mémoire… | implemented | src/core/services/project_service.py · ProjectService.create_project | tests/test_project/test_project_service.py | projet non enregistré (pas de fichier associé) |
 | RG004 | Chaque projet possède un identifiant stable, un nom, une date de création, une… | not-started | — | — | — |
 | RG005 | Les projets enregistrés ou ouverts avec succès sont ajoutés à la liste des… | not-started | — | — | — |
 | RG006 | La commande « Save » n'est active que si le projet ouvert est modifié ; « Save… | not-started | — | — | — |
 | RG007 | Lorsqu'aucun projet n'est ouvert, les entrées des menus Files (Close, Save,… | not-started | — | — | — |
 | RG008 | À l'ouverture ou à la création d'un projet, les entrées des menus Files (Close,… | not-started | — | — | — |
-| RG009 | L'ouverture d'un projet ne remplace le projet courant qu'après lecture et… | not-started | — | — | — |
-| RG010 | L'application n'ouvre un projet que si sa version de format est supportée ;… | not-started | — | — | — |
+| RG009 | L'ouverture d'un projet ne remplace le projet courant qu'après lecture et… | implemented | src/core/services/project_service.py · load_project | tests/test_project/test_project_service.py | fichier invalide/incompatible : projet courant inchangé |
+| RG010 | L'application n'ouvre un projet que si sa version de format est supportée ;… | implemented | src/core/services/project_service.py · load_project (format_version) | tests/test_project/test_project_service.py | — |
 | RG011 | Une sauvegarde ne remplace le fichier existant qu'après écriture complète et… | not-started | — | — | — |
 | RG012 | « Save as... » crée ou remplace un fichier à l'emplacement choisi (avec… | not-started | — | — | — |
-| RG013 | Un nouveau projet est nommé « Nouveau projet » et contient une carte narrative… | not-started | — | — | — |
+| RG013 | Un nouveau projet est nommé « Nouveau projet » et contient une carte narrative… | implemented | project_service.py · create_project + usecases/project_management/create_project_usecase.py | tests/test_project/test_project_service.py | — |
 | RG014 | Un projet contient toujours au moins une carte narrative (en MVP : exactement… | not-started | — | — | — |
 | RG015 | Une seule instance de l'application peut tourner à la fois ; si une instance… | not-started | — | — | — |
-| RG016 | Aucun projet planoscript existant n'est migré : les fichiers planoscript sont… | not-started | — | — | — |
+| RG016 | Aucun projet planoscript existant n'est migré : les fichiers planoscript sont… | implemented | project_service.py · load_project (rejet si format_version absent) | tests/test_project/test_project_service.py | fichiers planoscript = incompatibles |
 | RG017 | L'export sur fichier est hors périmètre MVP (seul l'aperçu in-app, vue « Export… | not-started | — | — | — |
 
 ### 2. Structure de la carte narrative
 
 | RG | Résumé | Statut | Code (fichier · symbole) | Test unitaire | Notes |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | RG018 | Chaque carte narrative possède un identifiant stable. | not-started | — | — | — |
 | RG019 | Chaque bloc, transition, participation, relation, parcours et rattachement d'un… | not-started | — | — | — |
 | RG020 | Les libellés des blocs, transitions, participations, relations, parcours et… | not-started | — | — | — |
@@ -51,7 +51,7 @@
 | RG022 | La suppression d'une carte narrative est irréversible et entraîne la… | not-started | — | — | — |
 | RG023 | La suppression d'un bloc entraîne la suppression en cascade de ses transitions,… | not-started | — | — | — |
 | RG024 | La suppression du dernier parcours d'une carte est impossible. | not-started | — | — | — |
-| RG025 | Chaque carte narrative possède un et un seul bloc Début, créé automatiquement à… | not-started | — | — | — |
+| RG025 | Chaque carte narrative possède un et un seul bloc Début, créé automatiquement à… | implemented | usecases/project_management/create_project_usecase.py | tests/test_project/test_project_service.py | bloc Start unique, auto-créé |
 | RG026 | Un bloc Fin ne peut recevoir aucune transition sortante (degré sortant 0). En… | not-started | — | — | — |
 | RG027 | Un bloc peut avoir plusieurs transitions entrantes et plusieurs transitions… | not-started | — | — | — |
 | RG028 | Le chaînage par transition est libre (de tout bloc vers tout bloc, cycles… | not-started | — | — | — |
@@ -67,11 +67,11 @@
 ### 3. Logique des parcours et appartenance
 
 | RG | Résumé | Statut | Code (fichier · symbole) | Test unitaire | Notes |
-|---|---|---|---|---|---|
-| RG037 | À la création d'une carte narrative, un parcours par défaut est automatiquement… | not-started | — | — | — |
+| --- | --- | --- | --- | --- | --- |
+| RG037 | À la création d'une carte narrative, un parcours par défaut est automatiquement… | implemented | usecases/project_management/create_project_usecase.py | tests/test_project/test_project_service.py | parcours par défaut créé et activé |
 | RG038 | La copie d'un parcours ne modifie pas le parcours activé quanf le filtre de… | not-started | — | — | — |
 | RG039 | Il existe toujours un parcours par défaut, et un seul ; si le parcours par… | not-started | — | — | — |
-| RG040 | Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; à sa… | not-started | — | — | — |
+| RG040 | Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; à sa… | implemented | usecases/project_management/create_project_usecase.py (journey_node sur le bloc Start) | tests/test_project/test_project_service.py | rattachement actif si filtre activé, défaut sinon |
 | RG041 | L'appartenance à un parcours est dérivée et jamais stockée : une transition… | not-started | — | — | — |
 | RG042 | Les parcours auxquels un bloc est rattaché se modifient via la liste des… | not-started | — | — | — |
 | RG043 | La copie d'un parcours reprend les rattachements de ses blocs. | not-started | — | — | — |
@@ -80,7 +80,7 @@
 ### 4. Visualisation et interaction
 
 | RG | Résumé | Statut | Code (fichier · symbole) | Test unitaire | Notes |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | RG045 | La position (x, y) de chaque bloc est conservée dans les métadonnées graphiques… | not-started | — | — | — |
 | RG046 | Les blocs s'alignent automatiquement sur la grille lors de leur création et de… | not-started | — | — | — |
 | RG047 | La modification du niveau de zoom, de la position des barres de défilement ou… | not-started | — | — | — |
@@ -97,12 +97,12 @@
 ### 5. Architecture technique et modèle de données
 
 | RG | Résumé | Statut | Code (fichier · symbole) | Test unitaire | Notes |
-|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- |
 | RG057 | Les agents appartiennent au projet, et non à la carte narrative. | not-started | — | — | — |
 | RG058 | L'interface ne modifie jamais directement le modèle métier : toute modification… | not-started | — | — | — |
 | RG059 | Aucune valeur n'est codée en dur dans l'interface : dimensions, couleurs,… | not-started | — | — | — |
 | RG060 | Les métadonnées de représentation graphique (positions des blocs, ordre des… | not-started | — | — | — |
-| RG061 | Le projet est enregistré dans un fichier unique structuré (JSON) contenant les… | not-started | — | — | — |
+| RG061 | Le projet est enregistré dans un fichier unique structuré (JSON) contenant les… | implemented | project_service.py · save_project/load_project (JSON unique) | tests/test_project/test_project_service.py | fichier layouts séparé géré par LayoutService (RG060) |
 | RG062 | L'auteur peut à tout moment désigner l'un des parcours de la carte comme… | not-started | — | — | — |
 
 ## B. Fonctionnalités (`03_features-*.md`)
@@ -111,40 +111,40 @@
 ### Hyperscript ::: Fonctionnalités
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 
 ### Application
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
-| FN001 | Lancer l'application | not-started | — | — | — | — | — |
-| FN002 | Quitter l'application | not-started | Files › Quit | — | — | — | — |
-| FN003 | Afficher l'historique des changements | not-started | About › Change Log | — | — | — | — |
-| FN004 | Afficher l'information « à propos » | not-started | About › About Hyperscript | — | — | — | — |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| FN001 | Lancer l'application | partial | — | src/main.py (garde single-instance) + ui/main_window.py (écran d'accueil) | — | — (test appli T-xxx à venir) | test GUI à valider sur poste de dev |
+| FN002 | Quitter l'application | partial | Files › Quit | ui/main_window.py · _handle_quit/closeEvent + QuitApplicationUseCase | — | tests/test_project/test_file_usecases.py (logique) | — |
+| FN003 | Afficher l'historique des changements | partial | About › Change Log | ui/dialogs/change_log_dialog.py + core/services/change_log_service.py | — | — | menu About › Change Log câblé |
+| FN004 | Afficher l'information « à propos » | partial | About › About Hyperscript | ui/dialogs/about_dialog.py + core/services/about_service.py | — | — | menu About › About Hyperscript câblé |
 
 ### Projet
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
-| FN005 | Créer un nouveau projet | not-started | Files › New Project... | — | — | — | — |
-| FN006 | Ouvrir un projet | not-started | Files › Open... | — | — | — | — |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| FN005 | Créer un nouveau projet | implemented | Files › New Project... | usecases/project_management/create_project_usecase.py + main_window.py · _create_project | — | tests/test_project/test_project_service.py | — |
+| FN006 | Ouvrir un projet | partial | Files › Open... | main_window.py · _open_project + LoadProjectUseCase | — | tests/test_project/test_file_usecases.py | boîte de dialogue fichier câblée |
 | FN007 | Ouvrir un projet récent | greyed-MVP | Files › Recent Projects | — | — | — | — |
-| FN008 | Enregistrer le projet | not-started | Files › Save | — | — | — | — |
-| FN009 | Enregistrer le projet sous... | not-started | Files › Save as... | — | — | — | — |
-| FN010 | Fermer le projet | not-started | Files › Close | — | — | — | — |
+| FN008 | Enregistrer le projet | partial | Files › Save | main_window.py · _save_project/_do_save + SaveProjectUseCase | — | tests/test_project/test_file_usecases.py | — |
+| FN009 | Enregistrer le projet sous... | partial | Files › Save as... | main_window.py · _save_project_as | — | tests/test_project/test_file_usecases.py | — |
+| FN010 | Fermer le projet | partial | Files › Close | main_window.py · _close_project + ProjectService.close_project | — | tests/test_project/test_file_usecases.py | — |
 | FN011 | Modifier le libellé du projet | not-started | — | — | — | — | — |
 
 ### Carte narrative
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | FN012 | Renommer la carte narrative | not-started | — | — | — | — | — |
 | FN013 | Exporter la carte narrative en document de lecture | greyed-MVP | Files › Export Map... | — | — | — | — |
 
 ### Blocs narratifs
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | FN014 | Créer un bloc narratif | not-started | Project › Narrative Blocks › New | — | — | — | — |
 | FN015 | Modifier les attributs d'un bloc | not-started | Project › Narrative Blocks › Edit... | — | — | — | — |
 | FN016 | Dupliquer un bloc | not-started | — | — | — | — | — |
@@ -155,7 +155,7 @@
 ### Transitions
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | FN020 | Créer une transition | not-started | Project › Transitions › New | — | — | — | — |
 | FN021 | Annoter et modifier une transition | not-started | Project › Transitions › Edit... | — | — | — | — |
 | FN022 | Supprimer une transition | not-started | Project › Transitions › Delete... | — | — | — | — |
@@ -163,7 +163,7 @@
 ### Parcours
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | FN023 | Créer un parcours | not-started | Project › Journeys › New | — | — | — | — |
 | FN024 | Renommer et décrire un parcours | not-started | — | — | — | — | — |
 | FN025 | Dupliquer un parcours | not-started | — | — | — | — | — |
@@ -174,14 +174,14 @@
 ### Visualisation
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | FN028 | Naviguer dans l'espace de travail | not-started | — | — | — | — | — |
 | FN029 | Filtrer l'affichage par parcours | not-started | — | — | — | — | — |
 
 ### Agents et participations
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | FN030 | Associer des agents à un bloc | not-started | — | — | — | — | — |
 | FN031 | Gérer les agents du projet | not-started | Project › Agents | — | — | — | — |
 | FN032 | Naviguer entre les vues (navigation croisée) | not-started | — | — | — | — | — |
@@ -190,46 +190,46 @@
 ### Relations entre agents
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | FN034 | Gérer une relation entre agents | not-started | Project › Relationships | — | — | — | — |
 
 ### Conditions
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | FN035 | Gérer la condition d'un bloc Condition et la promotion Scène → Pivot | not-started | — | — | — | — | — |
 
 ### Vue « Relations »
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | FN036 | Vue « Relations » | not-started | — | — | — | — | — |
 
 ### Configuration
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 | FN037 | Liste des types de relations | not-started | — | — | — | — | — |
 
 ### Hors périmètre MVP / à définir en phase de conception
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
-|---|---|---|---|---|---|---|---|
+| --- | --- | --- | --- | --- | --- | --- | --- |
 
 ## C. Entrées du menu général (`05_menu-*.yaml`)
 
 | Chemin | Libellé | Raccourci | Statut | Clé `main_window.py` |
-|---|---|---|---|---|
+| --- | --- | --- | --- | --- |
 | Fichiers | Fichiers |  | not-started | — |
-| Fichiers › Nouveau projet... | Nouveau projet... | Ctrl+N | not-started | — |
-| Fichiers › Ouvrir... | Ouvrir... | Ctrl+O | not-started | — |
-| Fichiers › Fermer | Fermer | Ctrl+W | not-started | — |
-| Fichiers › Enregistrer | Enregistrer | Ctrl+S | not-started | — |
-| Fichiers › Enregistrer sous... | Enregistrer sous... | Ctrl+Shift+S | not-started | — |
+| Fichiers › Nouveau projet... | Nouveau projet... | Ctrl+N | partial | menu_actions['new'] |
+| Fichiers › Ouvrir... | Ouvrir... | Ctrl+O | partial | menu_actions['open'] |
+| Fichiers › Fermer | Fermer | Ctrl+W | partial | menu_actions['close'] |
+| Fichiers › Enregistrer | Enregistrer | Ctrl+S | partial | menu_actions['save'] |
+| Fichiers › Enregistrer sous... | Enregistrer sous... | Ctrl+Shift+S | partial | menu_actions['save_as'] |
 | Fichiers › Exporter la carte... | Exporter la carte... |  | greyed-MVP | — |
 | Fichiers › Importer une carte... | Importer une carte... |  | greyed-MVP | — |
 | Fichiers › Projets récents | Projets récents |  | greyed-MVP | — |
-| Fichiers › Quitter | Quitter | Ctrl+Q | not-started | — |
+| Fichiers › Quitter | Quitter | Ctrl+Q | partial | menu_actions['quit'] |
 | Édition | Édition |  | greyed-MVP | — |
 | Édition › Annuler | Annuler | Ctrl+Z | greyed-MVP | — |
 | Édition › Rétablir | Rétablir | Ctrl+Y | greyed-MVP | — |
@@ -278,13 +278,13 @@
 | Projet › Relations › Éditer... | Éditer... |  | not-started | — |
 | Projet › Relations › Supprimer... | Supprimer... |  | not-started | — |
 | À propos | À propos |  | not-started | — |
-| À propos › Historique des changements | Historique des changements |  | not-started | — |
-| À propos › À propos d'Hyperscript | À propos d'Hyperscript |  | not-started | — |
+| À propos › Historique des changements | Historique des changements |  | partial | menu_actions['change_log'] |
+| À propos › À propos d'Hyperscript | À propos d'Hyperscript |  | partial | menu_actions['about'] |
 
 ## D. Scénarios d'utilisation (`01_user_stories-*.md`)
 
 | SU | Titre | FN couvertes | Statut agrégé |
-|---|---|---|---|
+| --- | --- | --- | --- |
 | SU001 | Gérer un projet narratif | FN001, FN002, FN005, FN006, FN007, FN008, FN009, FN010, FN011 | not-started |
 | SU002 | Gérer une carte narrative | FN012, FN013 | not-started |
 | SU003 | Gérer un bloc narratif | FN014, FN015, FN016, FN017, FN018, FN019, FN035 | not-started |

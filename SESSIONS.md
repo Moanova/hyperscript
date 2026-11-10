@@ -18,6 +18,7 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
   3. Parcours par défaut désigné par l'auteur : correction de SU005 (la création d'un parcours n'active rien — filtre possiblement désactivé), nouvelle fonctionnalité FN038 + entrée `Project › Journeys › Set as Default...`, nouvelle règle RG062 ; règle de rattachement des nouveaux blocs unifiée « parcours actif si le filtre de parcours est activé, parcours par défaut sinon » (FN014, FN019, FN026, SU003, SU005, RG040, FN038) ; notion « parcours courant » supprimée, unifiée sur « parcours actif ».
 - `docs/conception/03_conception-FR.md` aligné (règles §4, points 13–15) ; version EN créée : `docs/conception/03_conception-EN.md`.
 - Matrice de traçabilité initialisée : `docs/projet/implementation-FR.md` / `implementation-EN.md` (62 RG, 38 FN, entrées du menu, 12 SU ; statuts initiaux `not-started` / `greyed-MVP`).
+- TSK07 — initialisation de la base de code (reprise du code planoscript figé `faa8fdd`) : classe A reprise telle quelle (loaders config/user_state, `ui_utils`, services+dialogues About/Change Log, `conftest.py`, `pyproject.toml` renommé) + `theme.py` adapté (couleurs par type de bloc) ; classe B adaptée (nouveau `core/models/data_model.py`, `view_model.py`, `layout_service.py`, `project_service.py` + `close_project()`, `create_project_usecase.py`, `main.py`, `main_window.py` shell : menu conforme à `05_menu-EN.yaml` avec stubs `menu_actions`, écran d'accueil, info bar, actions fichier FN002/005/006/008/009/010, dialogues FN003/004) ; scripts associés `usecases/file_management/` ; workspaces laissés en placeholder (tâche suivante). 8 tests unitaires passed (`pytest tests/ -q`). Commits `72b2461` (revue specs) et `455c823` (code) poussés sur `dev` ; kanban : TSK01–TSK06 en Done, TSK07 en Review.
 - Vérifications : YAML des menus valide ; script de contrôle des références de chemins de menu contre `05_menu-EN.yaml` (OK) ; parité FR/EN des nouveaux documents (8 sections, tableau, points 1–15).
 
 ### Choix actés
@@ -28,12 +29,14 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 - Document de traçabilité placé dans `docs/projet/` (`implementation-FR.md` + `implementation-EN.md`), conventions de liens code/tests par commentaires d'ID (`# RGxxx:` / `# FNxxx:`) et noms de tests `test_rgXXX_*` / `test_fnXXX_*`.
 
 ### État en fin de séance
-- 10 fichiers de spécification/conception modifiés + 3 nouveaux fichiers (`03_conception-EN.md`, `implementation-FR.md`, `implementation-EN.md`) ; commit et push sur `dev`.
-- Kanban inchangé (TSK01–TSK06 toujours en Review) ; cette revue est tracée dans SESSIONS.md.
+- Commits `72b2461` (revue des spécifications) et `455c823` (initialisation de la base de code, TSK07) poussés sur `dev`.
+- Kanban : TSK01–TSK06 en Done (validées TSC 10-11-2026), TSK07 en Review.
+- Matrice de traçabilité `docs/projet/implementation-FR/EN.md` mise à jour : 9 RG `implemented`, FN001–FN004/FN006/FN008–FN010 `partial`, FN005 `implemented`, 8 entrées de menu câblées (`partial`).
+- Prochaine séance : espaces de travail (vues « Parcours »/Journeys, Agents, Relations, Export ; nœuds de blocs et transitions ; persistance des layouts RG060).
 - Points ouverts : libellé du menu contextuel « Associate agents... » (FR dans les docs FR) ; noms de vues/onglets en FR dans les docs FR (« Parcours », « Agents », « Relations ») alors que l'app sera anglaise ; fiches historiques `docs/projet/tasks/TSK0*.md` non réécrites (journal de séance) ; périmètre MVP des vues, maquette vue « Relations », SU009/SU010/SU012 à finaliser, exports, zoom, annuler/rétablir, barres latérales.
 
 ### Problèmes rencontrés
-- Aucun.
+- Lancement GUI non testable dans le sandbox (libGL.so.1 absent, pas de droits root) : tests offscreen Qt à valider sur poste de dev (noté dans la fiche TSK07).
 
 ---
 
