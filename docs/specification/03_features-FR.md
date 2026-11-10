@@ -3,7 +3,8 @@
 ## Document Version
 - **Version** : 1.0
 - **Date** : 09-11-2026
-- **Statut** : initial — rédigé en séance TSC 09-11-2026 à partir des fonctionnalités de planoscript (`03_features` v2.2 du dépôt planoscript) et des décisions actées (`docs/conception/03_conception-FR.md`). Pas de références aux règles de gestion (en cours de revue) ; pas de champ « État » (nouveau projet). Les espaces de travail sont référencés par leur nom, sans numérotation.
+- **Statut** : initial.
+
 
 ---
 
@@ -17,6 +18,7 @@
 - Le zoom et les fonctions d'édition (annuler/rétablir) sont à définir en phase de conception.
 - Le périmètre exact de l'export de lecture sera précisé ultérieurement.
 - Aucune migration des projets planoscript existants.
+
 
 ---
 
@@ -47,6 +49,7 @@
 - **Références** : menu « About › About Hyperscript ».
 - **Comportement attendu** :
     - Une boîte de dialogue présente les informations générales de l'application.
+
 
 ---
 
@@ -113,6 +116,7 @@
     - Toute modification du libellé met à jour la date de dernière modification et marque le projet comme modifié.
     - Le libellé n'est pas contraint à l'unicité.
 
+
 ---
 
 # Carte narrative
@@ -139,6 +143,7 @@
     - L'export ne marque ni la carte ni le projet comme modifiés.
 - **Note** : entrée « Files › Export Map » **grisée en MVP** (export sur fichier hors MVP ; seul l'aperçu in-app, FN033, est disponible dans le MVP). Le périmètre exact de l'export de lecture (pages, modes) sera précisé ultérieurement ; l'export technique destiné à la réimportation est à définir en phase de conception.
 
+
 ---
 
 # Blocs narratifs
@@ -152,7 +157,7 @@
     - Il est positionné à l'emplacement désigné par l'utilisateur, aligné sur la grille d'alignement (toujours visible et active).
     - Il présente deux ports d'attachement actifs : entrant (gauche) et sortant (droite).
     - Il n'est pas redimensionnable.
-    - Aucun bloc orphelin : le bloc nouvellement créé est automatiquement rattaché au parcours actif (ou au parcours par défaut).
+    - Aucun bloc orphelin : le bloc nouvellement créé est automatiquement rattaché au parcours par défaut.
     - Le bloc Début est unique : il est créé automatiquement à la création de la carte narrative et ne peut pas être créé manuellement ni dupliqué.
     - Toute création marque la carte, et donc le projet, comme modifié.
 
@@ -202,13 +207,14 @@
     - L'option est désactivée si la carte ne comporte qu'un seul parcours.
     - Toute modification de rattachement marque la carte, et donc le projet, comme modifié.
 
+
 ---
 
 # Transitions
 
 ## FN020 : Créer une transition
 - **Description** : Créer une transition orientée entre deux blocs de la carte narrative.
-- **Références** : SU004 ; menu « Project › Transitions... › Connect... ».
+- **Références** : SU004 ; menu « Project › Transitions › New... ».
 - **Comportement attendu** :
     - En MVP, la création est initiée depuis le menu (pas de barre d'outils).
     - L'utilisateur sélectionne un bloc source ; si aucun bloc n'est actif, il devient actif. Une connexion (tracé temporaire) suit alors le curseur jusqu'au clic sur le port du bloc cible.
@@ -221,7 +227,7 @@
 
 ## FN021 : Annoter et modifier une transition
 - **Description** : Annoter une transition d'un texte libre et modifier ses attributs éditables.
-- **Références** : SU004 ; menu « Project › Transitions... › Edit ».
+- **Références** : SU004 ; menu « Project › Transitions › Edit ».
 - **Comportement attendu** :
     - L'annotation s'effectue via le dialogue d'édition de la transition (champ « Note »).
     - La note de la transition est affichée dans une infobulle au survol de la ligne représentative.
@@ -230,11 +236,12 @@
 
 ## FN022 : Supprimer une transition
 - **Description** : Supprimer une transition entre deux blocs.
-- **Références** : SU004 ; menu « Project › Transitions... › Delete ».
+- **Références** : SU004 ; menu « Project › Transitions › Delete ».
 - **Comportement attendu** :
     - Une confirmation est demandée avant la suppression.
     - La suppression d'une transition supprime les rattachements de parcours qui la référençaient ; elle est indépendante de la suppression des blocs (hors cascade de FN018).
     - Toute suppression marque la carte, et donc le projet, comme modifié.
+
 
 ---
 
@@ -242,11 +249,9 @@
 
 ## FN023 : Créer un parcours
 - **Description** : Créer un parcours dans la carte.
-- **Références** : SU005 ; menu « Project › Journeys... › New... » ; liste des parcours dans « Display › Journey ».
+- **Références** : SU005 ; menu « Project › Journeys › New... » ; liste des parcours dans « Display › Journey ».
 - **Comportement attendu** :
     - Le nouveau parcours reçoit un identifiant unique, un libellé par défaut et une note vide.
-    - Le nouveau parcours est automatiquement activé et devient le parcours courant.
-    - Tout bloc créé par la suite est rattaché à ce parcours.
     - Toute création marque la carte, et donc le projet, comme modifié.
 
 ## FN024 : Renommer et décrire un parcours
@@ -262,12 +267,11 @@
 - **Comportement attendu** :
     - La copie porte un nom distinct et un nouvel identifiant.
     - Les rattachements des blocs du parcours source sont également rattachés à la copie.
-    - La copie ne devient pas le parcours activé ni le parcours par défaut.
     - Toute duplication marque la carte, et donc le projet, comme modifié.
 
 ## FN026 : Activer un parcours
 - **Description** : Activer un parcours comme parcours courant pour l'édition.
-- **Références** : SU005 ; liste des parcours dans « Display › Journey » ou menu « Project ».
+- **Références** : SU005 ; liste des parcours dans « Display › Journey ».
 - **Comportement attendu** :
     - L'activation s'effectue depuis la liste des parcours.
     - Le parcours activé devient le parcours courant : les nouveaux blocs y sont rattachés et le filtre d'affichage s'y applique (FN029).
@@ -279,9 +283,10 @@
 - **Comportement attendu** :
     - La suppression du dernier parcours de la carte est impossible : l'application affiche un message explicatif.
     - Dans les autres cas, une confirmation est demandée.
-    - **Les rattachements des blocs du parcours supprimé sont réaffectés au parcours par défaut** (aucun bloc orphelin ; décision TSC 09-11-2026).
+    - **Les rattachements des blocs du parcours supprimé sont réaffectés au parcours par défaut**.
     - Si le parcours supprimé était le parcours par défaut, le plus ancien parcours restant devient le parcours par défaut ; si c'était le parcours activé, le parcours par défaut devient le parcours activé.
     - Toute suppression marque la carte, et donc le projet, comme modifié.
+
 
 ---
 
@@ -304,10 +309,11 @@
 - **Comportement attendu** :
     - Le filtre permet de basculer entre « tout afficher » et « parcours actif ».
     - Point d'entrée : case cochable « All journeys » en tête de « Display › Journey » (cochée = filtre désactivé) ; cocher un parcours active ce parcours et le filtre.
-    - **Le filtre est désactivé par défaut à l'ouverture d'un projet** (décision TSC 09-11-2026) et son état n'est pas persisté entre les sessions.
+    - **Le filtre est désactivé par défaut à l'ouverture d'un projet** et son état n'est pas persisté entre les sessions.
     - **Le filtre s'applique à toutes les vues** (vue « Parcours », vue « Agents », vue « Relations », aperçu « Export ») : ne restent pleinement visibles que les blocs du parcours actif, les transitions dont les deux blocs y appartiennent, et les participations et relations dont le bloc d'ancrage y appartient ; les autres éléments sont estompés (opacité réduite) et non interactifs tant que le filtre est activé.
     - La bascule d'un parcours à l'autre met à jour instantanément l'affichage de toutes les vues.
     - Le filtrage ne marque pas la carte comme modifiée.
+
 
 ---
 
@@ -356,6 +362,7 @@
     - La visualisation de l'aperçu ne marque ni la carte ni le projet comme modifiés.
 - **Note** : le scenario SU010 est initialisé et sera finalisé après la phase de conception ; la vue « Export » fait partie du périmètre MVP minimal et pourra être renommée ultérieurement.
 
+
 ---
 
 # Relations entre agents
@@ -374,6 +381,7 @@
     - La suppression d'un agent ou d'un bloc entraîne la suppression en cascade de ses relations.
     - Toute création, modification ou suppression marque la carte, et donc le projet, comme modifié.
 
+
 ---
 
 # Conditions
@@ -388,6 +396,7 @@
     - Un bloc Fin ne peut pas recevoir de transition sortante.
     - Toute modification marque la carte, et donc le projet, comme modifié.
 
+
 ---
 
 # Vue « Relations »
@@ -396,8 +405,9 @@
 - **Description** : Visualiser le graphe des agents et de leurs relations (arcs étiquetés par type, annotés des blocs d'ancrage) dans l'espace de travail « Relations », avec navigation croisée vers le bloc d'ancrage dans la vue « Parcours » (FN032).
 - **Références** : SU012 ; filtre de parcours FN029.
 - **Comportement attendu** :
-    - À préciser avec la maquette de la vue, à définir durant la phase de conception (décision TSC 09-11-2026).
+    - À préciser avec la maquette de la vue, à définir durant la phase de conception.
     - Le périmètre MVP des vues n'est pas acté au-delà du minimum (vue « Parcours » et vue « Export »).
+
 
 ---
 
@@ -409,6 +419,7 @@
 - **Comportement attendu** :
     - En MVP, les types de relations proposés à la création (FN034) sont lus dans le fichier de configuration.
     - L'enrichissement de cette liste par l'auteur est une fonctionnalité hors MVP.
+
 
 ---
 

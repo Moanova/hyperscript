@@ -3,14 +3,15 @@
 ## Document Version
 - **Version** : 1.0
 - **Date** : 09-11-2026
-- **Statut** : initial — rédigé en séance TSC 09-11-2026 à partir des scenarii de planoscript et des décisions actées (`docs/conception/03_conception-FR.md`). Les scenarii SU009, SU010 et SU012 sont initialisés mais seront finalisés après la phase de conception. Aucune référence aux règles de gestion (en cours de revue) ni aux clés techniques du modèle de données : seule la sémantique du projet est utilisée.
+- **Statut** : initial.
+
 
 ---
 
 ## SU001 : Gérer un projet narratif
 - **Description** : En tant qu'auteur, je peux créer, ouvrir, enregistrer, renommer et fermer un projet narratif afin de regrouper, retrouver et poursuivre le travail sur ma carte narrative.
 - **Complément** :
-    - Un projet est un document local contenant les métadonnées du projet, les agents et la ou les cartes narratives. Le modèle prévoit plusieurs cartes narratives par projet ; le périmètre MVP en reste à une seule (SU002).
+    - Un projet est un document local contenant les métadonnées du projet, les agents et la ou les cartes narratives.
     - Un seul projet peut être ouvert dans l'application à tout moment.
     - Un projet nouvellement créé est un projet non enregistré : il existe en mémoire mais n'est associé à aucun fichier tant que l'utilisateur ne l'a pas sauvegardé.
     - Chaque projet possède un identifiant stable, un nom, une date de création et une date de dernière modification.
@@ -24,14 +25,14 @@
     - Un projet enregistré est ajouté à la liste des projets récents, qui respecte la limite configurée et retire les fichiers qui n'existent plus.
 - **Périmètre MVP** :
     - Chaque projet ne contient qu'une seule carte narrative.
-    - Aucune migration des projets planoscript existants.
+    - Pas de migration des projets planoscript existants.
 
 
 ## SU002 : Gérer une carte narrative
 - **Description** : En tant qu'auteur, je peux nommer et modifier le contenu de la carte narrative de mon projet afin de définir mon récit.
 - **Complément** :
     - Une carte narrative appartient à un et un seul projet ; elle possède un identifiant stable, un nom, une date de création et une date de dernière modification.
-    - Un projet contient toujours au moins une carte narrative ; celle créée par défaut s'appelle « Carte narrative principale ».
+    - Un projet contient toujours au moins une carte narrative.
     - Une carte est considérée comme modifiée lorsque l'utilisateur ajoute, modifie ou supprime un bloc, une transition, une participation ou une relation, ou modifie la position d'un bloc dans l'espace de travail.
     - La modification de la position des barres de défilement ne constitue pas une modification de la carte.
 - **Critères d'acceptation** :
@@ -52,11 +53,11 @@
     - Un bloc Fin ne peut pas recevoir de transition sortante.
     - Un bloc Pivot possède au moins deux transitions sortantes ; la promotion Scène → Pivot est automatique et unidirectionnelle lorsqu'une deuxième transition sortante est créée (jamais l'inverse).
     - Un bloc Condition possède exactement une transition entrante (depuis un Pivot) et une sortante (vers la scène gardée) ; il porte une condition structurée : nature (choix / artefact / compétence / flag), référence éventuelle vers un agent Artefact, libellé. Chaîner des blocs Condition équivaut à un ET ; deux blocs Condition issus d'un même Pivot équivalent à un OU.
-    - Rattachement aux parcours : ce sont les blocs qui sont rattachés aux parcours. Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; tout bloc nouvellement créé est automatiquement rattaché au parcours actif (ou au parcours par défaut) ; un bloc ne peut pas être retiré de son dernier parcours.
+    - Rattachement aux parcours : ce sont les blocs qui sont rattachés aux parcours. Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; tout bloc nouvellement créé est automatiquement rattaché au parcours par défaut ; un bloc ne peut pas être retiré de son dernier parcours.
     - La suppression d'un bloc entraîne la suppression en cascade de ses transitions, participations, relations ancrées et rattachements aux parcours.
 - **Critères d'acceptation** :
-    - L'utilisateur peut créer un bloc depuis le menu général ou le menu contextuel, en choisissant son type ; le bloc est automatiquement rattaché au parcours actif et positionné sur la grille à l'emplacement désigné.
-    - L'utilisateur peut dupliquer un bloc (copie avec nom distinctif et nouvel identifiant, rattachée au parcours actif).
+    - L'utilisateur peut créer un bloc depuis le menu général ou le menu contextuel, en choisissant son type ; le bloc est automatiquement rattaché au parcours par défaut et positionné sur la grille à l'emplacement désigné.
+    - L'utilisateur peut dupliquer un bloc (copie avec nom distinctif et nouvel identifiant, rattachée au parcours par défaut).
     - L'utilisateur peut modifier les attributs éditables d'un bloc via un dialogue d'édition.
     - L'utilisateur peut supprimer un bloc avec confirmation ; la suppression s'effectue en cascade selon le complément.
     - L'utilisateur peut déplacer un bloc par glisser-déposer (souris, stylet ou tactile) avec alignement automatique sur la grille.
@@ -90,7 +91,7 @@
     - Chaque carte contient toujours au moins un parcours ; à la création de la carte, un parcours initial est créé, activé et nommé par défaut.
     - Les blocs sont rattachés aux parcours ; un bloc peut appartenir à plusieurs parcours. L'appartenance d'une transition à un parcours est dérivée de ses deux blocs ; celle d'une participation ou d'une relation est dérivée de son bloc d'ancrage.
     - À la création d'un nouveau parcours, celui-ci devient automatiquement le parcours actif.
-    - Tout bloc nouvellement créé est rattaché au parcours actif (ou au parcours par défaut).
+    - Tout bloc nouvellement créé est rattaché au parcours par défaut.
     - La suppression du dernier parcours d'une carte est impossible ; l'application affiche un message explicatif.
     - La séquence de lecture d'un parcours est calculée en profondeur depuis le bloc Début (elle sert à l'aperçu et à l'export).
 - **Critères d'acceptation** :
@@ -155,7 +156,7 @@
     - Les agents participants d'un bloc sont représentés par des badges affichés sur le bloc dans la vue « Parcours ».
     - La suppression d'un agent ou d'un bloc entraîne la suppression en cascade de ses participations.
 - **Critères d'acceptation** :
-    - L'utilisateur peut associer un agent à un bloc depuis le menu contextuel du bloc dans la vue « Parcours », ou depuis la matrice de la vue agents ; il peut dissocier depuis l'un ou l'autre point d'entrée.
+    - L'utilisateur peut associer un agent à un bloc depuis le menu contextuel du bloc dans la vue « Parcours », ou depuis la vue agents ; il peut dissocier depuis l'un ou l'autre point d'entrée.
     - L'utilisateur peut créer un nouvel agent depuis le dialogue d'association et l'associer immédiatement au bloc courant.
     - L'application empêche la création d'une participation en double entre un agent et un bloc.
     - Les participations modifiées depuis une vue sont immédiatement visibles dans l'autre.
@@ -167,14 +168,14 @@
 
 
 ## SU009 : Gérer la vue agents — initialisé, à finaliser après la phase de conception
-- **Description** : En tant qu'auteur, je peux visualiser et éditer les participations entre les agents du projet et les blocs de la carte narrative dans un second espace de travail (matrice agents × blocs), afin de gérer les agents indépendamment du graphe des blocs.
-- **Statut** : scenario initialisé — à finaliser après la phase de conception (décision TSC 09-11-2026). Le périmètre MVP des vues n'est pas encore acté (au minimum : vue « Parcours » et vue « Export »).
+- **Description** : En tant qu'auteur, je peux visualiser et éditer les participations entre les agents du projet et les blocs de la carte narrative dans un second espace de travail, afin de gérer les agents indépendamment du graphe des blocs.
+- **Statut** : scenario initialisé — à finaliser après la phase de conception. Le périmètre MVP des vues n'est pas encore acté (au minimum : vue « Parcours » et vue « Export »).
 - **Éléments à préciser en conception** : ordre des colonnes (le bloc Début en premier), réordonnancement manuel conservé entre les sessions, navigation croisée entre les vues « Parcours » et agents.
 
 
 ## SU010 : Visualiser l'aperçu d'export — initialisé, à finaliser après la phase de conception
 - **Description** : En tant qu'auteur, je peux visualiser dans l'application un aperçu de lecture de ma carte narrative, tel qu'il sera restitué à l'export (espace de travail « Export »), afin de valider mon récit avant de le partager.
-- **Statut** : scenario initialisé — à finaliser après la phase de conception (décision TSC 09-11-2026). La vue « Export » fait partie du périmètre MVP minimal et pourra être renommée ultérieurement.
+- **Statut** : scenario initialisé — à finaliser après la phase de conception. La vue « Export » fait partie du périmètre MVP minimal et pourra être renommée ultérieurement.
 - **Éléments à préciser en conception** : lecture seule et liens inertes, dynamisme selon le filtre de parcours, ordre de restitution (séquence de lecture), restitution des relations sous leur bloc d'ancrage et de la section « état des relations », composants orphelins éventuels.
 
 
@@ -201,4 +202,4 @@
 
 ## SU012 : Gérer la vue « Relations » — initialisée, à finaliser après la phase de conception
 - **Description** : En tant qu'auteur, je peux visualiser le graphe des agents et de leurs relations (arcs étiquetés par type, annotés des blocs d'ancrage) dans un espace de travail dédié, avec navigation croisée vers le bloc d'ancrage dans la vue « Parcours ».
-- **Statut** : scenario initialisé — la maquette de cette vue sera définie durant la phase de conception (décision TSC 09-11-2026).
+- **Statut** : scenario initialisé — la maquette de cette vue sera définie durant la phase de conception.

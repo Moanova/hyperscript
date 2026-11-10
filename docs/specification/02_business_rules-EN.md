@@ -3,7 +3,8 @@
 ## Document Version
 - **Version**: 1.0
 - **Date**: 2026-11-09
-- **Status**: initial — written during the TSC session of 2026-11-09 from planoscript's business rules analyzed theme by theme (TSK06 task file). New RG numbering. Pure semantics, no technical terms (the project could be reimplemented in another language); display values (e.g. opacity) are configuration-driven.
+- **Status**: initial.
+
 
 ---
 
@@ -158,11 +159,11 @@
 ## 3. Journey logic and membership
 
 ## RG037
-- **Description** : When a narrative map is created, a default journey is automatically created and activated.
+- **Description** : When a narrative map is created, a default journey is automatically created.
 - **Classification** : 3. Journey logic and membership
 
 ## RG038
-- **Description** : When a new journey is created, it automatically becomes the active journey; duplicating a journey does not change the active one.
+- **Description** : Duplicating a journey does not change the active one when the journey filter is activated.
 - **Classification** : 3. Journey logic and membership
 
 ## RG039
@@ -170,7 +171,7 @@
 - **Classification** : 3. Journey logic and membership
 
 ## RG040
-- **Description** : No orphan block: every block belongs to at least one journey; at creation, a block is attached to the active journey (or to the default one); a block cannot be removed from its last journey.
+- **Description** : No orphan block: every block belongs to at least one journey; at creation, a block is attached to the default journey; a block cannot be removed from its last journey.
 - **Classification** : 3. Journey logic and membership
 
 ## RG041

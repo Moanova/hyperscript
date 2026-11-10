@@ -1,10 +1,7 @@
 # Hyperscript ::: General Application Menu
 # Version : 1.0
 # Date : 2026-11-09
-# Content : initial specification (TSC session 2026-11-09), from the planoscript menu
-# (05_menu-EN.yaml v2.2) revised per the decisions taken (docs/conception/03_conception-FR.md
-# section 8, point 15). No business-rule references (under review). Entries greyed out in
-# the MVP are marked in the notes. Keyboard shortcuts are preserved from planoscript.
+# Content : initial specification. No business-rule references. Entries greyed out in the MVP are marked in the notes. Keyboard shortcuts are preserved from planoscript.
 
 menu:
   name: General Menu
@@ -29,10 +26,10 @@ menu:
         - type: separator
         - name: Export Map
           references: "FN013, SU007"
-          note: "Greyed out in the MVP - file export is post-MVP; the in-app preview (workspace \"Export\", FN033) is part of the MVP and is not concerned by this entry"
+          note: "Greyed out in the MVP - file export is post-MVP"
         - name: Import Map
           references: "SU002"
-          note: "Greyed out in the MVP - imports a narrative map previously exported into the current project (distinct from the non-migration of planoscript projects)"
+          note: "Greyed out in the MVP - imports a narrative map previously exported into the current project"
         - type: separator
         - name: Recent Projects...
           dynamic: true
@@ -62,7 +59,7 @@ menu:
         - name: Paste
           shortcut: "Ctrl+V"
           note: "Greyed out in the MVP"
-      note: "All entries greyed out in the MVP. The former 'History' and 'Delete' entries are removed; they may be added after the MVP if needed."
+      note: "All entries greyed out in the MVP."
 
     - name: Display
       items:

@@ -36,7 +36,7 @@
          "items": {
             "$ref": "#/$defs/Narrative_map"
          },
-         "description": "Cartes narratives du projet — MVP : une seule carte ; le modèle prévoit N cartes dès le MVP (axe épisodes/saisons)"
+         "description": "Cartes narratives du projet - MVP : une seule carte ; le modèle prévoit N cartes dès le MVP"
       }
    },
    "required": [
@@ -205,7 +205,7 @@
             },
             "condition": {
                "type": "object",
-               "description": "Condition structurée — renseignée uniquement pour typ = Condition (unique support de la condition ; pas de clé condition sur Transition)",
+               "description": "Condition structurée — renseignée uniquement pour typ = Condition (unique support de la condition)",
                "properties": {
                   "kind": {
                      "type": "string",
@@ -294,7 +294,7 @@
             },
             "block_id": {
                "type": "integer",
-               "description": "Identifiant du bloc (référence à Block.id) — l'agent est présent dans ce bloc"
+               "description": "Identifiant du bloc (référence à Block.id) - l'agent est présent dans ce bloc"
             },
             "agent_id": {
                "type": "integer",
@@ -333,7 +333,7 @@
             },
             "block_id": {
                "type": "integer",
-               "description": "Identifiant du bloc d'ancrage (référence à Block.id) — « à ce moment du récit, la relation A —typ→ B est vraie » ; pas de clock_id, le rang est celui du bloc dans le parcours"
+               "description": "Identifiant du bloc d'ancrage (référence à Block.id) - « à ce moment du récit, la relation A —typ→ B est vraie » ; pas de clock_id, le rang est celui du bloc dans le parcours"
             },
             "agent_a_id": {
                "type": "integer",
@@ -345,7 +345,7 @@
             },
             "typ": {
                "type": "string",
-               "description": "Type de la relation — lu dans la liste de valeurs du fichier de configuration (MVP ; enrichissement par l'auteur hors MVP)"
+               "description": "Type de la relation - lu dans la liste de valeurs du fichier de configuration (MVP ; enrichissement par l'auteur hors MVP)"
             },
             "note": {
                "type": "string",
@@ -428,7 +428,7 @@
             },
             "block_id": {
                "type": "integer",
-               "description": "Identifiant du bloc rattaché (référence à Block.id) — le rattachement se fait sur les blocs, pas sur les transitions"
+               "description": "Identifiant du bloc rattaché (référence à Block.id) - le rattachement se fait sur les blocs, pas sur les transitions"
             },
             "sequence_order": {
                "type": "integer",

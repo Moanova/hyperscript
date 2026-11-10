@@ -3,7 +3,8 @@
 ## Document Version
 - **Version**: 1.0
 - **Date**: 2026-11-09
-- **Status**: initial — written during the TSC session of 2026-11-09 from planoscript's `04_interface` (v2.2), the decisions taken (`docs/conception/03_conception-FR.md`) and a document ↔ code verification. Deliberately incomplete: the design points still to be validated are marked "To be validated". No business-rule references (under review). The "Agents" and "Relationships" views are left empty (re-design to come). Zoom is out of the MVP. The application is unilingual for now (language to be confirmed).
+- **Status**: initial. The application is unilingual for now (English).
+
 
 ---
 
@@ -18,8 +19,7 @@
 - **Zoom bar**: none in the MVP (zoom post-MVP; "Display › Zoom" entries greyed out).
 
 ### Theme and style
-- **Dark theme kept** (plano's charter 98): all colors, dimensions and fonts are read
-  from `config.json` via a centralized theme module — **no hard-coded value in the UI code**.
+- **Dark theme kept** (plano's charter 98): all colors, dimensions and fonts are read from `config.json` via a centralized theme module — **no hard-coded value in the UI code**.
 - Palette (config.json defaults):
   - backgrounds: `bg_primary` `#1E1E1E`, `bg_surface` `#2D2D2D`; borders `border_color` `#383838`;
   - texts: `text_primary` `#FFFFFF`, `text_secondary` `#CCCCCC`; menu hover `menu_hover_bg` `#383838`;
@@ -28,6 +28,7 @@
 - Node (block): 80×40 px (`node_default_width`/`node_default_height`), corner radius 6 px.
 - Grid: minor 20 px / major 80 px (`grid_minor_size`/`grid_major_size`), colors `#333333`/`#4A4A4A`, always visible, redrawn on the visible area only.
 - **Colors per narrative block type** (Start, Scene, Pivot, Condition, End): *to be validated during the design phase* (plano: state `#E5C07B`, event `#D19A66`).
+
 
 ---
 
@@ -84,10 +85,12 @@
 - Displayed in the center as long as no project is open (the tab bar is hidden).
 - Centered text, 40 px padding, dark theme: title + paragraph with a "create a new project" link triggering project creation.
 
+
 ---
 
 ## Zoom
 - Out of the MVP: the "Display › Zoom" entries (in/out/reset, Ctrl+= / Ctrl+- / Ctrl+0) remain greyed out; no zoom bar. Zoom will be added after the MVP (to be defined during the design phase).
+
 
 ---
 
@@ -99,4 +102,3 @@
 5. Sidebars (whether to integrate them or not).
 6. Zoom (post-MVP).
 7. MVP scope of the views beyond the minimum "Journeys" + "Export".
-8. Application language (unilingual for now).

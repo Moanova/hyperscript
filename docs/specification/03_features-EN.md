@@ -3,7 +3,7 @@
 ## Document Version
 - **Version**: 1.0
 - **Date**: 2026-11-09
-- **Status**: initial — written during the TSC session of 2026-11-09 from the planoscript features (`03_features` v2.2 of the planoscript repository) and the decisions taken (`docs/conception/03_conception-FR.md`). No references to business rules (under review); no "Status" field (new project). Workspaces are referenced by name, without numbering.
+- **Status**: initial.
 
 ---
 
@@ -17,6 +17,7 @@
 - Zoom and editing functions (undo/redo) are to be defined during the design phase.
 - The exact scope of the reading export will be specified later.
 - No migration of existing planoscript projects.
+
 
 ---
 
@@ -47,6 +48,7 @@
 - **References**: menu "About › About Hyperscript".
 - **Expected behavior**:
     - A dialog presents the general information about the application.
+
 
 ---
 
@@ -113,6 +115,7 @@
     - Any label change updates the last modification date and marks the project as modified.
     - The label is not subject to uniqueness.
 
+
 ---
 
 # Narrative map
@@ -139,6 +142,7 @@
     - The export marks neither the map nor the project as modified.
 - **Note**: the "Files › Export Map" entry is **greyed out in the MVP** (file export out of the MVP; only the in-app preview, FN033, is available in the MVP). The exact scope of the reading export (pages, modes) will be specified later; the technical export intended for reimport is to be defined during the design phase.
 
+
 ---
 
 # Narrative blocks
@@ -152,7 +156,7 @@
     - It is positioned at the location designated by the user, snapped to the alignment grid (always visible and active).
     - It has two active attachment ports: incoming (left) and outgoing (right).
     - It is not resizable.
-    - No orphan block: the newly created block is automatically attached to the active journey (or to the default one).
+    - No orphan block: the newly created block is automatically attached to the default journey.
     - The Start block is unique: it is created automatically when the narrative map is created and cannot be created manually or duplicated.
     - Any creation marks the map, and therefore the project, as modified.
 
@@ -202,13 +206,14 @@
     - The option is disabled if the map has a single journey.
     - Any attachment change marks the map, and therefore the project, as modified.
 
+
 ---
 
 # Transitions
 
 ## FN020: Create a transition
 - **Description**: Create a directed transition between two blocks of the narrative map.
-- **References**: SU004 ; menu "Project › Transitions... › Connect...".
+- **References**: SU004 ; menu "Project › Transitions › New...".
 - **Expected behavior**:
     - In the MVP, creation is initiated from the menu (no toolbar).
     - The user selects a source block; if no block is active, it becomes active. A connection (temporary trace) then follows the cursor until the click on the target block's port.
@@ -221,7 +226,7 @@
 
 ## FN021: Annotate and edit a transition
 - **Description**: Annotate a transition with free text and edit its editable attributes.
-- **References**: SU004 ; menu "Project › Transitions... › Edit".
+- **References**: SU004 ; menu "Project › Transitions › Edit".
 - **Expected behavior**:
     - Annotation is done via the transition's edit dialog ("Note" field).
     - The transition's note is shown in a tooltip on hover over the representative line.
@@ -230,11 +235,12 @@
 
 ## FN022: Delete a transition
 - **Description**: Delete a transition between two blocks.
-- **References**: SU004 ; menu "Project › Transitions... › Delete".
+- **References**: SU004 ; menu "Project › Transitions › Delete".
 - **Expected behavior**:
     - A confirmation is requested before deletion.
     - Deleting a transition deletes the journey attachments referencing it; it is independent of block deletion (except for the FN018 cascade).
     - Any deletion marks the map, and therefore the project, as modified.
+
 
 ---
 
@@ -242,11 +248,9 @@
 
 ## FN023: Create a journey
 - **Description**: Create a journey in the map.
-- **References**: SU005 ; menu "Project › Journeys... › New..." ; journey list in "Display › Journey".
+- **References**: SU005 ; menu "Project › Journeys › New..." ; journey list in "Display › Journey".
 - **Expected behavior**:
     - The new journey receives a unique identifier, a default label and an empty note.
-    - The new journey is automatically activated and becomes the current journey.
-    - Every block created afterwards is attached to this journey.
     - Any creation marks the map, and therefore the project, as modified.
 
 ## FN024: Rename and describe a journey
@@ -262,12 +266,11 @@
 - **Expected behavior**:
     - The copy carries a distinct name and a new identifier.
     - The block attachments of the source journey are also attached to the copy.
-    - The copy becomes neither the active nor the default journey.
     - Any duplication marks the map, and therefore the project, as modified.
 
 ## FN026: Activate a journey
 - **Description**: Activate a journey as the current journey for editing.
-- **References**: SU005 ; journey list in "Display › Journey" or "Project" menu.
+- **References**: SU005 ; journey list in "Display › Journey".
 - **Expected behavior**:
     - Activation is done from the journey list.
     - The activated journey becomes the current journey: new blocks are attached to it and the display filter applies to it (FN029).
@@ -279,9 +282,10 @@
 - **Expected behavior**:
     - Deleting the last journey of the map is impossible: the application shows an explanatory message.
     - Otherwise, a confirmation is requested.
-    - **The block attachments of the deleted journey are reassigned to the default journey** (no orphan block; TSC decision 2026-11-09).
+    - **The block attachments of the deleted journey are reassigned to the default journey**.
     - If the deleted journey was the default one, the oldest remaining journey becomes the default; if it was the active one, the default journey becomes the active one.
     - Any deletion marks the map, and therefore the project, as modified.
+
 
 ---
 
@@ -304,10 +308,11 @@
 - **Expected behavior**:
     - The filter switches between "show all" and "active journey".
     - Entry point: checkable "All journeys" item at the top of "Display › Journey" (checked = filter disabled); checking a journey activates that journey and the filter.
-    - **The filter is disabled by default when a project is opened** (TSC decision 2026-11-09) and its state is not persisted between sessions.
+    - **The filter is disabled by default when a project is opened** and its state is not persisted between sessions.
     - **The filter applies to all views** ("Journeys" view, "Agents" view, "Relationships" view, "Export" preview): only the blocks of the active journey, the transitions whose two blocks belong to it, and the participations and relationships whose anchor block belongs to it remain fully visible; other elements are dimmed (reduced opacity) and non-interactive while the filter is active.
     - Switching from one journey to another instantly updates the display of all views.
     - Filtering does not mark the map as modified.
+
 
 ---
 
@@ -356,6 +361,7 @@
     - Viewing the preview marks neither the map nor the project as modified.
 - **Note**: scenario SU010 is initialized and will be finalized after the design phase; the "Export" view is part of the minimal MVP scope and may be renamed later.
 
+
 ---
 
 # Relationships between agents
@@ -374,6 +380,7 @@
     - Deleting an agent or a block cascades to its relationships.
     - Any creation, modification or deletion marks the map, and therefore the project, as modified.
 
+
 ---
 
 # Conditions
@@ -388,6 +395,7 @@
     - An End block cannot receive an outgoing transition.
     - Any modification marks the map, and therefore the project, as modified.
 
+
 ---
 
 # "Relationships" view
@@ -396,8 +404,9 @@
 - **Description**: Visualize the graph of agents and their relationships (arcs labeled by type, annotated with anchor blocks) in the "Relationships" workspace, with cross-navigation to the anchor block in the "Journeys" view (FN032).
 - **References**: SU012 ; journey filter FN029.
 - **Expected behavior**:
-    - To be specified with the view's mockup, to be defined during the design phase (TSC decision 2026-11-09).
+    - To be specified with the view's mockup, to be defined during the design phase.
     - The MVP view scope is not decided beyond the minimum ("Journeys" view and "Export" view).
+
 
 ---
 
@@ -409,6 +418,7 @@
 - **Expected behavior**:
     - In the MVP, the relationship types offered at creation (FN034) are read from the configuration file.
     - Enriching this list by the author is a post-MVP feature.
+
 
 ---
 

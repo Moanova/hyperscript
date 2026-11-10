@@ -36,7 +36,7 @@
          "items": {
             "$ref": "#/$defs/Narrative_map"
          },
-         "description": "Narrative maps of the project — MVP: a single map; the model supports N maps from the MVP (episodes/seasons axis)"
+         "description": "Narrative maps of the project - MVP: a single map; the model supports N maps from the MVP"
       }
    },
    "required": [
@@ -201,11 +201,11 @@
                   "End"
                ],
                "default_value": "Scene",
-               "description": "Block type: Start, Scene, Pivot, Condition, End — chosen at creation and immutable afterwards"
+               "description": "Block type: Start, Scene, Pivot, Condition, End - chosen at creation and immutable afterwards"
             },
             "condition": {
                "type": "object",
-               "description": "Structured condition — only set for typ = Condition (sole carrier of the condition; no condition key on Transition)",
+               "description": "Structured condition - only set for typ = Condition (sole carrier of the condition)",
                "properties": {
                   "kind": {
                      "type": "string",
@@ -294,7 +294,7 @@
             },
             "block_id": {
                "type": "integer",
-               "description": "Block identifier (reference to Block.id) — the agent is present in this block"
+               "description": "Block identifier (reference to Block.id) - the agent is present in this block"
             },
             "agent_id": {
                "type": "integer",
@@ -333,7 +333,7 @@
             },
             "block_id": {
                "type": "integer",
-               "description": "Anchor block identifier (reference to Block.id) — \"at this point of the story, relationship A —typ→ B holds\"; no clock_id, the rank is the block's rank in the journey"
+               "description": "Anchor block identifier (reference to Block.id) - \"at this point of the story, relationship A —typ→ B holds\"; no clock_id, the rank is the block's rank in the journey"
             },
             "agent_a_id": {
                "type": "integer",
@@ -345,7 +345,7 @@
             },
             "typ": {
                "type": "string",
-               "description": "Relationship type — read from the configuration file value list (MVP; author enrichment post-MVP)"
+               "description": "Relationship type - read from the configuration file value list (MVP; author enrichment post-MVP)"
             },
             "note": {
                "type": "string",
@@ -428,7 +428,7 @@
             },
             "block_id": {
                "type": "integer",
-               "description": "Attached block identifier (reference to Block.id) — attachment is on blocks, not on transitions"
+               "description": "Attached block identifier (reference to Block.id) - attachment is on blocks, not on transitions"
             },
             "sequence_order": {
                "type": "integer",

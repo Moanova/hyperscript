@@ -1,10 +1,7 @@
 # Hyperscript ::: Menu général de l'application
 # Version : 1.0
 # Date : 2026-11-09
-# Contenu : spécification initiale (séance TSC 2026-11-09), à partir du menu planoscript
-# (05_menu-EN.yaml v2.2) révisé selon les décisions actées (docs/conception/03_conception-FR.md
-# section 8, point 15). Pas de références aux règles de gestion (en cours de revue). Les entrées
-# grisées en MVP sont signalées dans les notes. Les raccourcis clavier sont conservés.
+# Contenu : spécification initiale. Pas de références aux règles de gestion. Les entrées grisées en MVP sont signalées dans les notes. Les raccourcis clavier sont conservés.
 
 menu:
   name: Menu général
@@ -29,10 +26,10 @@ menu:
         - type: separator
         - name: Exporter la carte
           references: "FN013, SU007"
-          note: "Grisée en MVP - l'export sur fichier est post-MVP ; l'aperçu in-app (espace de travail « Export », FN033) fait partie du MVP et n'est pas concerné par cette entrée"
+          note: "Grisée en MVP - l'export sur fichier est post-MVP"
         - name: Importer une carte
           references: "SU002"
-          note: "Grisée en MVP - importe une carte narrative préalablement exportée dans le projet courant (distinct de la non-migration des projets planoscript)"
+          note: "Grisée en MVP - importe une carte narrative préalablement exportée dans le projet courant"
         - type: separator
         - name: Projets récents...
           dynamic: true
@@ -62,7 +59,7 @@ menu:
         - name: Coller
           shortcut: "Ctrl+V"
           note: "Grisé en MVP"
-      note: "Toutes les entrées sont grisées en MVP. Les anciennes entrées « Historique » et « Supprimer » sont supprimées ; elles pourront être réajoutées après le MVP si besoin."
+      note: "Toutes les entrées sont grisées en MVP."
 
     - name: Affichage
       items:

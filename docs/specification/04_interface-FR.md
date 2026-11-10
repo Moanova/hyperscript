@@ -3,7 +3,8 @@
 ## Version du document
 - **Version** : 1.0
 - **Date** : 09-11-2026
-- **Statut** : initial — rédigé en séance TSC 09-11-2026 à partir de `04_interface` planoscript (v2.2), des décisions actées (`docs/conception/03_conception-FR.md`) et d'une vérification document ↔ code. Document volontairement incomplet : les points de conception restant à valider sont marqués « À valider ». Pas de références aux règles de gestion (en cours de revue). Les vues « Agents » et « Relations » sont laissées vides (re-conception à venir). Le zoom est hors MVP. L'application est unilingue pour l'instant (langue à confirmer).
+- **Statut** : initial. L'application est unilingue pour l'instant (anglais).
+
 
 ---
 
@@ -18,9 +19,7 @@
 - **Barre de zoom** : aucune en MVP (zoom post-MVP ; entrées « Display › Zoom » grisées).
 
 ### Thème et style
-- **Thème sombre conservé** (charte graphique 98 issue de planoscript) : toutes les
-  couleurs, dimensions et polices sont lues dans `config.json` via un module de thème
-  centralisé — **aucune valeur en dur dans le code UI**.
+- **Thème sombre conservé** (charte graphique 98 issue de planoscript) : toutes les couleurs, dimensions et polices sont lues dans `config.json` via un module de thème centralisé — **aucune valeur en dur dans le code UI**.
 - Palette (valeurs par défaut de `config.json`) :
   - arrière-plans : `bg_primary` `#1E1E1E`, `bg_surface` `#2D2D2D` ; bordures `border_color` `#383838` ;
   - textes : `text_primary` `#FFFFFF`, `text_secondary` `#CCCCCC` ; survol de menu `menu_hover_bg` `#383838` ;
@@ -29,6 +28,7 @@
 - Nœud (bloc) : 80×40 px (`node_default_width`/`node_default_height`), coins arrondis 6 px.
 - Grille : pas mineur 20 px / majeur 80 px (`grid_minor_size`/`grid_major_size`), couleurs `#333333`/`#4A4A4A`, toujours visible, redessinée uniquement sur la zone visible.
 - **Couleurs par type de bloc narratif** (Début, Scène, Pivot, Condition, Fin) : *À valider en phase de conception* (plano : état `#E5C07B`, événement `#D19A66`).
+
 
 ---
 
@@ -41,7 +41,7 @@
 
 ### 2. Barre de titre de la fenêtre
 - Barre de titre native du système d'exploitation.
-- Format dynamique : `Hyperscript : {libellé_projet} ({chemin_fichier})` si le projet est enregistré, `Hyperscript : {libellé_projet}` sinon ; message d'accueil (« start your new project ») quand aucun projet n'est ouvert. *Langue de l'application à confirmer (unilingue pour l'instant).*
+- Format dynamique : `Hyperscript : {libellé_projet} ({chemin_fichier})` si le projet est enregistré, `Hyperscript : {libellé_projet}` sinon ; message d'accueil (« start your new project ») quand aucun projet n'est ouvert.
 
 ### 3. Barre d'onglets (centre)
 - Hauteur 40 px, style sombre. Onglets nommés, sans numérotation :
@@ -49,10 +49,8 @@
   - **Agents** — vue matrice (voir section 5) ;
   - **Relations** — vue graphe des relations agent-agent (voir section 6) ;
   - **Export** — aperçu de lecture in-app (voir section 7).
-- La barre n'est visible que si un projet est ouvert. Les vues sont activées par la
-  barre d'onglets ; les entrées « Project › View » du menu sont des stubs.
-- **Périmètre MVP** : au minimum les onglets « Parcours » et « Export » ; « Agents » et
-  « Relations » selon le périmètre des vues à acter. *À valider.*
+- La barre n'est visible que si un projet est ouvert. Les vues sont activées par la barre d'onglets ; les entrées « Project › View » du menu sont des stubs.
+- **Périmètre MVP** : au minimum les onglets « Parcours » et « Export » ; « Agents » et « Relations » selon le périmètre des vues à acter. *À valider.*
 - Style des onglets : survol `#e0e0e0`-sombre équivalent (thème), onglet sélectionné en gras avec bordure inférieure visible.
 
 ### 4. Espace de travail — vue « Parcours »
@@ -87,10 +85,12 @@
 - Affiché dans le centre tant qu'aucun projet n'est ouvert (la barre d'onglets est masquée).
 - Texte centré, padding 40 px, thème sombre : titre + paragraphe avec un lien « créer un nouveau projet » déclenchant la création d'un projet.
 
+
 ---
 
 ## Zoom
 - Hors MVP : les entrées « Display › Zoom » (avant/arrière/réinitialiser, Ctrl+= / Ctrl+- / Ctrl+0) restent grisées ; aucune barre de zoom. Le zoom sera ajouté après le MVP (à définir en phase de conception).
+
 
 ---
 
@@ -102,4 +102,3 @@
 5. Barres latérales (intégration ou non).
 6. Zoom (post-MVP).
 7. Périmètre MVP des vues au-delà du minimum « Parcours » + « Export ».
-8. Langue de l'application (unilingue pour l'instant).

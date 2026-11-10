@@ -3,14 +3,14 @@
 ## Document Version
 - **Version**: 1.0
 - **Date**: 2026-11-09
-- **Status**: initial — written during the TSC session of 2026-11-09 from the planoscript user stories and the decisions taken (`docs/conception/03_conception-FR.md`). SU009, SU010 and SU012 are initialized but will be finalized after the design phase. No references to business rules (under review) or to technical data-model keys: project semantics only.
+- **Status**: initial.
 
 ---
 
 ## SU001: Manage a Narrative Project
 - **Description**: As an author, I can create, open, save, rename and close a narrative project in order to group, retrieve and continue working on my narrative map.
 - **Details**:
-    - A project is a local document containing the project metadata, the agents and one or more narrative maps. The model supports several narrative maps per project; the MVP scope remains a single one (SU002).
+    - A project is a local document containing the project metadata, the agents and one or more narrative maps.
     - Only one project can be open in the application at any time.
     - A newly created project is an unsaved project: it exists in memory but is not associated with any file until the user saves it.
     - Each project has a stable identifier, a name, a creation date and a last modification date.
@@ -31,7 +31,7 @@
 - **Description**: As an author, I can name and edit the content of my project's narrative map in order to define my story.
 - **Details**:
     - A narrative map belongs to one and only one project; it has a stable identifier, a name, a creation date and a last modification date.
-    - A project always contains at least one narrative map; the default one is named "Main narrative map".
+    - A project always contains at least one narrative map.
     - A map is considered modified when the user adds, modifies or deletes a block, a transition, a participation or a relationship, or changes the position of a block in the workspace.
     - Changing the scroll bars position is not a map modification.
 - **Acceptance criteria**:
@@ -52,11 +52,11 @@
     - An End block cannot have an outgoing transition.
     - A Pivot block has at least two outgoing transitions; the Scene → Pivot promotion is automatic and one-way when a second outgoing transition is created (never the other way round).
     - A Condition block has exactly one incoming transition (from a Pivot) and one outgoing transition (to the guarded scene); it carries a structured condition: kind (choice / artefact / skill / flag), optional reference to an Artefact agent, label. Chaining Condition blocks equals an AND; two Condition blocks from the same Pivot equal an OR.
-    - Attachment to journeys: blocks (not transitions) are attached to journeys. No orphan block: every block belongs to at least one journey; every newly created block is automatically attached to the active journey (or to the default one); a block cannot be removed from its last journey.
+    - Attachment to journeys: blocks (not transitions) are attached to journeys. No orphan block: every block belongs to at least one journey; every newly created block is automatically attached to the default journey; a block cannot be removed from its last journey.
     - Deleting a block cascades to its transitions, participations, anchored relationships and journey attachments.
 - **Acceptance criteria**:
-    - The user can create a block from the main menu or the context menu, choosing its type; the block is automatically attached to the active journey and positioned on the grid at the designated location.
-    - The user can duplicate a block (copy with a distinct name and a new identifier, attached to the active journey).
+    - The user can create a block from the main menu or the context menu, choosing its type; the block is automatically attached to the default journey and positioned on the grid at the designated location.
+    - The user can duplicate a block (copy with a distinct name and a new identifier, attached to the default journey).
     - The user can edit the editable attributes of a block via an edit dialog.
     - The user can delete a block with confirmation; the deletion cascades as described above.
     - The user can move a block by drag-and-drop (mouse, stylus or touch) with automatic grid snapping.
@@ -90,7 +90,7 @@
     - Each map always contains at least one journey; when the map is created, an initial journey is created, activated and given a default name.
     - Blocks are attached to journeys; a block can belong to several journeys. The journey membership of a transition is derived from its two blocks; that of a participation or a relationship is derived from its anchor block.
     - When a new journey is created, it automatically becomes the active journey.
-    - Every newly created block is attached to the active journey (or to the default one).
+    - Every newly created block is attached to the default journey.
     - Deleting the last journey of a map is impossible; the application shows an explanatory message.
     - The reading sequence of a journey is computed depth-first from the Start block (it is used for the preview and the export).
 - **Acceptance criteria**:
@@ -155,7 +155,7 @@
     - The participating agents of a block are represented by badges displayed on the block in the "Journeys" view.
     - Deleting an agent or a block cascades to its participations.
 - **Acceptance criteria**:
-    - The user can associate an agent with a block from the block's context menu in the "Journeys" view, or from the agents view matrix; the user can dissociate from either entry point.
+    - The user can associate an agent with a block from the block's context menu in the "Journeys" view, or from the agents view; the user can dissociate from either entry point.
     - The user can create a new agent from the association dialog and associate it immediately with the current block.
     - The application prevents a duplicate participation between an agent and a block.
     - Participations modified from one view are immediately visible in the other.
@@ -167,14 +167,14 @@
 
 
 ## SU009: Manage the agents view — initialized, to be finalized after the design phase
-- **Description**: As an author, I can visualize and edit the participations between the project's agents and the blocks of the narrative map in a second workspace (agents × blocks matrix), in order to manage the agents independently from the block graph.
-- **Status**: initialized scenario — to be finalized after the design phase (TSC decision 2026-11-09). The MVP view scope is not decided yet (minimum: "Journeys" view and "Export" view).
+- **Description**: As an author, I can visualize and edit the participations between the project's agents and the blocks of the narrative map in a second workspace, in order to manage the agents independently from the block graph.
+- **Status**: initialized scenario — to be finalized after the design phase. The MVP view scope is not decided yet (minimum: "Journeys" view and "Export" view).
 - **Elements to specify during design**: column order (the Start block first), manual reordering kept between sessions, cross-view navigation between the "Journeys" and agents views.
 
 
 ## SU010: Preview the export — initialized, to be finalized after the design phase
 - **Description**: As an author, I can visualize in the application a reading preview of my narrative map, as it will be rendered by the export (the "Export" workspace), in order to validate my story before sharing it.
-- **Status**: initialized scenario — to be finalized after the design phase (TSC decision 2026-11-09). The "Export" view is part of the minimal MVP scope and may be renamed later.
+- **Status**: initialized scenario — to be finalized after the design phase. The "Export" view is part of the minimal MVP scope and may be renamed later.
 - **Elements to specify during design**: read-only with inert links, dynamic according to the journey filter, reading order (reading sequence), rendering of relationships under their anchor block and of the "state of relationships" section, possible orphan components.
 
 
@@ -201,4 +201,4 @@
 
 ## SU012: Manage the "Relationships" view — initialized, to be finalized after the design phase
 - **Description**: As an author, I can visualize the graph of agents and their relationships (arcs labeled by type, annotated with anchor blocks) in a dedicated workspace, with cross-navigation to the anchor block in the "Journeys" view.
-- **Status**: initialized scenario — the mockup of this view will be defined during the design phase (TSC decision 2026-11-09).
+- **Status**: initialized scenario — the mockup of this view will be defined during the design phase.

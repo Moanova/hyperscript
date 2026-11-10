@@ -3,7 +3,8 @@
 ## Document Version
 - **Version** : 1.0
 - **Date** : 2026-11-09
-- **Statut** : initial — rédigé en séance TSC 09-11-2026 à partir des règles de gestion de planoscript analysées thème par thème (fiche TSK06). Nouvelle numérotation RG. Sémantique pure, sans termes techniques (réimplémentation possible dans un autre langage) ; valeurs d'affichage (ex. opacité) en configuration.
+- **Statut** : initial.
+
 
 ---
 
@@ -158,11 +159,11 @@
 ## 3. Logique des parcours et appartenance
 
 ## RG037
-- **Description** : À la création d'une carte narrative, un parcours par défaut est automatiquement créé et activé.
+- **Description** : À la création d'une carte narrative, un parcours par défaut est automatiquement créé.
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG038
-- **Description** : Lors de la création d'un nouveau parcours, celui-ci devient automatiquement le parcours activé ; la copie d'un parcours ne modifie pas le parcours activé.
+- **Description** : La copie d'un parcours ne modifie pas le parcours activé quanf le filtre de parcours est actif.
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG039
@@ -170,7 +171,7 @@
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG040
-- **Description** : Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; à sa création, un bloc est rattaché au parcours activé (ou au parcours par défaut) ; un bloc ne peut pas être retiré de son dernier parcours.
+- **Description** : Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; à sa création, un bloc est rattaché au parcours par défaut ; un bloc ne peut pas être retiré de son dernier parcours.
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG041
