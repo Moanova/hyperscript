@@ -1,0 +1,65 @@
+# ---------------------------------------------------------------------
+# Application  : Hyperscript
+# Script       : change_log_dialog.py
+# Version      : 1
+# Date         : 2026-11-10
+# Design       : TSC
+# Build        : Mistral Vibe
+# ---------------------------------------------------------------------
+from PySide6.QtWidgets import (
+    QDialog, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout
+)
+from PySide6.QtCore import Qt
+from core.services.change_log_service import ChangeLogService
+from ui.utils import theme
+
+class ChangeLogDialog(QDialog):
+    def __init__(self, change_log_service: ChangeLogService, parent=None):
+        super().__init__(parent)
+        self.change_log_service = change_log_service
+        self._setup_ui()
+
+    def _setup_ui(self):
+        self.setWindowTitle("Change Log")
+        self.setMinimumSize(500, 400)
+
+        layout = QVBoxLayout(self)
+
+        # Text area
+        self.text_edit = QTextEdit()
+        self.text_edit.setReadOnly(True)
+        self.text_edit.setVerticalScrollBarPolicy(Qt.ScrollBarAsNeeded)
+        # Dark theme (charter 98): the dialog stylesheet covers the text
+        # edit and its scrollbars
+        self.setStyleSheet(theme.DIALOG_STYLESHEET)
+        layout.addWidget(self.text_edit)
+
+        # OK button
+        button_layout = QHBoxLayout()
+        button_layout.addStretch()
+        ok_button = QPushButton("Ok")
+        ok_button.clicked.connect(self.accept)
+        button_layout.addWidget(ok_button)
+        button_layout.addStretch()
+        layout.addLayout(button_layout)
+
+        self._load_changes()
+
+    def _load_changes(self):
+        changes = self.change_log_service.get_changes()
+
+        html_content = """
+        <html><body style='font-family: Arial; font-size: 10pt;'>
+        <h2>Change Log</h2>
+        """
+
+        for change in changes:
+            html_content += f"""
+            <p><strong>{change.get('version', 'N/A')}</strong> - {change.get('build_date', 'Unknown Date')}</p>
+            <p>{change.get('object', '')}</p>
+            <p>{change.get('content', '').replace('\\n', '<br>')}</p>
+            <hr>
+            """
+        html_content += "</body></html>"
+
+        self.text_edit.setHtml(html_content)

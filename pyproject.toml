@@ -1,5 +1,5 @@
 [project]
-name = "planoscript"
+name = "hyperscript"
 version = "1.0.0"
 description = "Visual narrative map editor"
 readme = "README.md"

@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "object": "Hyperscript",
+      "version": "0.1.0-alpha",
+      "build_date": "2026-11-10",
+      "content": "Initial source tree: config loaders, theme, about/change-log services and dialogs, UI utils, test harness (reused from planoscript)."
+    }
+  ]
+}
