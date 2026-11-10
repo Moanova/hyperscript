@@ -24,14 +24,14 @@ menu:
           shortcut: "Ctrl+Shift+S"
           references: "FN009, SU001"
         - type: separator
-        - name: Exporter la carte
+        - name: Exporter la carte...
           references: "FN013, SU007"
           note: "Grisée en MVP - l'export sur fichier est post-MVP"
-        - name: Importer une carte
+        - name: Importer une carte...
           references: "SU002"
           note: "Grisée en MVP - importe une carte narrative préalablement exportée dans le projet courant"
         - type: separator
-        - name: Projets récents...
+        - name: Projets récents
           dynamic: true
           description: "Liste dynamique des derniers projets ouverts"
           references: "FN007, SU001"
@@ -96,19 +96,19 @@ menu:
           items:
             - name: Nouveau...
               references: "FN031, SU008"
-            - name: Éditer
+            - name: Éditer...
               references: "FN031, SU008"
             - name: Copier
               references: "FN031, SU008"
               note: "« Copier » est le terme retenu pour la duplication sur tous les sous-menus"
-            - name: Supprimer
+            - name: Supprimer...
               references: "FN031, SU008"
             - name: Associer à un bloc...
               references: "FN030, SU008"
               note: "Crée/modifie les participations (agent présent dans un bloc) ; remplace l'ancienne formulation « Lier à un bloc »"
         - name: Blocs narratifs
           items:
-            - name: Nouveau...
+            - name: Nouveau
               items:
                 - name: Scène
                 - name: Pivot
@@ -116,37 +116,39 @@ menu:
                 - name: Fin
               references: "FN014, SU003"
               note: "Début est volontairement absent de ce sous-menu : il est créé automatiquement avec la carte, unique, et non duplicable (règle de gestion à venir)"
-            - name: Éditer
+            - name: Éditer...
               references: "FN015, SU003"
             - name: Copier
               references: "FN016, SU003"
-            - name: Supprimer
+            - name: Supprimer...
               references: "FN018, SU003"
         - name: Transitions
           items:
-            - name: Nouvelle...
+            - name: Nouvelle
               references: "FN020, SU004"
-            - name: Éditer
+            - name: Éditer...
               references: "FN021, SU004"
-            - name: Supprimer
+            - name: Supprimer...
               references: "FN022, SU004"
         - name: Parcours
           items:
-            - name: Nouveau...
+            - name: Nouveau
               references: "FN023, SU005"
-            - name: Éditer
+            - name: Éditer...
               references: "FN024, SU005"
             - name: Copier
               references: "FN025, SU005"
-            - name: Supprimer
+            - name: Définir par défaut...
+              references: "FN038, SU005"
+            - name: Supprimer...
               references: "FN027, SU005"
         - name: Relations
           items:
             - name: Nouvelle...
               references: "FN034, SU011"
-            - name: Éditer
+            - name: Éditer...
               references: "FN034, SU011"
-            - name: Supprimer
+            - name: Supprimer...
               references: "FN034, SU011"
 
     - name: À propos
@@ -164,3 +166,4 @@ menu:
       Les éléments marqués 'dynamic: true' sont générés dynamiquement depuis les données de l'application.
       Les entrées grisées en MVP sont signalées dans les notes.
       Les espaces de travail (vues) sont référencés par leur nom, sans numérotation : Parcours, Agents, Relations, Export.
+      Règle des points de suspension : toute entrée ouvrant une fenêtre nécessitant une action complémentaire de l'utilisateur (dialogue de saisie, de choix ou de confirmation) est suffixée de « ... » ; une fenêtre purement informative (ex. « À propos d'Hyperscript ») n'en porte pas. Exception : « Nouveau projet... » conserve « ... » par convention usuelle (création directe en mémoire ; seule une confirmation de sauvegarde conditionnelle peut s'afficher).

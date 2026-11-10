@@ -37,7 +37,7 @@
 ### 1. Barre de menus de la fenêtre d'application
 - **Type** : QMenuBar native, en haut de la fenêtre, style sombre (thème).
 - **Contenu et raccourcis** : spécifiés dans `docs/specification/05_menu-FR.yaml` (version EN : `05_menu-EN.yaml`). Les entrées non implémentées restent des stubs (grisées).
-- **Comportement** : les menus sont désactivés lorsqu'aucun projet n'est ouvert (sauf « À propos ») ; « Enregistrer » est désactivé si le projet n'est pas modifié.
+- **Comportement** : les menus sont désactivés lorsqu'aucun projet n'est ouvert (sauf « About ») ; « Save » est désactivé si le projet n'est pas modifié.
 
 ### 2. Barre de titre de la fenêtre
 - Barre de titre native du système d'exploitation.
@@ -89,7 +89,7 @@
 ---
 
 ## Zoom
-- Hors MVP : les entrées « Display › Zoom » (avant/arrière/réinitialiser, Ctrl+= / Ctrl+- / Ctrl+0) restent grisées ; aucune barre de zoom. Le zoom sera ajouté après le MVP (à définir en phase de conception).
+- Hors MVP : les entrées « Display › Zoom » (In/Out/Reset, Ctrl+= / Ctrl+- / Ctrl+0) restent grisées ; aucune barre de zoom. Le zoom sera ajouté après le MVP (à définir en phase de conception).
 
 
 ---

@@ -31,15 +31,15 @@
 - **Classification** : 1. Gestion du projet et cycle de vie
 
 ## RG006
-- **Description** : La commande « Enregistrer » n'est active que si le projet ouvert est modifié ; « Enregistrer sous... » est active dès qu'un projet est ouvert ; sans projet ouvert, les deux sont désactivées.
+- **Description** : La commande « Save » n'est active que si le projet ouvert est modifié ; « Save as... » est active dès qu'un projet est ouvert ; sans projet ouvert, les deux sont désactivées.
 - **Classification** : 1. Gestion du projet et cycle de vie
 
 ## RG007
-- **Description** : Lorsqu'aucun projet n'est ouvert, les entrées des menus Fichiers (Fermer, Enregistrer, Enregistrer sous...), Édition, Affichage et Projet sont grisées. En MVP, « Exporter la carte », « Importer une carte », « Projets récents... », tout le menu Édition et le sous-menu Zoom restent grisés même avec un projet ouvert.
+- **Description** : Lorsqu'aucun projet n'est ouvert, les entrées des menus Files (Close, Save, Save as...), Edit, Display et Project sont grisées. En MVP, « Export Map... », « Import Map... », « Recent Projects », tout le menu Edit et le sous-menu Zoom restent grisés même avec un projet ouvert.
 - **Classification** : 1. Gestion du projet et cycle de vie
 
 ## RG008
-- **Description** : À l'ouverture ou à la création d'un projet, les entrées des menus Fichiers (Fermer, Enregistrer, Enregistrer sous...), Affichage et Projet sont activées (hors entrées grisées en MVP, RG007).
+- **Description** : À l'ouverture ou à la création d'un projet, les entrées des menus Files (Close, Save, Save as...), Display et Project sont activées (hors entrées grisées en MVP, RG007).
 - **Classification** : 1. Gestion du projet et cycle de vie
 
 ## RG009
@@ -55,7 +55,7 @@
 - **Classification** : 1. Gestion du projet et cycle de vie
 
 ## RG012
-- **Description** : « Enregistrer sous... » crée ou remplace un fichier à l'emplacement choisi (avec confirmation si le fichier existe déjà) ; après une sauvegarde réussie, ce fichier devient le fichier associé au projet ouvert, et l'ancien fichier n'est ni renommé ni supprimé.
+- **Description** : « Save as... » crée ou remplace un fichier à l'emplacement choisi (avec confirmation si le fichier existe déjà) ; après une sauvegarde réussie, ce fichier devient le fichier associé au projet ouvert, et l'ancien fichier n'est ni renommé ni supprimé.
 - **Classification** : 1. Gestion du projet et cycle de vie
 
 ## RG013
@@ -171,7 +171,7 @@
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG040
-- **Description** : Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; à sa création, un bloc est rattaché au parcours par défaut ; un bloc ne peut pas être retiré de son dernier parcours.
+- **Description** : Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; à sa création, un bloc est rattaché au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon ; un bloc ne peut pas être retiré de son dernier parcours.
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG041
@@ -261,3 +261,7 @@
 ## RG061
 - **Description** : Le projet est enregistré dans un fichier unique structuré (JSON) contenant les métadonnées et les données, associé au fichier de métadonnées graphiques.
 - **Classification** : 5. Architecture technique et modèle de données
+
+## RG062
+- **Description** : L'auteur peut à tout moment désigner l'un des parcours de la carte comme parcours par défaut ; la désignation remplace le parcours par défaut courant et ne modifie pas le parcours actif. Il n'existe toujours qu'un seul parcours par défaut (RG039).
+- **Classification** : 3. Logique des parcours et appartenance

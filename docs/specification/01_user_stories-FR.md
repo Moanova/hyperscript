@@ -39,7 +39,7 @@
     - L'utilisateur peut renommer la carte en éditant directement son libellé ou via une boîte de dialogue.
     - Toute modification met à jour la date de dernière modification de la carte et celle du projet.
 - **Périmètre MVP** :
-    - Une seule carte narrative par projet : la création, la duplication, la suppression, la navigation entre cartes et l'import/export de carte ne sont pas disponibles. Seuls le renommage et la modification du contenu sont fonctionnels en MVP (l'export sur fichier, SU007, est hors MVP — entrée « Files › Export Map » grisée ; l'aperçu in-app, vue « Export » (SU010), fait partie du MVP minimal).
+    - Une seule carte narrative par projet : la création, la duplication, la suppression, la navigation entre cartes et l'import/export de carte ne sont pas disponibles. Seuls le renommage et la modification du contenu sont fonctionnels en MVP (l'export sur fichier, SU007, est hors MVP — entrée « Files › Export Map... » grisée ; l'aperçu in-app, vue « Export » (SU010), fait partie du MVP minimal).
 
 
 ## SU003 : Gérer un bloc narratif
@@ -53,11 +53,11 @@
     - Un bloc Fin ne peut pas recevoir de transition sortante.
     - Un bloc Pivot possède au moins deux transitions sortantes ; la promotion Scène → Pivot est automatique et unidirectionnelle lorsqu'une deuxième transition sortante est créée (jamais l'inverse).
     - Un bloc Condition possède exactement une transition entrante (depuis un Pivot) et une sortante (vers la scène gardée) ; il porte une condition structurée : nature (choix / artefact / compétence / flag), référence éventuelle vers un agent Artefact, libellé. Chaîner des blocs Condition équivaut à un ET ; deux blocs Condition issus d'un même Pivot équivalent à un OU.
-    - Rattachement aux parcours : ce sont les blocs qui sont rattachés aux parcours. Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; tout bloc nouvellement créé est automatiquement rattaché au parcours par défaut ; un bloc ne peut pas être retiré de son dernier parcours.
+    - Rattachement aux parcours : ce sont les blocs qui sont rattachés aux parcours. Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; tout bloc nouvellement créé est rattaché au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon ; un bloc ne peut pas être retiré de son dernier parcours.
     - La suppression d'un bloc entraîne la suppression en cascade de ses transitions, participations, relations ancrées et rattachements aux parcours.
 - **Critères d'acceptation** :
-    - L'utilisateur peut créer un bloc depuis le menu général ou le menu contextuel, en choisissant son type ; le bloc est automatiquement rattaché au parcours par défaut et positionné sur la grille à l'emplacement désigné.
-    - L'utilisateur peut dupliquer un bloc (copie avec nom distinctif et nouvel identifiant, rattachée au parcours par défaut).
+    - L'utilisateur peut créer un bloc depuis le menu général ou le menu contextuel, en choisissant son type ; le bloc est rattaché au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon, et positionné sur la grille à l'emplacement désigné.
+    - L'utilisateur peut dupliquer un bloc (copie avec nom distinctif et nouvel identifiant, rattachée au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon).
     - L'utilisateur peut modifier les attributs éditables d'un bloc via un dialogue d'édition.
     - L'utilisateur peut supprimer un bloc avec confirmation ; la suppression s'effectue en cascade selon le complément.
     - L'utilisateur peut déplacer un bloc par glisser-déposer (souris, stylet ou tactile) avec alignement automatique sur la grille.
@@ -75,7 +75,7 @@
     - Appartenance aux parcours dérivée : une transition appartient à un parcours si et seulement si ses deux blocs y appartiennent.
     - La suppression d'une transition supprime ses rattachements aux parcours ; elle est indépendante de la suppression des blocs, hormis la cascade définie en SU003.
 - **Critères d'acceptation** :
-    - L'utilisateur peut initier la création d'une transition depuis le menu « Projet » ou le menu contextuel : sélection du bloc source, tracé temporaire suivant le curseur jusqu'au clic sur le port du bloc cible.
+    - L'utilisateur peut initier la création d'une transition depuis le menu « Project » ou le menu contextuel : sélection du bloc source, tracé temporaire suivant le curseur jusqu'au clic sur le port du bloc cible.
     - L'application empêche la création d'une transition en double entre deux blocs déjà reliés.
     - L'utilisateur peut annoter une transition par du texte libre via un dialogue d'édition.
     - L'utilisateur peut supprimer une transition avec confirmation préalable.
@@ -85,20 +85,21 @@
 
 
 ## SU005 : Gérer un parcours
-- **Description** : En tant qu'auteur, je peux créer, nommer, décrire, dupliquer, activer ou supprimer un parcours afin de définir les fils alternatifs de mon récit.
+- **Description** : En tant qu'auteur, je peux créer, nommer, décrire, dupliquer, activer, définir comme parcours par défaut ou supprimer un parcours afin de définir les fils alternatifs de mon récit.
 - **Complément** :
     - Un parcours appartient à une carte narrative ; il possède un identifiant unique au sein de la carte, ainsi qu'un libellé et une note éditables.
     - Chaque carte contient toujours au moins un parcours ; à la création de la carte, un parcours initial est créé, activé et nommé par défaut.
     - Les blocs sont rattachés aux parcours ; un bloc peut appartenir à plusieurs parcours. L'appartenance d'une transition à un parcours est dérivée de ses deux blocs ; celle d'une participation ou d'une relation est dérivée de son bloc d'ancrage.
-    - À la création d'un nouveau parcours, celui-ci devient automatiquement le parcours actif.
-    - Tout bloc nouvellement créé est rattaché au parcours par défaut.
+    - À la création d'un nouveau parcours, celui-ci n'est pas activé : le parcours actif reste inchangé (si le filtre de parcours est désactivé, tous les parcours sont actifs).
+    - Tout bloc nouvellement créé est rattaché au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon.
     - La suppression du dernier parcours d'une carte est impossible ; l'application affiche un message explicatif.
     - La séquence de lecture d'un parcours est calculée en profondeur depuis le bloc Début (elle sert à l'aperçu et à l'export).
 - **Critères d'acceptation** :
-    - L'utilisateur peut créer un parcours depuis le menu « Projet » ; il devient automatiquement le parcours courant.
+    - L'utilisateur peut créer un parcours depuis le menu « Project » ; le parcours actif reste inchangé.
     - L'utilisateur peut renommer un parcours et modifier sa note via un dialogue d'édition.
     - L'utilisateur peut dupliquer un parcours (nom distinctif, nouvel identifiant ; les rattachements des blocs du parcours source sont copiés).
-    - L'utilisateur peut activer un parcours en le sélectionnant dans la liste des parcours ou depuis le menu « Projet ».
+    - L'utilisateur peut activer un parcours en le sélectionnant dans la liste des parcours ou depuis le menu « Project ».
+    - L'utilisateur peut désigner à tout moment le parcours par défaut depuis le menu « Project › Journeys › Set as Default... » ; il n'en existe qu'un seul, et la désignation remplace le parcours par défaut courant.
     - L'utilisateur peut supprimer un parcours avec confirmation préalable, sauf s'il s'agit du dernier ; si le parcours supprimé était celui par défaut, le plus ancien parcours restant le devient.
     - L'utilisateur peut modifier les parcours auxquels un bloc est rattaché, sans pouvoir le retirer de son dernier parcours.
     - Toute opération sur un parcours marque la carte, donc le projet, comme modifiés.
@@ -117,7 +118,7 @@
 - **Critères d'acceptation** :
     - L'application s'adapte à la taille de la fenêtre sans perte de fonctionnalité (taille minimale 1280×720).
     - L'utilisateur peut naviguer dans l'espace de travail au moyen des barres de défilement ; l'application reste stable sur un espace de 10 000×10 000 pixels et réactive (sans latence perceptible) pour une carte contenant jusqu'à 100 blocs.
-    - Si le filtre de parcours est activé, l'utilisateur peut basculer d'un parcours à l'autre via la liste des parcours ou le menu « Projet » ; l'affichage se met à jour instantanément.
+    - Si le filtre de parcours est activé, l'utilisateur peut basculer d'un parcours à l'autre via la liste des parcours ou le menu « Project » ; l'affichage se met à jour instantanément.
     - Les blocs et transitions affichés sont rendus selon leurs coordonnées et leur représentation graphique conservées.
     - Les déplacements de barres de défilement ne marquent pas la carte comme modifiée.
 - **Périmètre MVP** :
@@ -137,11 +138,11 @@
     - Chaque page de déroulement propose un lien de retour vers le sommaire.
     - L'opération d'export ne marque ni la carte ni le projet comme modifiés.
 - **Critères d'acceptation** :
-    - L'utilisateur peut lancer l'export depuis le menu « Fichier ».
+    - L'utilisateur peut lancer l'export depuis le menu « Files ».
     - Le document généré s'affiche correctement dans les navigateurs standards (Chrome, Firefox, Edge) sans connexion Internet.
     - Une page intermédiaire liste les parcours de la carte ; le clic sur un parcours affiche le déroulement linéaire complet de sa séquence.
 - **Périmètre MVP** :
-    - L'export sur fichier est **hors périmètre MVP** (entrée « Files › Export Map » grisée) ; dans le MVP, seul l'aperçu in-app (vue « Export », SU010/FN033) est disponible.
+    - L'export sur fichier est **hors périmètre MVP** (entrée « Files › Export Map... » grisée) ; dans le MVP, seul l'aperçu in-app (vue « Export », SU010/FN033) est disponible.
     - Le périmètre exact de l'export de lecture (pages, modes de lecture) sera précisé ultérieurement pour la version post-MVP.
     - L'export technique pour réimport et la lecture « par événements » sont à définir durant la phase de conception.
 
@@ -190,7 +191,7 @@
     - Appartenance aux parcours dérivée : une relation appartient à un parcours si et seulement si son bloc d'ancrage y appartient.
     - La suppression d'un agent ou d'un bloc entraîne la suppression en cascade de ses relations.
 - **Critères d'acceptation** :
-    - L'utilisateur peut créer une relation depuis le menu « Projet » ou le menu contextuel : choix des deux agents, du type (dans la liste configurée) et du bloc d'ancrage.
+    - L'utilisateur peut créer une relation depuis le menu « Project » ou le menu contextuel : choix des deux agents, du type (dans la liste configurée) et du bloc d'ancrage.
     - L'utilisateur peut modifier une relation (type, bloc d'ancrage, note, contenu) via un dialogue d'édition.
     - L'utilisateur peut supprimer une relation avec confirmation préalable.
     - L'application empêche les doublons (bloc, paire d'agents, type).

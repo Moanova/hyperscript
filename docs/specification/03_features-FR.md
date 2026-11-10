@@ -75,14 +75,14 @@
 
 ## FN007 : Ouvrir un projet récent
 - **Description** : Ouvrir un projet depuis la liste des projets récents.
-- **Références** : SU001 ; menu « Files › Recents Projects... ».
+- **Références** : SU001 ; menu « Files › Recent Projects ».
 - **Comportement attendu** :
     - Le menu présente une liste dynamique des projets précédemment enregistrés ou ouverts.
     - La liste respecte la limite configurée de projets récents.
     - Les fichiers n'existant plus sont retirés de la liste.
     - Le même traitement des fichiers invalides et des confirmations de sauvegarde que FN006 s'applique.
 - **Périmètre MVP** :
-    - Entrée « Files › Recent Projects... » grisée en MVP (fonctionnalité hors MVP).
+    - Entrée « Files › Recent Projects » grisée en MVP (fonctionnalité hors MVP).
 
 ## FN008 : Enregistrer le projet
 - **Description** : Enregistrer le projet.
@@ -95,7 +95,7 @@
 
 ## FN009 : Enregistrer le projet sous...
 - **Description** : Enregistrer le projet sous un autre nom ou dans un autre emplacement.
-- **Références** : SU001 ; menu « Files › Save As... » (Ctrl+Shift+S).
+- **Références** : SU001 ; menu « Files › Save as... » (Ctrl+Shift+S).
 - **Comportement attendu** :
     - L'utilisateur choisit un nom et un emplacement.
     - La copie enregistrée devient le projet courant.
@@ -130,7 +130,7 @@
 
 ## FN013 : Exporter la carte narrative en document de lecture
 - **Description** : Exporter la carte narrative courante en document autonome de lecture (HTML), consultable dans un navigateur standard.
-- **Références** : SU002 (export de carte), SU007 ; menu « Files › Export Map ».
+- **Références** : SU002 (export de carte), SU007 ; menu « Files › Export Map... ».
 - **Comportement attendu** :
     - L'export est lancé depuis le menu « Files » (pas de barre d'outils en MVP).
     - L'export génère un dossier nommé d'après la carte, contenant un fichier index et toutes les pages nécessaires à la navigation hypertexte.
@@ -141,7 +141,7 @@
     - L'ordre de lecture est la séquence de lecture du parcours (calculée depuis le bloc Début), indépendamment des positions graphiques.
     - Chaque page de lecture offre un lien de retour vers le sommaire.
     - L'export ne marque ni la carte ni le projet comme modifiés.
-- **Note** : entrée « Files › Export Map » **grisée en MVP** (export sur fichier hors MVP ; seul l'aperçu in-app, FN033, est disponible dans le MVP). Le périmètre exact de l'export de lecture (pages, modes) sera précisé ultérieurement ; l'export technique destiné à la réimportation est à définir en phase de conception.
+- **Note** : entrée « Files › Export Map... » **grisée en MVP** (export sur fichier hors MVP ; seul l'aperçu in-app, FN033, est disponible dans le MVP). Le périmètre exact de l'export de lecture (pages, modes) sera précisé ultérieurement ; l'export technique destiné à la réimportation est à définir en phase de conception.
 
 
 ---
@@ -150,20 +150,20 @@
 
 ## FN014 : Créer un bloc narratif
 - **Description** : Créer un bloc narratif dans la carte narrative. Le type — Début, Scène, Pivot, Condition ou Fin — est choisi à la création et immuable ensuite.
-- **Références** : SU003 ; menu « Project › Blocks... › New... » (choix du type).
+- **Références** : SU003 ; menu « Project › Narrative Blocks › New » (choix du type).
 - **Comportement attendu** :
     - En MVP, la création s'effectue exclusivement depuis le menu (pas de barre d'outils).
     - Le bloc est créé avec un identifiant unique dans la carte, le libellé par défaut de son type, et le rendu visuel correspondant à son type.
     - Il est positionné à l'emplacement désigné par l'utilisateur, aligné sur la grille d'alignement (toujours visible et active).
     - Il présente deux ports d'attachement actifs : entrant (gauche) et sortant (droite).
     - Il n'est pas redimensionnable.
-    - Aucun bloc orphelin : le bloc nouvellement créé est automatiquement rattaché au parcours par défaut.
+    - Aucun bloc orphelin : le bloc nouvellement créé est rattaché au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon.
     - Le bloc Début est unique : il est créé automatiquement à la création de la carte narrative et ne peut pas être créé manuellement ni dupliqué.
     - Toute création marque la carte, et donc le projet, comme modifié.
 
 ## FN015 : Modifier les attributs d'un bloc
 - **Description** : Modifier les attributs éditables d'un bloc via un dialogue d'édition.
-- **Références** : SU003 ; menu « Project › Blocks... › Edit ».
+- **Références** : SU003 ; menu « Project › Narrative Blocks › Edit... ».
 - **Comportement attendu** :
     - Le dialogue d'édition présente les attributs éditables : libellé, note (annotation) et contenu narratif. Le type n'est pas modifiable.
     - Pour un bloc Condition, le dialogue présente en outre la condition structurée : nature (choix / artefact / compétence / flag), référence éventuelle vers un agent Artefact, libellé.
@@ -191,7 +191,7 @@
 
 ## FN018 : Supprimer un bloc
 - **Description** : Supprimer un bloc de la carte narrative.
-- **Références** : SU003 ; menu « Project › Blocks... › Delete ».
+- **Références** : SU003 ; menu « Project › Narrative Blocks › Delete... ».
 - **Comportement attendu** :
     - Si des données sont associées au bloc, une confirmation est demandée.
     - La suppression entraîne la suppression en cascade de ses transitions, de ses participations, de ses relations ancrées et de ses rattachements aux parcours.
@@ -202,7 +202,6 @@
 - **Références** : SU003, SU005.
 - **Comportement attendu** :
     - Le rattachement est géré via une liste à choix multiples des parcours, présentée dans le dialogue d'édition du bloc, parmi les parcours existants de la carte.
-    - À la création d'un bloc, celui-ci est automatiquement rattaché au parcours actuellement actif.
     - La liste ne peut pas être vidée : aucun bloc orphelin (un bloc ne peut pas être retiré de son dernier parcours).
     - L'option est désactivée si la carte ne comporte qu'un seul parcours.
     - Toute modification de rattachement marque la carte, et donc le projet, comme modifié.
@@ -214,7 +213,7 @@
 
 ## FN020 : Créer une transition
 - **Description** : Créer une transition orientée entre deux blocs de la carte narrative.
-- **Références** : SU004 ; menu « Project › Transitions › New... ».
+- **Références** : SU004 ; menu « Project › Transitions › New ».
 - **Comportement attendu** :
     - En MVP, la création est initiée depuis le menu (pas de barre d'outils).
     - L'utilisateur sélectionne un bloc source ; si aucun bloc n'est actif, il devient actif. Une connexion (tracé temporaire) suit alors le curseur jusqu'au clic sur le port du bloc cible.
@@ -227,7 +226,7 @@
 
 ## FN021 : Annoter et modifier une transition
 - **Description** : Annoter une transition d'un texte libre et modifier ses attributs éditables.
-- **Références** : SU004 ; menu « Project › Transitions › Edit ».
+- **Références** : SU004 ; menu « Project › Transitions › Edit... ».
 - **Comportement attendu** :
     - L'annotation s'effectue via le dialogue d'édition de la transition (champ « Note »).
     - La note de la transition est affichée dans une infobulle au survol de la ligne représentative.
@@ -236,7 +235,7 @@
 
 ## FN022 : Supprimer une transition
 - **Description** : Supprimer une transition entre deux blocs.
-- **Références** : SU004 ; menu « Project › Transitions › Delete ».
+- **Références** : SU004 ; menu « Project › Transitions › Delete... ».
 - **Comportement attendu** :
     - Une confirmation est demandée avant la suppression.
     - La suppression d'une transition supprime les rattachements de parcours qui la référençaient ; elle est indépendante de la suppression des blocs (hors cascade de FN018).
@@ -249,9 +248,10 @@
 
 ## FN023 : Créer un parcours
 - **Description** : Créer un parcours dans la carte.
-- **Références** : SU005 ; menu « Project › Journeys › New... » ; liste des parcours dans « Display › Journey ».
+- **Références** : SU005 ; menu « Project › Journeys › New » ; liste des parcours dans « Display › Journey ».
 - **Comportement attendu** :
     - Le nouveau parcours reçoit un identifiant unique, un libellé par défaut et une note vide.
+    - Le nouveau parcours n'est pas activé : le parcours actif reste inchangé (si le filtre de parcours est désactivé, tous les parcours sont actifs).
     - Toute création marque la carte, et donc le projet, comme modifié.
 
 ## FN024 : Renommer et décrire un parcours
@@ -270,11 +270,11 @@
     - Toute duplication marque la carte, et donc le projet, comme modifié.
 
 ## FN026 : Activer un parcours
-- **Description** : Activer un parcours comme parcours courant pour l'édition.
+- **Description** : Activer un parcours comme parcours actif.
 - **Références** : SU005 ; liste des parcours dans « Display › Journey ».
 - **Comportement attendu** :
     - L'activation s'effectue depuis la liste des parcours.
-    - Le parcours activé devient le parcours courant : les nouveaux blocs y sont rattachés et le filtre d'affichage s'y applique (FN029).
+    - L'activation rend le parcours actif : le filtre d'affichage s'y applique (FN029) et les nouveaux blocs y sont rattachés (FN014).
     - L'activation marque la carte, et donc le projet, comme modifié.
 
 ## FN027 : Supprimer un parcours
@@ -286,6 +286,16 @@
     - **Les rattachements des blocs du parcours supprimé sont réaffectés au parcours par défaut**.
     - Si le parcours supprimé était le parcours par défaut, le plus ancien parcours restant devient le parcours par défaut ; si c'était le parcours activé, le parcours par défaut devient le parcours activé.
     - Toute suppression marque la carte, et donc le projet, comme modifié.
+
+## FN038 : Définir le parcours par défaut
+- **Description** : Désigner l'un des parcours de la carte comme parcours par défaut.
+- **Références** : SU005 ; menu « Project › Journeys › Set as Default... ».
+- **Comportement attendu** :
+    - La désignation s'effectue via un dialogue de sélection du parcours à définir par défaut.
+    - Il n'existe toujours qu'un seul parcours par défaut : la désignation remplace le parcours par défaut courant.
+    - Le parcours par défaut est le parcours de rattachement des nouveaux blocs lorsque le filtre de parcours est désactivé (sinon, c'est le parcours actif, FN014), et celui de réaffectation des rattachements en cas de suppression d'un parcours.
+    - La désignation ne modifie pas le parcours actif.
+    - Toute désignation marque la carte, et donc le projet, comme modifié.
 
 
 ---
@@ -333,7 +343,7 @@
 
 ## FN031 : Gérer les agents du projet
 - **Description** : Créer, renommer, modifier ou supprimer un agent du projet.
-- **Références** : SU008, SU009 ; sous-menu « Project › Agents... » (Nouveau.../Éditer/Supprimer) ; vues « Parcours » et « Agents ».
+- **Références** : SU008, SU009 ; sous-menu « Project › Agents » (New.../Edit.../Delete...) ; vues « Parcours » et « Agents ».
 - **Comportement attendu** :
     - Un agent appartient au projet ; il est caractérisé par un identifiant unique au sein du projet, un libellé, un type (Personnage ou Artefact), une note et un contenu narratif.
     - La suppression d'un agent supprime en cascade toutes ses participations et toutes ses relations, avec confirmation préalable indiquant le nombre d'éléments supprimés.
@@ -369,7 +379,7 @@
 
 ## FN034 : Gérer une relation entre agents
 - **Description** : Créer, annoter, modifier ou supprimer une relation typée entre deux agents, ancrée à un bloc.
-- **Références** : SU011 ; menu « Project › Relations... ».
+- **Références** : SU011 ; menu « Project › Relationships ».
 - **Comportement attendu** :
     - La relation est binaire : elle relie exactement deux agents (une évolution à plus de deux agents est hors MVP).
     - Elle est dirigée et typée ; le type est choisi dans la liste de valeurs du fichier de configuration (FN037).

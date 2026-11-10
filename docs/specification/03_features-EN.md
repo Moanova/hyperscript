@@ -74,14 +74,14 @@
 
 ## FN007: Open a recent project
 - **Description**: Open a project from the recent projects list.
-- **References**: SU001 ; menu "Files › Recents Projects...".
+- **References**: SU001 ; menu "Files › Recent Projects".
 - **Expected behavior**:
     - The menu presents a dynamic list of previously saved or opened projects.
     - The list respects the configured limit of recent projects.
     - Files that no longer exist are removed from the list.
     - The same handling of invalid files and save confirmations as FN006 applies.
 - **MVP scope**:
-    - "Files › Recent Projects..." entry greyed out in the MVP (feature out of the MVP).
+    - "Files › Recent Projects" entry greyed out in the MVP (feature out of the MVP).
 
 ## FN008: Save the project
 - **Description**: Save the project.
@@ -94,7 +94,7 @@
 
 ## FN009: Save the project as...
 - **Description**: Save the project under another name or in another location.
-- **References**: SU001 ; menu "Files › Save As..." (Ctrl+Shift+S).
+- **References**: SU001 ; menu "Files › Save as..." (Ctrl+Shift+S).
 - **Expected behavior**:
     - The user chooses a name and a location.
     - The saved copy becomes the current project.
@@ -129,7 +129,7 @@
 
 ## FN013: Export the narrative map as a reading document
 - **Description**: Export the current narrative map as a standalone reading document (HTML), viewable in a standard browser.
-- **References**: SU002 (map export), SU007 ; menu "Files › Export Map".
+- **References**: SU002 (map export), SU007 ; menu "Files › Export Map...".
 - **Expected behavior**:
     - The export is launched from the "Files" menu (no toolbar in the MVP).
     - The export generates a folder named after the map, containing an index file and all the pages needed for hypertext navigation.
@@ -140,7 +140,7 @@
     - The reading order is the journey's reading sequence (computed from the Start block), independently of the graphical positions.
     - Each reading page offers a link back to the index.
     - The export marks neither the map nor the project as modified.
-- **Note**: the "Files › Export Map" entry is **greyed out in the MVP** (file export out of the MVP; only the in-app preview, FN033, is available in the MVP). The exact scope of the reading export (pages, modes) will be specified later; the technical export intended for reimport is to be defined during the design phase.
+- **Note**: the "Files › Export Map..." entry is **greyed out in the MVP** (file export out of the MVP; only the in-app preview, FN033, is available in the MVP). The exact scope of the reading export (pages, modes) will be specified later; the technical export intended for reimport is to be defined during the design phase.
 
 
 ---
@@ -149,20 +149,20 @@
 
 ## FN014: Create a narrative block
 - **Description**: Create a narrative block in the narrative map. The type — Start, Scene, Pivot, Condition or End — is chosen at creation and immutable afterwards.
-- **References**: SU003 ; menu "Project › Blocks... › New..." (type choice).
+- **References**: SU003 ; menu "Project › Narrative Blocks › New" (type choice).
 - **Expected behavior**:
     - In the MVP, creation is done exclusively from the menu (no toolbar).
     - The block is created with an identifier unique within the map, the default label of its type, and the visual rendering corresponding to its type.
     - It is positioned at the location designated by the user, snapped to the alignment grid (always visible and active).
     - It has two active attachment ports: incoming (left) and outgoing (right).
     - It is not resizable.
-    - No orphan block: the newly created block is automatically attached to the default journey.
+    - No orphan block: the newly created block is attached to the active journey if the journey filter is enabled, to the default journey otherwise.
     - The Start block is unique: it is created automatically when the narrative map is created and cannot be created manually or duplicated.
     - Any creation marks the map, and therefore the project, as modified.
 
 ## FN015: Edit a block's attributes
 - **Description**: Edit the editable attributes of a block via an edit dialog.
-- **References**: SU003 ; menu "Project › Blocks... › Edit".
+- **References**: SU003 ; menu "Project › Narrative Blocks › Edit...".
 - **Expected behavior**:
     - The edit dialog presents the editable attributes: label, note (annotation) and narrative content. The type is not editable.
     - For a Condition block, the dialog also presents the structured condition: kind (choice / artefact / skill / flag), optional reference to an Artefact agent, label.
@@ -190,7 +190,7 @@
 
 ## FN018: Delete a block
 - **Description**: Delete a block from the narrative map.
-- **References**: SU003 ; menu "Project › Blocks... › Delete".
+- **References**: SU003 ; menu "Project › Narrative Blocks › Delete...".
 - **Expected behavior**:
     - If data is associated with the block, a confirmation is requested.
     - Deletion cascades to its transitions, participations, anchored relationships and journey attachments.
@@ -201,7 +201,6 @@
 - **References**: SU003, SU005.
 - **Expected behavior**:
     - Attachments are managed via a multi-choice list of journeys, presented in the block's edit dialog, among the existing journeys of the map.
-    - At creation, the block is automatically attached to the currently active journey.
     - The list cannot be emptied: no orphan block (a block cannot be removed from its last journey).
     - The option is disabled if the map has a single journey.
     - Any attachment change marks the map, and therefore the project, as modified.
@@ -213,7 +212,7 @@
 
 ## FN020: Create a transition
 - **Description**: Create a directed transition between two blocks of the narrative map.
-- **References**: SU004 ; menu "Project › Transitions › New...".
+- **References**: SU004 ; menu "Project › Transitions › New".
 - **Expected behavior**:
     - In the MVP, creation is initiated from the menu (no toolbar).
     - The user selects a source block; if no block is active, it becomes active. A connection (temporary trace) then follows the cursor until the click on the target block's port.
@@ -226,7 +225,7 @@
 
 ## FN021: Annotate and edit a transition
 - **Description**: Annotate a transition with free text and edit its editable attributes.
-- **References**: SU004 ; menu "Project › Transitions › Edit".
+- **References**: SU004 ; menu "Project › Transitions › Edit...".
 - **Expected behavior**:
     - Annotation is done via the transition's edit dialog ("Note" field).
     - The transition's note is shown in a tooltip on hover over the representative line.
@@ -235,7 +234,7 @@
 
 ## FN022: Delete a transition
 - **Description**: Delete a transition between two blocks.
-- **References**: SU004 ; menu "Project › Transitions › Delete".
+- **References**: SU004 ; menu "Project › Transitions › Delete...".
 - **Expected behavior**:
     - A confirmation is requested before deletion.
     - Deleting a transition deletes the journey attachments referencing it; it is independent of block deletion (except for the FN018 cascade).
@@ -248,9 +247,10 @@
 
 ## FN023: Create a journey
 - **Description**: Create a journey in the map.
-- **References**: SU005 ; menu "Project › Journeys › New..." ; journey list in "Display › Journey".
+- **References**: SU005 ; menu "Project › Journeys › New" ; journey list in "Display › Journey".
 - **Expected behavior**:
     - The new journey receives a unique identifier, a default label and an empty note.
+    - The new journey is not activated: the active journey remains unchanged (if the journey filter is disabled, all journeys are active).
     - Any creation marks the map, and therefore the project, as modified.
 
 ## FN024: Rename and describe a journey
@@ -269,11 +269,11 @@
     - Any duplication marks the map, and therefore the project, as modified.
 
 ## FN026: Activate a journey
-- **Description**: Activate a journey as the current journey for editing.
+- **Description**: Activate a journey as the active journey.
 - **References**: SU005 ; journey list in "Display › Journey".
 - **Expected behavior**:
     - Activation is done from the journey list.
-    - The activated journey becomes the current journey: new blocks are attached to it and the display filter applies to it (FN029).
+    - Activation makes the journey the active one: the display filter applies to it (FN029) and new blocks are attached to it (FN014).
     - Activation marks the map, and therefore the project, as modified.
 
 ## FN027: Delete a journey
@@ -285,6 +285,16 @@
     - **The block attachments of the deleted journey are reassigned to the default journey**.
     - If the deleted journey was the default one, the oldest remaining journey becomes the default; if it was the active one, the default journey becomes the active one.
     - Any deletion marks the map, and therefore the project, as modified.
+
+## FN038: Set the default journey
+- **Description**: Designate one of the map's journeys as the default journey.
+- **References**: SU005 ; menu "Project › Journeys › Set as Default...".
+- **Expected behavior**:
+    - The designation is done via a dialog selecting the journey to set as default.
+    - There is always only one default journey: the designation replaces the current default journey.
+    - The default journey is the one to which new blocks are attached when the journey filter is disabled (otherwise, it is the active journey, FN014), and the one used for reassignment of attachments when a journey is deleted.
+    - The designation does not change the active journey.
+    - Any designation marks the map, and therefore the project, as modified.
 
 
 ---
@@ -332,7 +342,7 @@
 
 ## FN031: Manage the project's agents
 - **Description**: Create, rename, edit or delete an agent of the project.
-- **References**: SU008, SU009 ; submenu "Project › Agents..." (New.../Edit/Delete) ; "Journeys" and "Agents" views.
+- **References**: SU008, SU009 ; submenu "Project › Agents" (New.../Edit.../Delete...) ; "Journeys" and "Agents" views.
 - **Expected behavior**:
     - An agent belongs to the project; it is characterized by an identifier unique within the project, a label, a type (Character or Artefact), a note and a narrative content.
     - Deleting an agent cascades to all its participations and all its relationships, with a prior confirmation indicating the number of deleted elements.
@@ -368,7 +378,7 @@
 
 ## FN034: Manage a relationship between agents
 - **Description**: Create, annotate, edit or delete a typed relationship between two agents, anchored to a block.
-- **References**: SU011 ; menu "Project › Relationships...".
+- **References**: SU011 ; menu "Project › Relationships".
 - **Expected behavior**:
     - The relationship is binary: it links exactly two agents (an evolution to more than two agents is post-MVP).
     - It is directed and typed; the type is chosen from the value list of the configuration file (FN037).

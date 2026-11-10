@@ -35,7 +35,7 @@
 - **Classification** : 1. Project management and lifecycle
 
 ## RG007
-- **Description** : When no project is open, the entries of the Files (Close, Save, Save as...), Edit, Display and Project menus are greyed out. In the MVP, "Export Map", "Import Map", "Recent Projects...", the whole Edit menu and the Zoom submenu remain greyed out even with a project open.
+- **Description** : When no project is open, the entries of the Files (Close, Save, Save as...), Edit, Display and Project menus are greyed out. In the MVP, "Export Map...", "Import Map...", "Recent Projects", the whole Edit menu and the Zoom submenu remain greyed out even with a project open.
 - **Classification** : 1. Project management and lifecycle
 
 ## RG008
@@ -171,7 +171,7 @@
 - **Classification** : 3. Journey logic and membership
 
 ## RG040
-- **Description** : No orphan block: every block belongs to at least one journey; at creation, a block is attached to the default journey; a block cannot be removed from its last journey.
+- **Description** : No orphan block: every block belongs to at least one journey; at creation, a block is attached to the active journey if the journey filter is enabled, to the default journey otherwise; a block cannot be removed from its last journey.
 - **Classification** : 3. Journey logic and membership
 
 ## RG041
@@ -261,3 +261,7 @@
 ## RG061
 - **Description** : The project is saved in a single structured file (JSON) containing metadata and data, associated with the graphical metadata file.
 - **Classification** : 5. Technical architecture and data model
+
+## RG062
+- **Description**: The author can at any time designate one of the map's journeys as the default journey; the designation replaces the current default journey and does not change the active journey. There is always only one default journey (RG039).
+- **Classification**: 3. Journey logic and membership

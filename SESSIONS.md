@@ -9,6 +9,34 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 
 --
 
+## Séance n°02 (2026-11-10)
+
+### Travaux
+- Revue des spécifications (3 points de vérification TSC) :
+  1. Règle des points de suspension actée et appliquée à `05_menu-FR/EN.yaml` : « ... » = entrée ouvrant une fenêtre nécessitant une action complémentaire (saisie/choix/confirmation), fenêtre purement informative sans « ... » ; ajout sur « Exporter la carte... », « Importer une carte... », les 5 « Éditer... », les 5 « Supprimer... » ; retrait sur « Projets récents », « Blocs narratifs › Nouveau », « Transitions › Nouvelle », « Parcours › Nouveau » ; « Nouveau projet... » conservé par convention usuelle (exception documentée dans la légende des deux fichiers).
+  2. Toutes les références aux entrées du menu dans `docs/specification/` alignées sur les noms anglais à jour de `05_menu-EN.yaml` (application unilingue anglais), y compris dans les documents FR (corrections : « Recents Projects... », « Fichier », « Blocks... », « Agents... », « Relations... », etc.).
+  3. Parcours par défaut désigné par l'auteur : correction de SU005 (la création d'un parcours n'active rien — filtre possiblement désactivé), nouvelle fonctionnalité FN038 + entrée `Project › Journeys › Set as Default...`, nouvelle règle RG062 ; règle de rattachement des nouveaux blocs unifiée « parcours actif si le filtre de parcours est activé, parcours par défaut sinon » (FN014, FN019, FN026, SU003, SU005, RG040, FN038) ; notion « parcours courant » supprimée, unifiée sur « parcours actif ».
+- `docs/conception/03_conception-FR.md` aligné (règles §4, points 13–15) ; version EN créée : `docs/conception/03_conception-EN.md`.
+- Matrice de traçabilité initialisée : `docs/projet/implementation-FR.md` / `implementation-EN.md` (62 RG, 38 FN, entrées du menu, 12 SU ; statuts initiaux `not-started` / `greyed-MVP`).
+- Vérifications : YAML des menus valide ; script de contrôle des références de chemins de menu contre `05_menu-EN.yaml` (OK) ; parité FR/EN des nouveaux documents (8 sections, tableau, points 1–15).
+
+### Choix actés
+- Règle des « ... » documentée dans la légende de `05_menu-FR/EN.yaml` ; exception « Nouveau projet... » conservée.
+- Application unilingue anglais pour le moment : les documents de spécification référencent les noms anglais des entrées du menu, même en version FR.
+- Une seule notion de parcours actif (`active_journey`, null = parcours par défaut) ; « parcours courant » abandonné.
+- L'auteur peut désigner le parcours par défaut à tout moment (FN038, `Set as Default...`, RG062) ; la désignation ne modifie pas le parcours actif.
+- Document de traçabilité placé dans `docs/projet/` (`implementation-FR.md` + `implementation-EN.md`), conventions de liens code/tests par commentaires d'ID (`# RGxxx:` / `# FNxxx:`) et noms de tests `test_rgXXX_*` / `test_fnXXX_*`.
+
+### État en fin de séance
+- 10 fichiers de spécification/conception modifiés + 3 nouveaux fichiers (`03_conception-EN.md`, `implementation-FR.md`, `implementation-EN.md`) ; commit et push sur `dev`.
+- Kanban inchangé (TSK01–TSK06 toujours en Review) ; cette revue est tracée dans SESSIONS.md.
+- Points ouverts : libellé du menu contextuel « Associate agents... » (FR dans les docs FR) ; noms de vues/onglets en FR dans les docs FR (« Parcours », « Agents », « Relations ») alors que l'app sera anglaise ; fiches historiques `docs/projet/tasks/TSK0*.md` non réécrites (journal de séance) ; périmètre MVP des vues, maquette vue « Relations », SU009/SU010/SU012 à finaliser, exports, zoom, annuler/rétablir, barres latérales.
+
+### Problèmes rencontrés
+- Aucun.
+
+---
+
 ## Séance n°01 (2026-11-09)
 
 ### Travaux

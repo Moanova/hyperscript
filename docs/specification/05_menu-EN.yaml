@@ -24,14 +24,14 @@ menu:
           shortcut: "Ctrl+Shift+S"
           references: "FN009, SU001"
         - type: separator
-        - name: Export Map
+        - name: Export Map...
           references: "FN013, SU007"
           note: "Greyed out in the MVP - file export is post-MVP"
-        - name: Import Map
+        - name: Import Map...
           references: "SU002"
           note: "Greyed out in the MVP - imports a narrative map previously exported into the current project"
         - type: separator
-        - name: Recent Projects...
+        - name: Recent Projects
           dynamic: true
           description: "Dynamic list of recently opened projects"
           references: "FN007, SU001"
@@ -96,19 +96,19 @@ menu:
           items:
             - name: New...
               references: "FN031, SU008"
-            - name: Edit
+            - name: Edit...
               references: "FN031, SU008"
             - name: Copy
               references: "FN031, SU008"
               note: "'Copy' is the term used for duplication on all submenus"
-            - name: Delete
+            - name: Delete...
               references: "FN031, SU008"
             - name: Associate with Block...
               references: "FN030, SU008"
               note: "Creates/edits participations (agent present in a block); replaces the former 'Link to Block' wording"
         - name: Narrative Blocks
           items:
-            - name: New...
+            - name: New
               items:
                 - name: Scene
                 - name: Pivot
@@ -116,37 +116,39 @@ menu:
                 - name: Ending
               references: "FN014, SU003"
               note: "Start is deliberately absent from this submenu: it is created automatically with the map, unique, and cannot be duplicated (business rule to come)"
-            - name: Edit
+            - name: Edit...
               references: "FN015, SU003"
             - name: Copy
               references: "FN016, SU003"
-            - name: Delete
+            - name: Delete...
               references: "FN018, SU003"
         - name: Transitions
           items:
-            - name: New...
+            - name: New
               references: "FN020, SU004"
-            - name: Edit
+            - name: Edit...
               references: "FN021, SU004"
-            - name: Delete
+            - name: Delete...
               references: "FN022, SU004"
         - name: Journeys
           items:
-            - name: New...
+            - name: New
               references: "FN023, SU005"
-            - name: Edit
+            - name: Edit...
               references: "FN024, SU005"
             - name: Copy
               references: "FN025, SU005"
-            - name: Delete
+            - name: Set as Default...
+              references: "FN038, SU005"
+            - name: Delete...
               references: "FN027, SU005"
         - name: Relationships
           items:
             - name: New...
               references: "FN034, SU011"
-            - name: Edit
+            - name: Edit...
               references: "FN034, SU011"
-            - name: Delete
+            - name: Delete...
               references: "FN034, SU011"
 
     - name: About
@@ -164,3 +166,4 @@ menu:
       Elements marked 'dynamic: true' are dynamically generated from application data.
       Entries greyed out in the MVP are marked in the notes.
       Workspaces (views) are referenced by name, without numbering: Journeys, Agents, Relationships, Export.
+      Ellipsis rule: any entry opening a window that requires an additional action from the user (input, choice or confirmation dialog) is suffixed with "..."; a purely informational window (e.g. "About Hyperscript") has none. Exception: "New Project..." keeps "..." by usual convention (creation is direct in memory; only a conditional save confirmation may appear).

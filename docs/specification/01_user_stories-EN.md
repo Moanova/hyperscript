@@ -38,7 +38,7 @@
     - The user can rename the map by directly editing its label or via an edit dialog.
     - Any modification updates the last modification date of the map and of the project.
 - **MVP scope**:
-    - A single narrative map per project: creating, duplicating, deleting, navigating between maps and importing/exporting a map are not available. Only renaming and editing the content are functional in the MVP (the file export, SU007, is out of the MVP — "Files › Export Map" greyed out; the in-app preview, "Export" view (SU010), is part of the minimal MVP).
+    - A single narrative map per project: creating, duplicating, deleting, navigating between maps and importing/exporting a map are not available. Only renaming and editing the content are functional in the MVP (the file export, SU007, is out of the MVP — "Files › Export Map..." greyed out; the in-app preview, "Export" view (SU010), is part of the minimal MVP).
 
 
 ## SU003: Manage a Narrative Block
@@ -52,11 +52,11 @@
     - An End block cannot have an outgoing transition.
     - A Pivot block has at least two outgoing transitions; the Scene → Pivot promotion is automatic and one-way when a second outgoing transition is created (never the other way round).
     - A Condition block has exactly one incoming transition (from a Pivot) and one outgoing transition (to the guarded scene); it carries a structured condition: kind (choice / artefact / skill / flag), optional reference to an Artefact agent, label. Chaining Condition blocks equals an AND; two Condition blocks from the same Pivot equal an OR.
-    - Attachment to journeys: blocks (not transitions) are attached to journeys. No orphan block: every block belongs to at least one journey; every newly created block is automatically attached to the default journey; a block cannot be removed from its last journey.
+    - Attachment to journeys: blocks (not transitions) are attached to journeys. No orphan block: every block belongs to at least one journey; every newly created block is attached to the active journey if the journey filter is enabled, to the default journey otherwise; a block cannot be removed from its last journey.
     - Deleting a block cascades to its transitions, participations, anchored relationships and journey attachments.
 - **Acceptance criteria**:
-    - The user can create a block from the main menu or the context menu, choosing its type; the block is automatically attached to the default journey and positioned on the grid at the designated location.
-    - The user can duplicate a block (copy with a distinct name and a new identifier, attached to the default journey).
+    - The user can create a block from the main menu or the context menu, choosing its type; the block is attached to the active journey if the journey filter is enabled, to the default journey otherwise, and positioned on the grid at the designated location.
+    - The user can duplicate a block (copy with a distinct name and a new identifier, attached to the active journey if the journey filter is enabled, to the default journey otherwise).
     - The user can edit the editable attributes of a block via an edit dialog.
     - The user can delete a block with confirmation; the deletion cascades as described above.
     - The user can move a block by drag-and-drop (mouse, stylus or touch) with automatic grid snapping.
@@ -84,20 +84,21 @@
 
 
 ## SU005: Manage a Journey
-- **Description**: As an author, I can create, name, describe, duplicate, activate or delete a journey in order to define the alternative threads of my story.
+- **Description**: As an author, I can create, name, describe, duplicate, activate, set as default or delete a journey in order to define the alternative threads of my story.
 - **Details**:
     - A journey belongs to a narrative map; it has an identifier unique within the map, plus an editable label and note.
     - Each map always contains at least one journey; when the map is created, an initial journey is created, activated and given a default name.
     - Blocks are attached to journeys; a block can belong to several journeys. The journey membership of a transition is derived from its two blocks; that of a participation or a relationship is derived from its anchor block.
-    - When a new journey is created, it automatically becomes the active journey.
-    - Every newly created block is attached to the default journey.
+    - When a new journey is created, it is not activated: the active journey remains unchanged (if the journey filter is disabled, all journeys are active).
+    - Every newly created block is attached to the active journey if the journey filter is enabled, to the default journey otherwise.
     - Deleting the last journey of a map is impossible; the application shows an explanatory message.
     - The reading sequence of a journey is computed depth-first from the Start block (it is used for the preview and the export).
 - **Acceptance criteria**:
-    - The user can create a journey from the "Project" menu; it automatically becomes the current journey.
+    - The user can create a journey from the "Project" menu; the active journey remains unchanged.
     - The user can rename a journey and edit its note via an edit dialog.
     - The user can duplicate a journey (distinct name, new identifier; the block attachments of the source journey are copied).
     - The user can activate a journey by selecting it in the journey list or from the "Project" menu.
+    - The user can set the default journey at any time from the "Project › Journeys › Set as Default..." menu; there is only one default journey, and the designation replaces the current default journey.
     - The user can delete a journey with prior confirmation, except if it is the last one; if the deleted journey was the default one, the oldest remaining journey becomes the default.
     - The user can change the journeys a block is attached to, without being able to remove it from its last journey.
     - Any operation on a journey marks the map, and therefore the project, as modified.
@@ -136,11 +137,11 @@
     - Each reading page offers a link back to the index.
     - The export operation marks neither the map nor the project as modified.
 - **Acceptance criteria**:
-    - The user can launch the export from the "File" menu.
+    - The user can launch the export from the "Files" menu.
     - The generated document displays correctly in standard browsers (Chrome, Firefox, Edge) without an Internet connection.
     - An intermediate page lists the journeys of the map; clicking a journey displays the complete linear reading of its sequence.
 - **MVP scope**:
-    - The file export is **out of the MVP scope** ("Files › Export Map" greyed out); in the MVP, only the in-app preview ("Export" view, SU010/FN033) is available.
+    - The file export is **out of the MVP scope** ("Files › Export Map..." greyed out); in the MVP, only the in-app preview ("Export" view, SU010/FN033) is available.
     - The exact scope of the reading export (pages, reading modes) will be specified later for the post-MVP version.
     - The technical export for reimport and the "by events" reading mode are to be defined during the design phase.
 
