@@ -109,7 +109,7 @@
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG025
-- **Description** : Chaque carte narrative possède un et un seul bloc Début, créé automatiquement à la création de la carte, jamais supprimable ni duplicable ; le type « Début » n'est proposé nulle part ailleurs (création ou édition d'un autre bloc).
+- **Description** : Chaque carte narrative possède un et un seul bloc Début, créé automatiquement à la création de la carte, jamais supprimable ni duplicable ; le type « Début » n'est proposé nulle part ailleurs (création ou édition d'un autre bloc) ; le bloc Début ne reçoit jamais de transition entrante.
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG026
@@ -117,11 +117,21 @@
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG027
-- **Description** : Un bloc peut avoir plusieurs transitions entrantes et plusieurs transitions sortantes.
+- **Description** : Un bloc peut avoir 0 ou n transitions entrantes et 0 ou n transitions sortantes, dans les limites des types autorisés par la matrice d'enchaînement (RG028).
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG028
-- **Description** : Le chaînage par transition est libre (de tout bloc vers tout bloc, cycles autorisés — ex. Scène → Pivot → Condition → la même Scène) ; il ne peut exister qu'une seule transition par paire ordonnée de blocs.
+- **Description** : Le chaînage par transition est contraint par la matrice des types de blocs autorisés :
+
+  | Type du bloc source | Types des blocs cibles autorisés |
+  | --- | --- |
+  | Début | Scène, Pivot |
+  | Scène | Scène, Pivot, Fin |
+  | Pivot | Condition |
+  | Condition | Scène, Fin |
+  | Fin | — (aucune transition sortante) |
+
+  Les cycles sont autorisés (ex. Scène → Pivot → Condition → la même Scène). En construction, un bloc peut avoir 0 ou n transitions entrantes et sortantes ; en carte finalisée et cohérente, 1 ou n (hors Début : 0 entrante ; Fin : 0 sortante) — ce contrôle de cohérence est hors MVP. Il ne peut exister qu'une seule transition par paire ordonnée de blocs.
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG029
@@ -129,11 +139,11 @@
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG030
-- **Description** : Un bloc Pivot possède au moins deux transitions sortantes ; la promotion Scène → Pivot est automatique et unidirectionnelle lorsqu'une deuxième transition sortante est créée (jamais l'inverse). *Règle sujette à révision en cours de conception si le besoin apparaît.*
+- **Description** : Un bloc Pivot ne peut recevoir de transitions entrantes que de blocs Début ou Scène, et n'émettre de transitions sortantes que vers des blocs Condition (matrice RG028) ; plusieurs blocs Condition issus d'un même Pivot valent OU.
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG031
-- **Description** : Un bloc Condition possède exactement une transition entrante (depuis un Pivot) et une sortante (vers la scène gardée) ; il porte une condition structurée (nature : choix / artefact / compétence / flag ; référence éventuelle vers un agent Artefact ; libellé) ; chaîner des blocs Condition équivaut à un ET, deux blocs Condition issus d'un même Pivot à un OU. *Règle sujette à révision en cours de conception si le besoin apparaît.*
+- **Description** : Un bloc Condition ne peut recevoir de transitions entrantes que de blocs Pivot, et n'émettre de transitions sortantes que vers des blocs Scène ou Fin (matrice RG028) ; il porte une condition structurée (nature : choix / artefact / compétence / flag ; référence éventuelle vers un agent Artefact ; libellé) — unique support de celle-ci. Chaîner des blocs Condition (Condition → Condition) n'est pas autorisé : le ET n'est pas exprimable ; deux blocs Condition issus d'un même Pivot valent OU (RG030).
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG032

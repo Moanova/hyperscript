@@ -27,7 +27,7 @@
 - Font: Segoe UI; sizes in config (`menu_font_size_px` 12, `node_font_size_px` 13, `node_label_font_size_px` 9, `node_title_font_size_px` 14).
 - Node (block): 80×40 px (`node_default_width`/`node_default_height`), corner radius 6 px.
 - Grid: minor 20 px / major 80 px (`grid_minor_size`/`grid_major_size`), colors `#333333`/`#4A4A4A`, always visible, redrawn on the visible area only.
-- **Colors per narrative block type** (Start, Scene, Pivot, Condition, End): *to be validated during the design phase* (plano: state `#E5C07B`, event `#D19A66`).
+- **Colors per narrative block type** (node border color): Start `#E5C07B` (gold), Scene `#A7C957` (olive green), Pivot `#D19A66` (copper), Condition `#E06666` (red), End `#F0F0F0` (off-white) — adopted session 03; values to be confirmed after the first visual tests, within the same hues (dark grey, off-white, gold, sand…).
 
 
 ---
@@ -58,7 +58,7 @@
 - **Grid**: always visible (20/80 px); blocks snap to the grid at creation and when moved.
 - **Scrolling**: horizontal and vertical scroll bars always visible; auto-scroll when the mouse is within 50 px of an edge; initial scene 4000×4000 px, dynamically extended when blocks exceed it.
 - **Selection and editing**: single selection (no multi-selection); blocks moved by drag-and-drop; graphical elements hit-tested through an enlarged area (`shape()`); immediate tooltips on hover (block and transition notes).
-- **Narrative block**: 80×40 px rectangle; distinct visual rendering per type — *to be validated during the design phase*; two active ports (incoming left, outgoing right, 8 px); badge with the participation count (agents present in the block) — *position/details to be validated*; label displayed, note in a tooltip on hover.
+- **Narrative block**: 80×40 px rectangle; border colored by type (color code above); two active ports (incoming left, outgoing right, 8 px); **type displayed** in the node, **label and note in a tooltip on hover**; badge with the participation count (agents present in the block): bottom-right corner of the node (2/3 of the badge inside the outline, 1/3 outside), 16 px diameter (`journeys_view_badge_diameter_px`), fixed `badge_bg_color` fill, `badge_border_color` outline, `badge_text_color` text; hidden at 0 participation, "9+" beyond 9; "Agents: …" line added to the tooltip.
 - **Transition**: directed arrow, 2 px (`connection_color`), follows the connected blocks, not movable as such; note shown in a tooltip on hover; created with a temporary trace from the source block's outgoing port to the target block's incoming port.
 - **Journey filter**: applies to **all views**; disabled by default when a project is opened; not persisted between sessions. With the filter active, only the blocks of the active journey, the transitions whose two blocks belong to it, and the participations/relationships whose anchor block belongs to it remain at full opacity; other elements are dimmed (opacity 0.25) and non-interactive.
 - **Context menus**: **dynamically aligned** with the application menu according to the active view and the selected graphical objects; right-click selects the item under the cursor before opening the menu, so actions apply to the clicked item.
@@ -95,8 +95,8 @@
 ---
 
 ## Open points to be validated during the design phase
-1. Visual style of the 5 narrative block types (shapes/colors/icons) and of transitions.
-2. Badges: participation count in the "Journeys" view; incoming/outgoing transition counts in the "Agents" view (to be re-designed).
+1. Visual style of the 5 narrative block types (shapes/icons) and of transitions — color code adopted session 03 (see "Theme and style"); color values to be confirmed after the first visual tests (same hues).
+2. Badges: participation count in the "Journeys" view — adopted session 03 (see section 4); incoming/outgoing transition counts in the "Agents" view (to be re-designed).
 3. Mockup of the "Relationships" view.
 4. Content of the "Agents" view (re-design).
 5. Sidebars (whether to integrate them or not).

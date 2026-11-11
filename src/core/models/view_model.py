@@ -139,7 +139,7 @@ class ConnectionLayout:
     source_port: PortPosition = PortPosition.RIGHT
     target_node_id: int = -1
     target_port: PortPosition = PortPosition.LEFT
-    style: ConnectionStyle = ConnectionStyle.STRAIGHT
+    style: ConnectionStyle = ConnectionStyle.ARROW
     color: Optional[str] = None
     thickness: float = 2.0
     z_index: int = 0

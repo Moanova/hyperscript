@@ -41,7 +41,7 @@
 - **Project** { id, lb, dates, agents[], narrative_maps[] } — agents at project level; the map list anticipates from the MVP the possibility of multiple maps (episodes/seasons axis), even if the MVP scope remains a single map per project (§7).
 - **Narrative map** { id, lb, active_journey_id, blocks[], transitions[], participations[], relationships[], journeys[] }
 - **Narrative block** { id, lb, typ ∈ {Start, Scene, Pivot, Condition, End}, note, content, dates }
-- **Transition** { id, from_block_id, to_block_id, note, dates } — directed block → block; any chaining allowed (no bipartite constraint, cycles included — §4). **No `condition` key on the transition**: the structured condition is carried only by the Condition block.
+- **Transition** { id, from_block_id, to_block_id, note, dates } — directed block → block; chaining constrained by the block-type matrix (§4, RG028), cycles included. **No `condition` key on the transition**: the structured condition is carried only by the Condition block.
 - **Participation** { id, block_id, agent_id, note, dates } — presence of an agent in a block (symmetric, matrix view).
 - **Relationship** { id, block_id (anchor), agent_a_id, agent_b_id, typ, note, content, dates } — directed and typed, **binary** (`agent_a_id`, `agent_b_id`): a relationship between more than two agents is a **post-MVP** evolution. **Anchored to a block**: "at this point in the story, the relationship A —typ→ B holds". A pair's history = its anchors ordered by block rank; the current state at a block = the last anchor of rank ≤ the block's rank (**derived, never stored**). No clock key (`clock_id`): the rank is that of the anchor block in the journey (`journey_node.sequence_order`).
 - **Journey** { id, lb, default, note } + **journey node** { journey_id, block_id, sequence_order } — attachment is **on blocks**, not on transitions.
@@ -50,11 +50,12 @@
 
 ## 4. Adopted rules (invariants, enforced by the application)
 
-- **Start**: unique, automatically created, immutable; can carry the branching (several outgoing transitions).
-- **End**: out-degree 0; adding an outgoing transition is forbidden (to extend: duplicate the block into a Scene).
-- **Pivot**: out-degree ≥ 2; **automatic one-way promotion** Scene → Pivot when a 2nd outgoing transition is created (never the reverse). Its transitions lead either to **Condition** blocks (guarded branch) or directly to Scenes (free choice, label in the transition note).
-- **Condition**: exactly 1 incoming transition (from a Pivot) and 1 outgoing (to the guarded scene). Carries the structured condition — **unique support** of it (no `condition` on Transition): kind (choice / artefact / skill / flag), ref to an Artefact agent, label. Chaining Condition blocks = AND; two Conditions from the same Pivot = OR.
-- **Cycles**: allowed, expressed by block chaining — e.g. **S1 (Scene) → P1 (Pivot) → C1 (Condition) → S1**. The Pivot invariant (out-degree ≥ 2) applies: the branch returning to S1 is one of at least two branches. The DFS sequence memoizes cycles.
+- **Block-type chaining matrix** (RG028): Start → {Scene, Pivot}; Scene → {Scene, Pivot, End}; Pivot → {Condition}; Condition → {Scene, End}; End → no outgoing transition. While building: 0 to n incoming/outgoing transitions per block; in a finalized, consistent map: 1 to n (consistency check out of the MVP, §7).
+- **Start**: unique, automatically created, immutable; never receives an incoming transition; can carry the branching (several outgoing transitions to Scene or Pivot blocks).
+- **End**: out-degree 0; adding an outgoing transition is forbidden (to extend: duplicate the block into a Scene); its incoming transitions come exclusively from Scene or Condition blocks.
+- **Pivot**: incoming transitions from **Start** or **Scene** blocks only, outgoing transitions to **Condition** blocks only (matrix RG028); several **Condition** blocks from the same Pivot = OR.
+- **Condition**: incoming transitions from **Pivot** blocks only, outgoing transitions to **Scene** or **End** blocks only (matrix RG028). Carries the structured condition — **unique support** of it (no `condition` on Transition): kind (choice / artefact / skill / flag), ref to an Artefact agent, label. Two Conditions from the same Pivot = OR; chaining Condition blocks (= AND) is not allowed (Condition → Condition forbidden).
+- **Cycles**: allowed, expressed by block chaining — e.g. **S1 (Scene) → P1 (Pivot) → C1 (Condition) → S1**. The DFS sequence memoizes cycles.
 - **Journey membership derived** (uniform rule): a Transition belongs to a journey iff **both its endpoints** belong to it; a Participation or a Relationship belongs to it iff its **anchor block** belongs to it. (Solves by construction the cross-association pollution observed on testCase01.)
 - **Block attachment to journeys**: no orphan block — every block belongs to at least one journey; a newly created block is attached to the active journey if the journey filter is enabled, to the default journey otherwise; a block cannot be removed from its last journey.
 - **Default journey**: unique at all times, automatically created when the map is created; the author can at any time designate another journey as the default journey (the designation replaces the previous one and does not change the active journey).

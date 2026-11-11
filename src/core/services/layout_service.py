@@ -466,7 +466,8 @@ class LayoutService:
         """
         return WorkspaceLayout(
             narrative_map_id=narrative_map_id,
-            nodes={},
+            block_nodes={},
+            transition_connections={},
             zoom_level=1.0,
             scroll_x=0.0,
             scroll_y=0.0
@@ -610,25 +611,28 @@ class LayoutService:
         cls,
         source_node_id: int,
         target_node_id: int,
+        relation_id: int = None,
     ) -> ConnectionLayout:
         """
         Factory method to create a ConnectionLayout with sensible defaults.
 
         Args:
-            source_node_id: Business entity ID of the source node
-            target_node_id: Business entity ID of the target node
+            source_node_id: Business entity ID of the source block
+            target_node_id: Business entity ID of the target block
+            relation_id: Business entity ID of the transition (Transition.id)
 
         Returns:
-            A new ConnectionLayout instance
+            A new ConnectionLayout instance (directed arrow by default)
         """
         return ConnectionLayout(
             source_node_id=source_node_id,
             source_port=PortPosition.RIGHT,
             target_node_id=target_node_id,
             target_port=PortPosition.LEFT,
-            style=ConnectionStyle.STRAIGHT,
+            style=ConnectionStyle.ARROW,
             color=None,
-            thickness=2.0
+            thickness=2.0,
+            relation_id=relation_id,
         )
 
 

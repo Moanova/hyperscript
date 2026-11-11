@@ -51,8 +51,8 @@
     - Chaque bloc est déplaçable dans l'espace de travail mais non redimensionnable ; il s'aligne automatiquement sur la grille à la création et lors des déplacements ; sa position est conservée entre les sessions.
     - À la création d'une carte narrative, un bloc Début unique est créé automatiquement.
     - Un bloc Fin ne peut pas recevoir de transition sortante.
-    - Un bloc Pivot possède au moins deux transitions sortantes ; la promotion Scène → Pivot est automatique et unidirectionnelle lorsqu'une deuxième transition sortante est créée (jamais l'inverse).
-    - Un bloc Condition possède exactement une transition entrante (depuis un Pivot) et une sortante (vers la scène gardée) ; il porte une condition structurée : nature (choix / artefact / compétence / flag), référence éventuelle vers un agent Artefact, libellé. Chaîner des blocs Condition équivaut à un ET ; deux blocs Condition issus d'un même Pivot équivalent à un OU.
+    - Un bloc Pivot ne reçoit de transitions entrantes que de blocs Début ou Scène et n'en émet que vers des blocs Condition ; plusieurs blocs Condition issus d'un même Pivot équivalent à un OU.
+    - Un bloc Condition ne reçoit de transitions entrantes que de blocs Pivot et n'en émet que vers des blocs Scène ou Fin ; il porte une condition structurée : nature (choix / artefact / compétence / flag), référence éventuelle vers un agent Artefact, libellé. Deux blocs Condition issus d'un même Pivot équivalent à un OU (chaîner des blocs Condition, Condition → Condition, n'est pas autorisé).
     - Rattachement aux parcours : ce sont les blocs qui sont rattachés aux parcours. Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; tout bloc nouvellement créé est rattaché au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon ; un bloc ne peut pas être retiré de son dernier parcours.
     - La suppression d'un bloc entraîne la suppression en cascade de ses transitions, participations, relations ancrées et rattachements aux parcours.
 - **Critères d'acceptation** :
@@ -69,14 +69,14 @@
 ## SU004 : Gérer une transition entre blocs
 - **Description** : En tant qu'auteur, je peux créer, annoter, modifier ou supprimer une transition entre deux blocs afin de définir les enchaînements de mon récit.
 - **Complément** :
-    - Une transition est dirigée d'un bloc source vers un bloc cible ; le chaînage est libre, y compris les cycles (par ex. Scène → Pivot → Condition → la même Scène).
+    - Une transition est dirigée d'un bloc source vers un bloc cible ; le chaînage est contraint par la matrice des types de blocs : Début → Scène ou Pivot ; Scène → Scène, Pivot ou Fin ; Pivot → Condition ; Condition → Scène ou Fin ; Fin → aucune. Les cycles restent autorisés (par ex. Scène → Pivot → Condition → la même Scène).
     - Il ne peut exister qu'une seule transition par paire ordonnée de blocs.
     - Une transition porte une note textuelle, affichée en infobulle au survol. Elle ne porte pas de condition : la condition structurée est portée par le bloc Condition.
     - Appartenance aux parcours dérivée : une transition appartient à un parcours si et seulement si ses deux blocs y appartiennent.
     - La suppression d'une transition supprime ses rattachements aux parcours ; elle est indépendante de la suppression des blocs, hormis la cascade définie en SU003.
 - **Critères d'acceptation** :
     - L'utilisateur peut initier la création d'une transition depuis le menu « Project » ou le menu contextuel : sélection du bloc source, tracé temporaire suivant le curseur jusqu'au clic sur le port du bloc cible.
-    - L'application empêche la création d'une transition en double entre deux blocs déjà reliés.
+    - L'application empêche la création d'une transition en double entre deux blocs déjà reliés, ainsi que toute transition entre deux types de blocs dont l'enchaînement n'est pas autorisé.
     - L'utilisateur peut annoter une transition par du texte libre via un dialogue d'édition.
     - L'utilisateur peut supprimer une transition avec confirmation préalable.
     - Toute création, modification ou suppression de transition marque la carte, donc le projet, comme modifiés.

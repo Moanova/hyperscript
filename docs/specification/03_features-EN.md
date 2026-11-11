@@ -217,8 +217,8 @@
     - In the MVP, creation is initiated from the menu (no toolbar).
     - The user selects a source block; if no block is active, it becomes active. A connection (temporary trace) then follows the cursor until the click on the target block's port.
     - The transition is directed: the source block's outgoing port is linked to the target block's incoming port.
-    - Chaining is free, including cycles (e.g. Scene → Pivot → Condition → the same Scene).
-    - The application refuses creation only if a transition already exists for the ordered pair of blocks (source, target).
+    - Chaining is constrained by the block-type matrix: Start → Scene or Pivot; Scene → Scene, Pivot or End; Pivot → Condition; Condition → Scene or End; End → none. Cycles remain allowed (e.g. Scene → Pivot → Condition → the same Scene).
+    - The application refuses creation if a transition already exists for the ordered pair of blocks (source, target), or if the chaining of the two block types is not allowed by the matrix.
     - The transition is represented by a line; it follows the moves of the blocks it links and is not movable as such.
     - Journey membership is derived: a transition belongs to a journey if and only if both its blocks belong to it (no direct attachment).
     - Any creation marks the map, and therefore the project, as modified.
@@ -395,13 +395,13 @@
 
 # Conditions
 
-## FN035: Manage a Condition block's condition and the Scene → Pivot promotion
-- **Description**: Edit the structured condition of a Condition block and apply the branching invariants (automatic promotion, block degrees).
+## FN035: Manage a Condition block's condition
+- **Description**: Edit the structured condition of a Condition block.
 - **References**: SU003, SU004.
 - **Expected behavior**:
     - The structured condition of a Condition block is edited via the block's edit dialog (FN015): kind (choice / artefact / skill / flag), optional reference to an Artefact agent, label.
-    - A Pivot block has at least two outgoing transitions; when a second outgoing transition is created on a Scene, it is automatically promoted to Pivot (one-way promotion, never the other way round).
-    - A Condition block has exactly one incoming transition (from a Pivot) and one outgoing transition (to the guarded scene). Chaining Condition blocks equals an AND; two Condition blocks from the same Pivot equal an OR.
+    - A Pivot block can only receive incoming transitions from Start or Scene blocks and only emit outgoing transitions to Condition blocks; several Condition blocks from the same Pivot equal an OR.
+    - A Condition block can only receive incoming transitions from Pivot blocks and only emit outgoing transitions to Scene or End blocks. Two Condition blocks from the same Pivot equal an OR; chaining Condition blocks (Condition → Condition) is not allowed.
     - An End block cannot receive an outgoing transition.
     - Any modification marks the map, and therefore the project, as modified.
 

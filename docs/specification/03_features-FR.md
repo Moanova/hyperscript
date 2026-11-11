@@ -218,8 +218,8 @@
     - En MVP, la création est initiée depuis le menu (pas de barre d'outils).
     - L'utilisateur sélectionne un bloc source ; si aucun bloc n'est actif, il devient actif. Une connexion (tracé temporaire) suit alors le curseur jusqu'au clic sur le port du bloc cible.
     - La transition est orientée : le port sortant du bloc source est relié au port entrant du bloc cible.
-    - Le chaînage est libre, y compris les cycles (par ex. Scène → Pivot → Condition → la même Scène).
-    - L'application refuse la création uniquement si une transition existe déjà pour la paire ordonnée de blocs (source, cible).
+    - Le chaînage est contraint par la matrice des types de blocs : Début → Scène ou Pivot ; Scène → Scène, Pivot ou Fin ; Pivot → Condition ; Condition → Scène ou Fin ; Fin → aucune. Les cycles restent autorisés (par ex. Scène → Pivot → Condition → la même Scène).
+    - L'application refuse la création si une transition existe déjà pour la paire ordonnée de blocs (source, cible), ou si l'enchaînement des deux types de blocs n'est pas autorisé par la matrice.
     - La transition est représentée par une ligne ; elle suit les déplacements des blocs qu'elle relie et n'est pas déplaçable en tant que telle.
     - L'appartenance aux parcours est dérivée : une transition appartient à un parcours si et seulement si ses deux blocs y appartiennent (aucun rattachement direct).
     - Toute création marque la carte, et donc le projet, comme modifié.
@@ -396,13 +396,13 @@
 
 # Conditions
 
-## FN035 : Gérer la condition d'un bloc Condition et la promotion Scène → Pivot
-- **Description** : Éditer la condition structurée d'un bloc Condition et appliquer les invariants de branchement (promotion automatique, degrés des blocs).
+## FN035 : Gérer la condition d'un bloc Condition
+- **Description** : Éditer la condition structurée d'un bloc Condition.
 - **Références** : SU003, SU004.
 - **Comportement attendu** :
     - La condition structurée d'un bloc Condition est éditée via le dialogue d'édition du bloc (FN015) : nature (choix / artefact / compétence / flag), référence éventuelle vers un agent Artefact, libellé.
-    - Un bloc Pivot possède au moins deux transitions sortantes ; lorsqu'une deuxième transition sortante est créée sur une Scène, celle-ci est automatiquement promue Pivot (promotion unidirectionnelle, jamais l'inverse).
-    - Un bloc Condition possède exactement une transition entrante (depuis un Pivot) et une sortante (vers la scène gardée). Chaîner des blocs Condition équivaut à un ET ; deux blocs Condition issus d'un même Pivot équivalent à un OU.
+    - Un bloc Pivot ne reçoit de transitions entrantes que de blocs Début ou Scène et n'en émet que vers des blocs Condition ; plusieurs blocs Condition issus d'un même Pivot équivalent à un OU.
+    - Un bloc Condition ne reçoit de transitions entrantes que de blocs Pivot et n'en émet que vers des blocs Scène ou Fin. Deux blocs Condition issus d'un même Pivot équivalent à un OU ; chaîner des blocs Condition (Condition → Condition) n'est pas autorisé.
     - Un bloc Fin ne peut pas recevoir de transition sortante.
     - Toute modification marque la carte, et donc le projet, comme modifié.
 

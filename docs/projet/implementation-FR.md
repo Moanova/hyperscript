@@ -1,7 +1,7 @@
 # Hyperscript ::: Matrice de traçabilité de l'implémentation
 
 
-- **Date de dernière modification** : 10-11-2026
+- **Date de dernière modification** : 11-11-2026
 - **Description** : état et localisation de l'implémentation des règles de gestion (RG), des fonctionnalités (FN), des entrées du menu général et des scenarii d'utilisation (SU) dans la base de code.
 
 
@@ -49,18 +49,18 @@
 | RG020 | Les libellés des blocs, transitions, participations, relations, parcours et… | not-started | — | — | — |
 | RG021 | Une carte narrative contient toujours au moins un parcours. | not-started | — | — | — |
 | RG022 | La suppression d'une carte narrative est irréversible et entraîne la… | not-started | — | — | — |
-| RG023 | La suppression d'un bloc entraîne la suppression en cascade de ses transitions,… | not-started | — | — | — |
-| RG024 | La suppression du dernier parcours d'une carte est impossible. | not-started | — | — | — |
-| RG025 | Chaque carte narrative possède un et un seul bloc Début, créé automatiquement à… | implemented | usecases/project_management/create_project_usecase.py | tests/test_project/test_project_service.py | bloc Start unique, auto-créé |
-| RG026 | Un bloc Fin ne peut recevoir aucune transition sortante (degré sortant 0). En… | not-started | — | — | — |
-| RG027 | Un bloc peut avoir plusieurs transitions entrantes et plusieurs transitions… | not-started | — | — | — |
-| RG028 | Le chaînage par transition est libre (de tout bloc vers tout bloc, cycles… | not-started | — | — | — |
-| RG029 | Le type d'un bloc est choisi à sa création et immuable ensuite. | not-started | — | — | — |
-| RG030 | Un bloc Pivot possède au moins deux transitions sortantes ; la promotion Scène… | not-started | — | — | Règle sujette à révision en cours de conception si le besoin apparaît. |
-| RG031 | Un bloc Condition possède exactement une transition entrante (depuis un Pivot)… | not-started | — | — | Règle sujette à révision en cours de conception si le besoin apparaît. |
+| RG023 | La suppression d'un bloc entraîne la suppression en cascade de ses transitions,… | implemented | core/services/transition_service.py (delete_block_cascade) | tests/test_transitions/test_transition_service.py | cascade testée |
+| RG024 | La suppression du dernier parcours d'une carte est impossible. | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | dernier parcours refusé (message UI) |
+| RG025 | Chaque carte narrative possède un et un seul bloc Début, créé automatiquement à… | implemented | usecases/project_management/create_project_usecase.py; usecases/view_management/ (delete/duplicate) | tests/test_project/test_project_service.py; tests/test_blocks/test_block_usecases.py | Start jamais supprimable ni duplicable |
+| RG026 | Un bloc Fin ne peut recevoir aucune transition sortante (degré sortant 0). En… | implemented | core/services/transition_service.py (matrice : Fin → aucune cible) | tests/test_transitions/test_transition_service.py | via la matrice RG028 |
+| RG027 | Un bloc peut avoir plusieurs transitions entrantes et plusieurs transitions… | implemented | core/services/transition_service.py | tests/test_transitions/test_transition_service.py | 0..n dans les limites de la matrice RG028 |
+| RG028 | Le chaînage est contraint par la matrice des types de blocs autorisés (Début→Scène/Pivot ; Scène→Scène/Pivot/Fin ; Pivot→Condition ; Condition→Scène/Fin ; Fin→aucune), cycles… | implemented | core/services/transition_service.py (ALLOWED_TARGET_TYPES) | tests/test_transitions/test_transition_service.py | matrice actée séance 03 ; cycles autorisés ; unicité paire ordonnée |
+| RG029 | Le type d'un bloc est choisi à sa création et immuable ensuite. | implemented | core/models/data_model.py (Block.__post_init__); usecases/view_management/update_block_usecase.py | tests/test_blocks/test_block_usecases.py | type non modifiable à l'édition |
+| RG030 | Un bloc Pivot : entrantes depuis Début/Scène uniquement, sortantes vers Condition… | implemented | core/services/transition_service.py (matrice) | tests/test_transitions/test_transition_service.py | révisée séance 03 : promotion Scène→Pivot supprimée |
+| RG031 | Un bloc Condition : entrantes depuis Pivot uniquement, sortantes vers Scène/Fin… | implemented | core/services/transition_service.py (matrice); core/models/data_model.py (condition) | tests/test_transitions/; tests/test_blocks/ | révisée séance 03 : ET non exprimable, OU conservé |
 | RG032 | Il ne peut exister qu'une seule participation par couple (bloc, agent). | not-started | — | — | — |
 | RG033 | La suppression d'un agent entraîne la suppression en cascade de toutes ses… | not-started | — | — | — |
-| RG034 | La suppression d'un parcours réaffecte au parcours par défaut les rattachements… | not-started | — | — | — |
+| RG034 | La suppression d'un parcours réaffecte au parcours par défaut les rattachements… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | réaffectation au parcours par défaut (aucun bloc orphelin) |
 | RG035 | Une relation est binaire (exactement deux agents), dirigée et typée, et ancrée… | not-started | — | — | — |
 | RG036 | Dans la vue « Agents », les colonnes (blocs) sont ordonnées par défaut par… | not-started | — | — | À re-concevoir avec la vue « Agents ». |
 
@@ -69,29 +69,29 @@
 | RG | Résumé | Statut | Code (fichier · symbole) | Test unitaire | Notes |
 | --- | --- | --- | --- | --- | --- |
 | RG037 | À la création d'une carte narrative, un parcours par défaut est automatiquement… | implemented | usecases/project_management/create_project_usecase.py | tests/test_project/test_project_service.py | parcours par défaut créé et activé |
-| RG038 | La copie d'un parcours ne modifie pas le parcours activé quanf le filtre de… | not-started | — | — | — |
-| RG039 | Il existe toujours un parcours par défaut, et un seul ; si le parcours par… | not-started | — | — | — |
-| RG040 | Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; à sa… | implemented | usecases/project_management/create_project_usecase.py (journey_node sur le bloc Start) | tests/test_project/test_project_service.py | rattachement actif si filtre activé, défaut sinon |
-| RG041 | L'appartenance à un parcours est dérivée et jamais stockée : une transition… | not-started | — | — | — |
+| RG038 | La copie d'un parcours ne modifie pas le parcours activé quanf le filtre de… | implemented | usecases/journey_management/duplicate_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | copie non activée |
+| RG039 | Il existe toujours un parcours par défaut, et un seul ; si le parcours par… | implemented | core/services/journey_service.py; delete/set_default use cases | tests/test_journeys/test_journey_usecases.py | un seul default ; repli default/actif à la suppression |
+| RG040 | Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; à sa… | implemented | core/services/journey_service.py (attach_new_block); create/duplicate block use cases | tests/test_blocks/test_block_usecases.py | parcours actif si filtre activé, défaut sinon |
+| RG041 | L'appartenance à un parcours est dérivée et jamais stockée : une transition… | implemented | core/services/journey_filter_service.py; core/services/journey_sequence_service.py | tests/test_journeys/test_journey_filter_service.py; test_journey_sequence_service.py | appartenance dérivée (jamais stockée) |
 | RG042 | Les parcours auxquels un bloc est rattaché se modifient via la liste des… | not-started | — | — | — |
-| RG043 | La copie d'un parcours reprend les rattachements de ses blocs. | not-started | — | — | — |
-| RG044 | La séquence de lecture d'un parcours est calculée en profondeur depuis le bloc… | not-started | — | — | — |
+| RG043 | La copie d'un parcours reprend les rattachements de ses blocs. | implemented | usecases/journey_management/duplicate_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | rattachements des blocs copiés |
+| RG044 | La séquence de lecture d'un parcours est calculée en profondeur depuis le bloc… | implemented | core/services/journey_sequence_service.py | tests/test_journeys/test_journey_sequence_service.py | DFS depuis Start, branches par id de transition croissant, cycles mémoïsés, repli déterministe |
 
 ### 4. Visualisation et interaction
 
 | RG | Résumé | Statut | Code (fichier · symbole) | Test unitaire | Notes |
 | --- | --- | --- | --- | --- | --- |
 | RG045 | La position (x, y) de chaque bloc est conservée dans les métadonnées graphiques… | not-started | — | — | — |
-| RG046 | Les blocs s'alignent automatiquement sur la grille lors de leur création et de… | not-started | — | — | — |
+| RG046 | Les blocs s'alignent automatiquement sur la grille lors de leur création et de… | partial | core/services/layout_service.py (snap_to_grid); ui/nodes/base_node.py (itemChange) | — | test offscreen à valider sur poste de dev (libGL absent dans le sandbox) |
 | RG047 | La modification du niveau de zoom, de la position des barres de défilement ou… | not-started | — | — | — |
-| RG048 | Le filtre de parcours affiche soit tous les parcours, soit un seul, dans toutes… | not-started | — | — | — |
-| RG049 | Dans un espace de travail, un seul élément est sélectionné à la fois ; la… | not-started | — | — | — |
-| RG050 | Un bloc ne peut pas être créé à des coordonnées chevauchant celles d'un bloc… | not-started | — | — | — |
+| RG048 | Le filtre de parcours affiche soit tous les parcours, soit un seul, dans toutes… | partial | core/services/journey_filter_service.py; ui/views/journeys_workspace.py; ui/main_window.py | tests/test_journeys/test_journey_filter_service.py | service testé (opacité config journey_filter_opacity) ; rendu visuel (opacité 0.25 + désactivation) à valider offscreen |
+| RG049 | Dans un espace de travail, un seul élément est sélectionné à la fois ; la… | partial | ui/views/journeys_workspace.py (_select_item_only, _clear_all_selections) | — | test offscreen à valider |
+| RG050 | Un bloc ne peut pas être créé à des coordonnées chevauchant celles d'un bloc… | partial | core/services/layout_service.py (find_non_overlapping_position); ui/views/journeys_workspace.py (next_free_position) | — | test offscreen à valider |
 | RG051 | Lorsqu'un bloc déplacé dépasse la partie visible de l'espace de travail, le… | not-started | — | — | — |
 | RG052 | Le tracé d'une transition ne doit jamais chevaucher un bloc qui n'en est ni la… | not-started | — | — | — |
-| RG053 | La zone cliquable d'un élément graphique (bloc, transition) est définie par sa… | not-started | — | — | — |
-| RG054 | Les notes des blocs et des transitions s'affichent en infobulle dès le survol,… | not-started | — | — | — |
-| RG055 | À l'ouverture d'un menu contextuel, l'élément situé sous le curseur est d'abord… | not-started | — | — | — |
+| RG053 | La zone cliquable d'un élément graphique (bloc, transition) est définie par sa… | partial | ui/nodes/base_node.py; ui/nodes/connection.py (shape()/boundingRect élargis) | — | test offscreen à valider |
+| RG054 | Les notes des blocs et des transitions s'affichent en infobulle dès le survol,… | partial | ui/nodes/base_node.py; ui/nodes/connection.py (hoverEnterEvent → QToolTip.showText immédiat) | — | test offscreen à valider |
+| RG055 | À l'ouverture d'un menu contextuel, l'élément situé sous le curseur est d'abord… | partial | ui/views/journeys_workspace.py; ui/main_window.py (_show_workspace_context_menu construit depuis les QAction du menu général) | — | test offscreen à valider |
 | RG056 | Le focus de navigation croisée entre les vues (y compris la vue « Relations »)… | not-started | — | — | — |
 
 ### 5. Architecture technique et modèle de données
@@ -99,11 +99,11 @@
 | RG | Résumé | Statut | Code (fichier · symbole) | Test unitaire | Notes |
 | --- | --- | --- | --- | --- | --- |
 | RG057 | Les agents appartiennent au projet, et non à la carte narrative. | not-started | — | — | — |
-| RG058 | L'interface ne modifie jamais directement le modèle métier : toute modification… | not-started | — | — | — |
+| RG058 | L'interface ne modifie jamais directement le modèle métier : toute modification… | implemented | architecture : UI → signaux → use cases/services (aucune écriture du modèle dans ui/) | — | vérifié par grep (pas de mutation du modèle dans src/ui/) |
 | RG059 | Aucune valeur n'est codée en dur dans l'interface : dimensions, couleurs,… | not-started | — | — | — |
-| RG060 | Les métadonnées de représentation graphique (positions des blocs, ordre des… | not-started | — | — | — |
+| RG060 | Les métadonnées de représentation graphique (positions des blocs, ordre des… | partial | core/services/layout_service.py; ui/main_window.py (_do_save / _init_workspace) | — | persistance câblée au save/load ; roundtrip layout à valider |
 | RG061 | Le projet est enregistré dans un fichier unique structuré (JSON) contenant les… | implemented | project_service.py · save_project/load_project (JSON unique) | tests/test_project/test_project_service.py | fichier layouts séparé géré par LayoutService (RG060) |
-| RG062 | L'auteur peut à tout moment désigner l'un des parcours de la carte comme… | not-started | — | — | — |
+| RG062 | L'auteur peut à tout moment désigner l'un des parcours de la carte comme… | implemented | usecases/journey_management/set_default_journey_usecase.py; ui/dialogs/journey_selection_dialog.py | tests/test_journeys/test_journey_usecases.py | désignation remplace le défaut, actif inchangé |
 
 ## B. Fonctionnalités (`03_features-*.md`)
 
@@ -145,38 +145,38 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN014 | Créer un bloc narratif | not-started | Project › Narrative Blocks › New | — | — | — | — |
-| FN015 | Modifier les attributs d'un bloc | not-started | Project › Narrative Blocks › Edit... | — | — | — | — |
-| FN016 | Dupliquer un bloc | not-started | — | — | — | — | — |
-| FN017 | Déplacer un bloc | not-started | — | — | — | — | — |
-| FN018 | Supprimer un bloc | not-started | Project › Narrative Blocks › Delete... | — | — | — | — |
-| FN019 | Gérer le rattachement d'un bloc aux parcours | not-started | — | — | — | — | — |
+| FN014 | Créer un bloc narratif | implemented | Project › Narrative Blocks › New | usecases/view_management/create_block_usecase.py; ui/main_window.py (_create_new_block) | — | — | tests/test_blocks/test_block_usecases.py |
+| FN015 | Modifier les attributs d'un bloc | implemented | Project › Narrative Blocks › Edit... | usecases/view_management/update_block_usecase.py; ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
+| FN016 | Dupliquer un bloc | implemented | — | usecases/view_management/duplicate_block_usecase.py; ui/main_window.py | — | — | tests/test_blocks/test_block_usecases.py |
+| FN017 | Déplacer un bloc | partial | — | ui/nodes/base_node.py (itemChange, snap RG046); ui/main_window.py (_on_workspace_modified) | — | — | test offscreen à valider |
+| FN018 | Supprimer un bloc | implemented | Project › Narrative Blocks › Delete... | usecases/view_management/delete_block_usecase.py; ui/main_window.py | — | — | tests/test_blocks/test_block_usecases.py |
+| FN019 | Gérer le rattachement d'un bloc aux parcours | implemented | — | usecases/view_management/update_block_usecase.py (journey_ids); ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
 
 ### Transitions
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN020 | Créer une transition | not-started | Project › Transitions › New | — | — | — | — |
-| FN021 | Annoter et modifier une transition | not-started | Project › Transitions › Edit... | — | — | — | — |
-| FN022 | Supprimer une transition | not-started | Project › Transitions › Delete... | — | — | — | — |
+| FN020 | Créer une transition | implemented | Project › Transitions › New | usecases/view_management/create_transition_usecase.py; ui/views/journeys_workspace.py (tracé); ui/main_window.py | — | — | tests/test_transitions/ |
+| FN021 | Annoter et modifier une transition | implemented | Project › Transitions › Edit... | usecases/view_management/update_transition_usecase.py; ui/dialogs/transition_dialog.py | — | — | tests/test_transitions/test_transition_usecases.py |
+| FN022 | Supprimer une transition | implemented | Project › Transitions › Delete... | usecases/view_management/delete_transition_usecase.py; ui/main_window.py | — | — | tests/test_transitions/test_transition_usecases.py |
 
 ### Parcours
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN023 | Créer un parcours | not-started | Project › Journeys › New | — | — | — | — |
-| FN024 | Renommer et décrire un parcours | not-started | — | — | — | — | — |
-| FN025 | Dupliquer un parcours | not-started | — | — | — | — | — |
-| FN026 | Activer un parcours | not-started | — | — | — | — | — |
-| FN027 | Supprimer un parcours | not-started | — | — | — | — | — |
+| FN023 | Créer un parcours | implemented | Project › Journeys › New | usecases/journey_management/create_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
+| FN024 | Renommer et décrire un parcours | implemented | — | usecases/journey_management/update_journey_usecase.py; ui/dialogs/journey_dialog.py | — | — | tests/test_journeys/test_journey_usecases.py |
+| FN025 | Dupliquer un parcours | implemented | — | usecases/journey_management/duplicate_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
+| FN026 | Activer un parcours | implemented | — | usecases/journey_management/activate_journey_usecase.py; ui/main_window.py (_activate_journey, Display > Journey) | — | — | tests/test_journeys/test_journey_usecases.py |
+| FN027 | Supprimer un parcours | implemented | — | usecases/journey_management/delete_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN038 | Définir le parcours par défaut | not-started | Project › Journeys › Set as Default... | — | — | — | — |
 
 ### Visualisation
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN028 | Naviguer dans l'espace de travail | not-started | — | — | — | — | — |
-| FN029 | Filtrer l'affichage par parcours | not-started | — | — | — | — | — |
+| FN028 | Naviguer dans l'espace de travail | partial | — | ui/views/journeys_workspace.py (grille 20/80, scène 4000×4000 extensible, auto-scroll 50 px) | — | — | test offscreen à valider |
+| FN029 | Filtrer l'affichage par parcours | partial | — | core/services/journey_filter_service.py; ui/views/journeys_workspace.py; ui/main_window.py (Display > Journey dynamique) | — | — | tests/test_journeys/test_journey_filter_service.py (service) ; rendu visuel offscreen à valider |
 
 ### Agents et participations
 
@@ -197,7 +197,7 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN035 | Gérer la condition d'un bloc Condition et la promotion Scène → Pivot | not-started | — | — | — | — | — |
+| FN035 | Gérer la condition d'un bloc Condition | implemented | — | usecases/view_management/update_block_usecase.py (condition); ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
 
 ### Vue « Relations »
 
@@ -236,47 +236,47 @@
 | Édition › Couper | Couper | Ctrl+X | greyed-MVP | — |
 | Édition › Copier | Copier | Ctrl+C | greyed-MVP | — |
 | Édition › Coller | Coller | Ctrl+V | greyed-MVP | — |
-| Affichage | Affichage |  | not-started | — |
-| Affichage › Parcours | Parcours |  | not-started | — |
+| Affichage | Affichage |  | partial | — |
+| Affichage › Parcours | Parcours |  | implemented | main_window._rebuild_journey_menu (dynamique, cochable, FN026/FN029) |
 | Affichage › Zoom | Zoom |  | not-started | — |
 | Affichage › Zoom › Avant | Avant | Ctrl+= | greyed-MVP | — |
 | Affichage › Zoom › Arrière | Arrière | Ctrl+- | greyed-MVP | — |
 | Affichage › Zoom › Réinitialiser | Réinitialiser | Ctrl+0 | greyed-MVP | — |
-| Projet | Projet |  | not-started | — |
-| Projet › Vue | Vue |  | not-started | — |
-| Projet › Vue › Parcours | Parcours |  | not-started | — |
-| Projet › Vue › Agents | Agents |  | not-started | — |
-| Projet › Vue › Relations | Relations |  | not-started | — |
-| Projet › Vue › Export | Export |  | not-started | — |
-| Projet › Agents | Agents |  | not-started | — |
-| Projet › Agents › Nouveau... | Nouveau... |  | not-started | — |
-| Projet › Agents › Éditer... | Éditer... |  | not-started | — |
-| Projet › Agents › Copier | Copier |  | not-started | — |
-| Projet › Agents › Supprimer... | Supprimer... |  | not-started | — |
-| Projet › Agents › Associer à un bloc... | Associer à un bloc... |  | not-started | — |
-| Projet › Blocs narratifs | Blocs narratifs |  | not-started | — |
-| Projet › Blocs narratifs › Nouveau | Nouveau |  | not-started | — |
-| Projet › Blocs narratifs › Nouveau › Scène | Scène |  | not-started | — |
-| Projet › Blocs narratifs › Nouveau › Pivot | Pivot |  | not-started | — |
-| Projet › Blocs narratifs › Nouveau › Condition | Condition |  | not-started | — |
-| Projet › Blocs narratifs › Nouveau › Fin | Fin |  | not-started | — |
-| Projet › Blocs narratifs › Éditer... | Éditer... |  | not-started | — |
-| Projet › Blocs narratifs › Copier | Copier |  | not-started | — |
-| Projet › Blocs narratifs › Supprimer... | Supprimer... |  | not-started | — |
-| Projet › Transitions | Transitions |  | not-started | — |
-| Projet › Transitions › Nouvelle | Nouvelle |  | not-started | — |
-| Projet › Transitions › Éditer... | Éditer... |  | not-started | — |
-| Projet › Transitions › Supprimer... | Supprimer... |  | not-started | — |
-| Projet › Parcours | Parcours |  | not-started | — |
-| Projet › Parcours › Nouveau | Nouveau |  | not-started | — |
-| Projet › Parcours › Éditer... | Éditer... |  | not-started | — |
-| Projet › Parcours › Copier | Copier |  | not-started | — |
-| Projet › Parcours › Définir par défaut... | Définir par défaut... |  | not-started | — |
-| Projet › Parcours › Supprimer... | Supprimer... |  | not-started | — |
-| Projet › Relations | Relations |  | not-started | — |
-| Projet › Relations › Nouvelle... | Nouvelle... |  | not-started | — |
-| Projet › Relations › Éditer... | Éditer... |  | not-started | — |
-| Projet › Relations › Supprimer... | Supprimer... |  | not-started | — |
+| Projet | Projet |  | partial | — |
+| Projet › Vue | Vue |  | stub | menu_actions['view_*'] (stubs — vues activées par la barre d'onglets) |
+| Projet › Vue › Parcours | Parcours |  | stub | menu_actions['view_journeys'] |
+| Projet › Vue › Agents | Agents |  | stub | menu_actions['view_agents'] |
+| Projet › Vue › Relations | Relations |  | stub | menu_actions['view_relationships'] |
+| Projet › Vue › Export | Export |  | stub | menu_actions['view_export'] |
+| Projet › Agents | Agents |  | stub | menu_actions['agents_*'] (stubs — vue Agents hors MVP) |
+| Projet › Agents › Nouveau... | Nouveau... |  | stub | menu_actions['agents_new'] |
+| Projet › Agents › Éditer... | Éditer... |  | stub | menu_actions['agents_edit'] |
+| Projet › Agents › Copier | Copier |  | stub | menu_actions['agents_copy'] |
+| Projet › Agents › Supprimer... | Supprimer... |  | stub | menu_actions['agents_delete'] |
+| Projet › Agents › Associer à un bloc... | Associer à un bloc... |  | stub | menu_actions['agents_associate'] |
+| Projet › Blocs narratifs | Blocs narratifs |  | implemented | menu_actions['blocks_*'] |
+| Projet › Blocs narratifs › Nouveau | Nouveau |  | implemented | menu_actions['blocks_new'] |
+| Projet › Blocs narratifs › Nouveau › Scène | Scène |  | implemented | menu_actions['blocks_new_scene'] |
+| Projet › Blocs narratifs › Nouveau › Pivot | Pivot |  | implemented | menu_actions['blocks_new_pivot'] |
+| Projet › Blocs narratifs › Nouveau › Condition | Condition |  | implemented | menu_actions['blocks_new_condition'] |
+| Projet › Blocs narratifs › Nouveau › Fin | Fin |  | implemented | menu_actions['blocks_new_ending'] |
+| Projet › Blocs narratifs › Éditer... | Éditer... |  | implemented | menu_actions['blocks_edit'] (BlockDialog, FN015) |
+| Projet › Blocs narratifs › Copier | Copier |  | implemented | menu_actions['blocks_copy'] (FN016) |
+| Projet › Blocs narratifs › Supprimer... | Supprimer... |  | implemented | menu_actions['blocks_delete'] (FN018) |
+| Projet › Transitions | Transitions |  | implemented | menu_actions['transitions_*'] |
+| Projet › Transitions › Nouvelle | Nouvelle |  | implemented | menu_actions['transitions_new'] (FN020, tracé) |
+| Projet › Transitions › Éditer... | Éditer... |  | implemented | menu_actions['transitions_edit'] (TransitionDialog, FN021) |
+| Projet › Transitions › Supprimer... | Supprimer... |  | implemented | menu_actions['transitions_delete'] (FN022) |
+| Projet › Parcours | Parcours |  | implemented | menu_actions['journeys_*'] |
+| Projet › Parcours › Nouveau | Nouveau |  | implemented | menu_actions['journeys_new'] (FN023) |
+| Projet › Parcours › Éditer... | Éditer... |  | implemented | menu_actions['journeys_edit'] (JourneyDialog, FN024) |
+| Projet › Parcours › Copier | Copier |  | implemented | menu_actions['journeys_copy'] (FN025) |
+| Projet › Parcours › Définir par défaut... | Définir par défaut... |  | implemented | menu_actions['journeys_set_default'] (FN038) |
+| Projet › Parcours › Supprimer... | Supprimer... |  | implemented | menu_actions['journeys_delete'] (FN027) |
+| Projet › Relations | Relations |  | stub | menu_actions['relationships_*'] (stubs — vue Relations hors MVP) |
+| Projet › Relations › Nouvelle... | Nouvelle... |  | stub | menu_actions['relationships_new'] |
+| Projet › Relations › Éditer... | Éditer... |  | stub | menu_actions['relationships_edit'] |
+| Projet › Relations › Supprimer... | Supprimer... |  | stub | menu_actions['relationships_delete'] |
 | À propos | À propos |  | not-started | — |
 | À propos › Historique des changements | Historique des changements |  | partial | menu_actions['change_log'] |
 | À propos › À propos d'Hyperscript | À propos d'Hyperscript |  | partial | menu_actions['about'] |
@@ -287,10 +287,10 @@
 | --- | --- | --- | --- |
 | SU001 | Gérer un projet narratif | FN001, FN002, FN005, FN006, FN007, FN008, FN009, FN010, FN011 | not-started |
 | SU002 | Gérer une carte narrative | FN012, FN013 | not-started |
-| SU003 | Gérer un bloc narratif | FN014, FN015, FN016, FN017, FN018, FN019, FN035 | not-started |
-| SU004 | Gérer une transition entre blocs | FN020, FN021, FN022, FN035 | not-started |
-| SU005 | Gérer un parcours | FN019, FN023, FN024, FN025, FN026, FN027, FN038 | not-started |
-| SU006 | Visualiser la carte narrative (vue « Parcours ») | FN017, FN028, FN029 | not-started |
+| SU003 | Gérer un bloc narratif | FN014, FN015, FN016, FN017, FN018, FN019, FN035 | partial |
+| SU004 | Gérer une transition entre blocs | FN020, FN021, FN022, FN035 | implemented |
+| SU005 | Gérer un parcours | FN019, FN023, FN024, FN025, FN026, FN027, FN038 | implemented |
+| SU006 | Visualiser la carte narrative (vue « Parcours ») | FN017, FN028, FN029 | partial |
 | SU007 | Exporter la carte narrative | FN013, FN033 | not-started |
 | SU008 | Gérer les participations agent-bloc | FN030, FN031 | not-started |
 | SU009 | Gérer la vue agents — initialisé, à finaliser après la phase de conception | FN031, FN032 | not-started |

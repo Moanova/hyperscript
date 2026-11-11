@@ -109,7 +109,7 @@
 - **Classification** : 2. Narrative map structure
 
 ## RG025
-- **Description** : Each narrative map has one and only one Start block, created automatically when the map is created, never deletable nor duplicable; the "Start" type is offered nowhere else (creation or edition of another block).
+- **Description** : Each narrative map has one and only one Start block, created automatically when the map is created, never deletable nor duplicable; the "Start" type is offered nowhere else (creation or edition of another block); the Start block never receives an incoming transition.
 - **Classification** : 2. Narrative map structure
 
 ## RG026
@@ -117,11 +117,21 @@
 - **Classification** : 2. Narrative map structure
 
 ## RG027
-- **Description** : A block can have several incoming and several outgoing transitions.
+- **Description** : A block can have 0 to n incoming and 0 to n outgoing transitions, within the limits of the types allowed by the chaining matrix (RG028).
 - **Classification** : 2. Narrative map structure
 
 ## RG028
-- **Description** : Chaining through transitions is free (from any block to any block, cycles allowed — e.g. Scene → Pivot → Condition → the same Scene); there can be only one transition per ordered pair of blocks.
+- **Description** : Chaining through transitions is constrained by the block-type matrix:
+
+  | Source block type | Allowed target block types |
+  | --- | --- |
+  | Start | Scene, Pivot |
+  | Scene | Scene, Pivot, End |
+  | Pivot | Condition |
+  | Condition | Scene, End |
+  | End | — (no outgoing transition) |
+
+  Cycles are allowed (e.g. Scene → Pivot → Condition → the same Scene). While building, a block can have 0 to n incoming and outgoing transitions; in a finalized, consistent map, 1 to n (except Start: 0 incoming; End: 0 outgoing) — this consistency check is out of the MVP. There can be only one transition per ordered pair of blocks.
 - **Classification** : 2. Narrative map structure
 
 ## RG029
@@ -129,11 +139,11 @@
 - **Classification** : 2. Narrative map structure
 
 ## RG030
-- **Description** : A Pivot block has at least two outgoing transitions; the Scene → Pivot promotion is automatic and one-way when a second outgoing transition is created (never the other way round). *Rule subject to revision during the design phase if the need arises.*
+- **Description** : A Pivot block can only receive incoming transitions from Start or Scene blocks, and only emit outgoing transitions to Condition blocks (matrix RG028); several Condition blocks from the same Pivot equal an OR.
 - **Classification** : 2. Narrative map structure
 
 ## RG031
-- **Description** : A Condition block has exactly one incoming transition (from a Pivot) and one outgoing transition (to the guarded scene); it carries a structured condition (kind: choice / artefact / skill / flag; optional reference to an Artefact agent; label); chaining Condition blocks equals an AND, two Condition blocks from the same Pivot equal an OR. *Rule subject to revision during the design phase if the need arises.*
+- **Description** : A Condition block can only receive incoming transitions from Pivot blocks, and only emit outgoing transitions to Scene or End blocks (matrix RG028); it carries a structured condition (kind: choice / artefact / skill / flag; optional reference to an Artefact agent; label) — the unique support of it. Chaining Condition blocks (Condition → Condition) is not allowed: AND is not expressible; two Condition blocks from the same Pivot equal an OR (RG030).
 - **Classification** : 2. Narrative map structure
 
 ## RG032

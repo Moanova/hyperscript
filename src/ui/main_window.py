@@ -16,31 +16,48 @@ project is open, bottom info bar, file actions (new/open/save/save as/close/
 quit with save confirmation - FN002/FN005/FN006/FN008/FN009/FN010) and the
 About dialogs (FN003/FN004).
 
-The workspaces (views "Journeys"/"Agents"/"Relationships"/"Export") are handled
-by the next task: the central area currently shows a placeholder page once a
-project is open.
+The workspaces (views "Journeys"/"Agents"/"Relationships"/"Export") are
+activated by the tab bar; only "Journeys" is implemented in the MVP (TSK11):
+blocks/transitions graph, journey filter (FN029), context menus dynamically
+aligned with the application menu (RG055), layout persistence (RG060).
+The other tabs show a placeholder page.
 """
 
 import logging
 import os
 
 from PySide6.QtWidgets import (
-    QMainWindow, QWidget, QVBoxLayout, QLabel,
-    QMessageBox, QFileDialog, QStackedWidget
+    QMainWindow, QWidget, QVBoxLayout, QLabel, QDialog,
+    QMessageBox, QFileDialog, QStackedWidget, QMenu
 )
 from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QCloseEvent
 
 from ui.widgets.info_bar import InfoBar
+from ui.widgets.tab_bar import TabBar
+from ui.views import JourneysWorkspace
+from ui.nodes.block_node import BlockNode
+from ui.nodes.connection import Connection
 from ui.utils import theme
 from ui.dialogs.about_dialog import AboutDialog
 from ui.dialogs.change_log_dialog import ChangeLogDialog
+from ui.dialogs import BlockDialog, TransitionDialog, JourneyDialog, JourneySelectionDialog
+from core.services.journey_service import JourneyService
 from core.services.project_service import ProjectService
 from core.services.about_service import AboutService
 from core.services.change_log_service import ChangeLogService
+from core.services.layout_service import LayoutService
 from usecases.project_management import CreateProjectUseCase
 from usecases.file_management import (
     LoadProjectUseCase, SaveProjectUseCase, QuitApplicationUseCase
+)
+from usecases.view_management import (
+    CreateBlockUseCase, UpdateBlockUseCase, DuplicateBlockUseCase, DeleteBlockUseCase,
+    CreateTransitionUseCase, UpdateTransitionUseCase, DeleteTransitionUseCase
+)
+from usecases.journey_management import (
+    CreateJourneyUseCase, UpdateJourneyUseCase, ActivateJourneyUseCase,
+    SetDefaultJourneyUseCase, DuplicateJourneyUseCase, DeleteJourneyUseCase
 )
 from config.config_loader import get as _get_config
 from config.user_state_loader import get as _get_user_state, set as _set_user_state
@@ -74,14 +91,28 @@ class MainWindow(QMainWindow):
         self.quit_usecase = QuitApplicationUseCase(self.project_service)
         self.about_service = AboutService()
         self.change_log_service = ChangeLogService()
+        # View/journey use cases (TSK08/TSK09)
+        self.create_block_usecase = CreateBlockUseCase(self.project_service)
+        self.update_block_usecase = UpdateBlockUseCase(self.project_service)
+        self.duplicate_block_usecase = DuplicateBlockUseCase(self.project_service)
+        self.delete_block_usecase = DeleteBlockUseCase(self.project_service)
+        self.create_transition_usecase = CreateTransitionUseCase(self.project_service)
+        self.update_transition_usecase = UpdateTransitionUseCase(self.project_service)
+        self.delete_transition_usecase = DeleteTransitionUseCase(self.project_service)
+        self.create_journey_usecase = CreateJourneyUseCase(self.project_service)
+        self.update_journey_usecase = UpdateJourneyUseCase(self.project_service)
+        self.activate_journey_usecase = ActivateJourneyUseCase(self.project_service)
+        self.set_default_journey_usecase = SetDefaultJourneyUseCase(self.project_service)
+        self.duplicate_journey_usecase = DuplicateJourneyUseCase(self.project_service)
+        self.delete_journey_usecase = DeleteJourneyUseCase(self.project_service)
 
         # Window dimensions (FN028: fully functional from 1280x720)
         self.setWindowTitle(_get_config("app_window_title", "Hyperscript"))
         self.setMinimumSize(int(_get_config("window_min_width", 1280)),
                             int(_get_config("window_min_height", 720)))
 
-        # Central widget: menu bar on top, stacked pages in the middle
-        # (welcome page / workspace placeholder), info bar at the bottom
+        # Central widget: menu bar on top, tab bar + stacked views in the
+        # middle (welcome page / project views), info bar at the bottom
         central_widget = QWidget()
         self.setCentralWidget(central_widget)
         main_layout = QVBoxLayout(central_widget)
@@ -90,6 +121,12 @@ class MainWindow(QMainWindow):
 
         self._create_menu_bar()
 
+        # Tab bar, visible only when a project is open (04_interface section 3)
+        self.tab_bar = TabBar(["Journeys", "Agents", "Relationships", "Export"])
+        self.tab_bar.hide()
+        main_layout.addWidget(self.tab_bar)
+        self.tab_bar.currentChanged.connect(self._on_tab_changed)
+
         self.pages = QStackedWidget()
         main_layout.addWidget(self.pages, 1)
 
@@ -97,17 +134,28 @@ class MainWindow(QMainWindow):
         self.welcome_page = QWidget()
         self.pages.addWidget(self.welcome_page)
 
-        # Workspace placeholder page (project open) - workspaces are the next task
-        self.workspace_page = QWidget()
-        placeholder_layout = QVBoxLayout(self.workspace_page)
-        placeholder = QLabel("Workspace — handled by the next task.")
-        placeholder.setAlignment(Qt.AlignmentFlag.AlignCenter)
-        placeholder.setStyleSheet(f"color: {theme.TEXT_SECONDARY};")
-        placeholder_layout.addWidget(placeholder)
-        self.pages.addWidget(self.workspace_page)
+        # View pages (project open); only "Journeys" is implemented in the MVP
+        self.view_pages = {}
+        self.journeys_page = QWidget()
+        QVBoxLayout(self.journeys_page).setContentsMargins(0, 0, 0, 0)
+        self.pages.addWidget(self.journeys_page)
+        self.view_pages["Journeys"] = self.journeys_page
+        for name in ("Agents", "Relationships", "Export"):
+            page = QWidget()
+            page_layout = QVBoxLayout(page)
+            label = QLabel(f"{name} view — handled by a later task.")
+            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
+            label.setStyleSheet(f"color: {theme.TEXT_SECONDARY};")
+            page_layout.addWidget(label)
+            self.pages.addWidget(page)
+            self.view_pages[name] = page
 
         self.info_bar = InfoBar()
         main_layout.addWidget(self.info_bar)
+
+        # Workspace state (created when a project is opened)
+        self.journeys_workspace = None
+        self.journey_filter_active = False  # RG047/RG048: off by default, not persisted
 
         self._show_welcome_message()
         self._update_menu_state()
@@ -168,24 +216,24 @@ class MainWindow(QMainWindow):
         self.menu_actions['agents_associate'] = agents_menu.addAction("Associate with Block...", lambda: None)
         blocks_menu = project_menu.addMenu("Narrative Blocks")
         new_block_menu = blocks_menu.addMenu("New")
-        new_block_menu.addAction("Scene", lambda: None)
-        new_block_menu.addAction("Pivot", lambda: None)
-        new_block_menu.addAction("Condition", lambda: None)
-        new_block_menu.addAction("Ending", lambda: None)
+        self.menu_actions['blocks_new_scene'] = new_block_menu.addAction("Scene", lambda: self._create_new_block("Scene"))
+        self.menu_actions['blocks_new_pivot'] = new_block_menu.addAction("Pivot", lambda: self._create_new_block("Pivot"))
+        self.menu_actions['blocks_new_condition'] = new_block_menu.addAction("Condition", lambda: self._create_new_block("Condition"))
+        self.menu_actions['blocks_new_ending'] = new_block_menu.addAction("Ending", lambda: self._create_new_block("End"))
         self.menu_actions['blocks_new'] = new_block_menu
-        self.menu_actions['blocks_edit'] = blocks_menu.addAction("Edit...", lambda: None)
-        self.menu_actions['blocks_copy'] = blocks_menu.addAction("Copy", lambda: None)
-        self.menu_actions['blocks_delete'] = blocks_menu.addAction("Delete...", lambda: None)
+        self.menu_actions['blocks_edit'] = blocks_menu.addAction("Edit...", self._edit_selected_block)
+        self.menu_actions['blocks_copy'] = blocks_menu.addAction("Copy", self._duplicate_selected_block)
+        self.menu_actions['blocks_delete'] = blocks_menu.addAction("Delete...", self._delete_selected_block)
         transitions_menu = project_menu.addMenu("Transitions")
-        self.menu_actions['transitions_new'] = transitions_menu.addAction("New", lambda: None)
-        self.menu_actions['transitions_edit'] = transitions_menu.addAction("Edit...", lambda: None)
-        self.menu_actions['transitions_delete'] = transitions_menu.addAction("Delete...", lambda: None)
+        self.menu_actions['transitions_new'] = transitions_menu.addAction("New", self._start_transition_creation)
+        self.menu_actions['transitions_edit'] = transitions_menu.addAction("Edit...", self._edit_selected_transition)
+        self.menu_actions['transitions_delete'] = transitions_menu.addAction("Delete...", self._delete_selected_transition)
         journeys_menu = project_menu.addMenu("Journeys")
-        self.menu_actions['journeys_new'] = journeys_menu.addAction("New", lambda: None)
-        self.menu_actions['journeys_edit'] = journeys_menu.addAction("Edit...", lambda: None)
-        self.menu_actions['journeys_copy'] = journeys_menu.addAction("Copy", lambda: None)
-        self.menu_actions['journeys_set_default'] = journeys_menu.addAction("Set as Default...", lambda: None)
-        self.menu_actions['journeys_delete'] = journeys_menu.addAction("Delete...", lambda: None)
+        self.menu_actions['journeys_new'] = journeys_menu.addAction("New", self._new_journey)
+        self.menu_actions['journeys_edit'] = journeys_menu.addAction("Edit...", self._edit_journey)
+        self.menu_actions['journeys_copy'] = journeys_menu.addAction("Copy", self._copy_journey)
+        self.menu_actions['journeys_set_default'] = journeys_menu.addAction("Set as Default...", self._set_default_journey)
+        self.menu_actions['journeys_delete'] = journeys_menu.addAction("Delete...", self._delete_journey)
         relationships_menu = project_menu.addMenu("Relationships")
         self.menu_actions['relationships_new'] = relationships_menu.addAction("New...", lambda: None)
         self.menu_actions['relationships_edit'] = relationships_menu.addAction("Edit...", lambda: None)
@@ -277,7 +325,8 @@ class MainWindow(QMainWindow):
 
         project = self.create_project_usecase.execute()
         self.project_opened = True
-        self.pages.setCurrentWidget(self.workspace_page)
+        self._init_workspace()
+        self.pages.setCurrentWidget(self.view_pages["Journeys"])
         self.setWindowTitle(f"{_get_config('app_window_title', 'Hyperscript')} : {project.lb}")
         self._update_menu_state()
         logger.debug("Project created: %s", project)
@@ -311,7 +360,8 @@ class MainWindow(QMainWindow):
 
         if self.load_project_usecase.execute(file_path):
             self.project_opened = True
-            self.pages.setCurrentWidget(self.workspace_page)
+            self._init_workspace()
+            self.pages.setCurrentWidget(self.view_pages["Journeys"])
             project = self.project_service.current_project
             self.setWindowTitle(f"{_get_config('app_window_title', 'Hyperscript')} : {project.lb} ({file_path})")
             self._update_menu_state()
@@ -380,8 +430,12 @@ class MainWindow(QMainWindow):
         try:
             success = self.save_project_usecase.execute(file_path)
             if success:
-                # Layout persistence (RG060) hooks in here once the
-                # workspaces exist (next task)
+                # Layout persistence (RG060): the visual layout is stored in a
+                # dedicated file next to the project file
+                if self.journeys_workspace is not None:
+                    nm = self.project_service.current_project.narrative_maps[0]
+                    LayoutService.save_workspace_layout(
+                        file_path, nm.id, self.journeys_workspace.collect_workspace_layout())
                 project = self.project_service.current_project
                 self.setWindowTitle(f"{_get_config('app_window_title', 'Hyperscript')} : {project.lb} ({file_path})")
                 self._update_menu_state()  # is_modified is now False: Save is disabled (RG006)
@@ -406,6 +460,7 @@ class MainWindow(QMainWindow):
             if reply == QMessageBox.StandardButton.Yes and not self._save_project():
                 return False
 
+        self._teardown_workspace()
         self.project_service.close_project()
         self._show_welcome_message()
         self.info_bar.clear()
@@ -436,6 +491,302 @@ class MainWindow(QMainWindow):
 
     def _on_quit(self):
         self.close()  # triggers closeEvent
+
+    # ---------------------------------------------------------------------
+    # Workspaces (views) — "Journeys" implemented in the MVP (TSK11)
+    # ---------------------------------------------------------------------
+    def _current_narrative_map(self):
+        project = self.project_service.current_project
+        return project.narrative_maps[0] if project else None  # MVP: single map
+
+    def _init_workspace(self):
+        """Create the Journeys workspace and populate it from the saved layout
+        (RG060) or with default positions (FN028)."""
+        nm = self._current_narrative_map()
+        if nm is None:
+            return
+        self._teardown_workspace()
+        workspace = JourneysWorkspace(narrative_map=nm, info_bar=self.info_bar, main_window=self)
+        workspace.transition_created.connect(self._on_transition_created)
+        workspace.workspace_modified.connect(self._on_workspace_modified)
+        workspace.context_menu_requested.connect(self._show_workspace_context_menu)
+        self.journeys_page.layout().addWidget(workspace)
+        self.journeys_workspace = workspace
+
+        saved = None
+        if self.project_service.file_path:
+            saved = LayoutService.load_workspace_layout(self.project_service.file_path, nm.id)
+        if saved is not None:
+            workspace.populate_from_layout(saved, nm)
+        else:
+            workspace.populate_default(nm)
+
+        # RG047/RG048: the journey filter is disabled by default, not persisted
+        self.journey_filter_active = False
+        workspace.set_journey_filter_active(False)
+        self._rebuild_journey_menu()
+        self.tab_bar.show()
+        self.tab_bar.forceCurrentTab("Journeys")
+
+    def _teardown_workspace(self):
+        if self.journeys_workspace is not None:
+            self.journeys_workspace.setParent(None)
+            self.journeys_workspace.deleteLater()
+            self.journeys_workspace = None
+        self.journey_filter_active = False
+        self.tab_bar.hide()
+
+    def _on_tab_changed(self, tab_name: str):
+        page = self.view_pages.get(tab_name)
+        if page is not None:
+            self.pages.setCurrentWidget(page)
+
+    # ---------------------------------------------------------------------
+    # Blocks and transitions actions (FN014/FN016/FN018/FN020/FN022)
+    # ---------------------------------------------------------------------
+    def _create_new_block(self, typ: str):
+        """FN014: create a block of the given type at the first free grid position."""
+        if self.journeys_workspace is None:
+            return
+        block = self.create_block_usecase.execute(typ, filter_active=self.journey_filter_active)  # RG040
+        x, y = self.journeys_workspace.next_free_position()
+        layout = LayoutService.create_node_layout(block.id, block.typ, x, y)  # RG046: snapped
+        self.journeys_workspace.create_block_node(block, layout, select=True)
+        self._update_menu_state()
+
+    def _start_transition_creation(self):
+        """FN020: enter transition creation mode (trace from the source's outgoing port)."""
+        if self.journeys_workspace is not None:
+            self.journeys_workspace.enter_transition_creation_mode()
+            self.info_bar.show_message(
+                "Click the outgoing port (right) of the source block, then the incoming port (left) of the target block")
+
+    def _on_transition_created(self, source_node, target_node):
+        """Apply the transition creation use case (RG028 validation); the
+        workspace never writes the model (RG058)."""
+        transition = self.create_transition_usecase.execute(
+            source_node.entity.id, target_node.entity.id)
+        if transition is None:
+            self.info_bar.show_message(
+                "Transition refused: block-type matrix or duplicate ordered pair (RG028)")
+            return
+        self.journeys_workspace.create_connection_from_data(
+            source_node, target_node, transition, select=True)
+        self._update_menu_state()
+
+    def _on_workspace_modified(self):
+        """FN017: moving a block marks the project as modified."""
+        self.project_service.set_modified(True)
+        self._update_menu_state()
+
+    def _get_selected_item(self):
+        if self.journeys_workspace is None:
+            return None
+        return self.journeys_workspace.get_selected_item()
+
+    def _duplicate_selected_block(self):
+        """FN016: duplicate the selected block (Start is not duplicable, RG025)."""
+        item = self._get_selected_item()
+        if not isinstance(item, BlockNode):
+            return
+        copy = self.duplicate_block_usecase.execute(item.entity, filter_active=self.journey_filter_active)
+        x, y = self.journeys_workspace.next_free_position(item.pos().x() + 120, item.pos().y())
+        layout = LayoutService.create_node_layout(copy.id, copy.typ, x, y)
+        self.journeys_workspace.create_block_node(copy, layout, select=True)
+        self._update_menu_state()
+
+    def _delete_selected_block(self):
+        """FN018: delete the selected block, with confirmation; the cascade
+        (RG023) is handled by the use case."""
+        item = self._get_selected_item()
+        if not isinstance(item, BlockNode):
+            return
+        reply = QMessageBox.question(
+            self, "Confirmation",
+            f"Delete block '{item.entity.lb}'?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        removed = self.delete_block_usecase.execute(item.entity.id)  # RG023/RG025
+        if removed is None:
+            return
+        self.journeys_workspace.remove_node(item)
+        cascaded = sum(len(v) for k, v in removed.items() if k != 'block')
+        if cascaded:
+            self.info_bar.show_message(
+                f"Block deleted; {cascaded} associated element(s) removed with it (cascade)")
+        else:
+            self.info_bar.show_message("Block deleted")
+        self._update_menu_state()
+
+    def _delete_selected_transition(self):
+        """FN022: delete the selected transition, with confirmation."""
+        item = self._get_selected_item()
+        if not isinstance(item, Connection):
+            return
+        reply = QMessageBox.question(
+            self, "Confirmation",
+            "Delete the selected transition?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        if self.delete_transition_usecase.execute(item.get_relation_id()):
+            self.journeys_workspace.remove_connection(item)
+            self.info_bar.show_message("Transition deleted")
+            self._update_menu_state()
+
+    # ---------------------------------------------------------------------
+    # Journeys actions (FN023/FN025/FN027) + Display > Journey (FN026/FN029)
+    # ---------------------------------------------------------------------
+    def _new_journey(self):
+        """FN023: create a journey (not activated; the active journey is unchanged)."""
+        self.create_journey_usecase.execute()
+        self._rebuild_journey_menu()
+        self._update_menu_state()
+
+    def _copy_journey(self):
+        """FN025/RG043: duplicate the active journey (block attachments copied)."""
+        nm = self._current_narrative_map()
+        active = nm.get_active_journey() if nm else None
+        if active is not None:
+            self.duplicate_journey_usecase.execute(active)
+        self._rebuild_journey_menu()
+        self._update_menu_state()
+
+    def _delete_journey(self):
+        """FN027: delete the active journey (RG024: the last one cannot be deleted)."""
+        nm = self._current_narrative_map()
+        active = nm.get_active_journey() if nm else None
+        if active is None:
+            return
+        result = self.delete_journey_usecase.execute(active)
+        if not result or not result.get('success'):
+            QMessageBox.information(self, "Cannot delete journey",
+                                    "The last journey of the map cannot be deleted.")
+            return
+        self._rebuild_journey_menu()
+        if self.journeys_workspace is not None:
+            self.journeys_workspace.apply_journey_filter()
+        self._update_menu_state()
+
+    def _rebuild_journey_menu(self):
+        """Rebuild the Display > Journey menu dynamically (FN026/FN029):
+        checkable 'All journeys' on top (checked = filter disabled), then one
+        checkable entry per journey."""
+        self.journey_menu.clear()
+        all_action = self.journey_menu.addAction(_get_config("journey_list_all_label", "All journeys"))
+        all_action.setCheckable(True)
+        all_action.setChecked(not self.journey_filter_active)
+        all_action.triggered.connect(lambda: self._set_journey_filter_active(False))
+        self.journey_menu.addSeparator()
+        nm = self._current_narrative_map()
+        if nm is not None:
+            active = nm.get_active_journey()
+            for journey in nm.journey:
+                action = self.journey_menu.addAction(journey.lb)
+                action.setCheckable(True)
+                action.setChecked(self.journey_filter_active and active is journey)
+                action.triggered.connect(lambda _checked=False, j=journey: self._activate_journey(j))
+
+    def _activate_journey(self, journey):
+        """FN026: activate a journey; the filter applies to it (FN029)."""
+        self.activate_journey_usecase.execute(journey)
+        self._set_journey_filter_active(True)
+        self._update_menu_state()
+
+    def _set_journey_filter_active(self, active: bool):
+        """FN029/RG048: toggle the journey filter on all views (visual only,
+        RG047: does not mark the project as modified)."""
+        self.journey_filter_active = active
+        if self.journeys_workspace is not None:
+            self.journeys_workspace.set_journey_filter_active(active)
+        self._rebuild_journey_menu()
+
+    # ---------------------------------------------------------------------
+    # Edition dialogs (FN015/FN021/FN024/FN038) - TSK12
+    # ---------------------------------------------------------------------
+    def _edit_selected_block(self):
+        """FN015: edit the selected block (label, note, content, journey
+        attachments RG042, structured condition FN035 for Condition blocks)."""
+        item = self._get_selected_item()
+        if not isinstance(item, BlockNode):
+            return
+        nm = self._current_narrative_map()
+        attached = JourneyService.attachment_journey_ids(nm, item.entity.id)
+        artefacts = [a for a in self.project_service.current_project.agent if a.typ == "Artefact"]
+        dialog = BlockDialog(item.entity, nm.journey, attached, artefacts, parent=self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        values = dialog.get_values()
+        self.update_block_usecase.execute(
+            item.entity, lb=values['lb'], note=values['note'], content=values['content'],
+            condition=values['condition'], journey_ids=values['journey_ids'])
+        item.update_entity_data()  # type label + tooltip refresh
+        self.journeys_workspace.apply_journey_filter()
+        self._update_menu_state()
+
+    def _edit_selected_transition(self):
+        """FN021: edit the selected transition's note."""
+        item = self._get_selected_item()
+        if not isinstance(item, Connection):
+            return
+        dialog = TransitionDialog(item.get_transition(), parent=self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        self.update_transition_usecase.execute(item.get_transition(), note=dialog.get_values()['note'])
+        self._update_menu_state()
+
+    def _edit_journey(self):
+        """FN024: edit the active journey (label, note)."""
+        nm = self._current_narrative_map()
+        active = nm.get_active_journey() if nm else None
+        if active is None:
+            return
+        dialog = JourneyDialog(active, parent=self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        values = dialog.get_values()
+        self.update_journey_usecase.execute(active, lb=values['lb'], note=values['note'])
+        self._rebuild_journey_menu()
+        self._update_menu_state()
+
+    def _set_default_journey(self):
+        """FN038/RG062: designate the default journey via a selection dialog
+        (the active journey is not modified)."""
+        nm = self._current_narrative_map()
+        if nm is None or not nm.journey:
+            return
+        dialog = JourneySelectionDialog(nm.journey, parent=self, title="Set as Default Journey")
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        chosen = dialog.get_selected_journey()
+        if chosen is not None:
+            self.set_default_journey_usecase.execute(chosen)
+            self._rebuild_journey_menu()
+            self._update_menu_state()
+
+    # ---------------------------------------------------------------------
+    # Context menu: dynamically aligned with the application menu (RG055)
+    # ---------------------------------------------------------------------
+    def _show_workspace_context_menu(self, item, global_pos):
+        """Build the context menu from the application menu's own actions (same
+        labels, shortcuts and enabled states), according to the selected
+        graphical object; the chosen action triggers the same handler as the
+        application menu."""
+        menu = QMenu(self)
+        menu.setStyleSheet(theme.CONTEXT_MENU_STYLESHEET)
+        if isinstance(item, BlockNode):
+            for key in ('blocks_edit', 'blocks_copy', 'blocks_delete'):
+                menu.addAction(self.menu_actions[key])
+        elif isinstance(item, Connection):
+            for key in ('transitions_edit', 'transitions_delete'):
+                menu.addAction(self.menu_actions[key])
+        else:
+            new_menu = menu.addMenu("New")  # aligned with Project > Narrative Blocks > New
+            for key in ('blocks_new_scene', 'blocks_new_pivot', 'blocks_new_condition', 'blocks_new_ending'):
+                new_menu.addAction(self.menu_actions[key])
+            menu.addAction(self.menu_actions['transitions_new'])
+        menu.exec(global_pos)
 
     # ---------------------------------------------------------------------
     # About dialogs (FN003/FN004)

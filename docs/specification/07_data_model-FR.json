@@ -248,7 +248,7 @@
       "Transition": {
          "type": "object",
          "category": "relationship",
-         "description": "Transition dirigée bloc → bloc ; chaînage libre, cycles autorisés (ex. S1 → P1 → C1 → S1) ; pas de clé condition",
+         "description": "Transition dirigée bloc → bloc ; chaînage contraint par la matrice des types de blocs autorisés (RG028), cycles autorisés (ex. S1 → P1 → C1 → S1) ; pas de clé condition",
          "properties": {
             "id": {
                "type": "integer",

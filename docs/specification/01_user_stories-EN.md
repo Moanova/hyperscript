@@ -50,8 +50,8 @@
     - Each block can be moved in the workspace but not resized; it automatically snaps to the grid at creation and when moved; its position is kept between sessions.
     - When a narrative map is created, a single Start block is created automatically.
     - An End block cannot have an outgoing transition.
-    - A Pivot block has at least two outgoing transitions; the Scene → Pivot promotion is automatic and one-way when a second outgoing transition is created (never the other way round).
-    - A Condition block has exactly one incoming transition (from a Pivot) and one outgoing transition (to the guarded scene); it carries a structured condition: kind (choice / artefact / skill / flag), optional reference to an Artefact agent, label. Chaining Condition blocks equals an AND; two Condition blocks from the same Pivot equal an OR.
+    - A Pivot block can only receive incoming transitions from Start or Scene blocks and only emit outgoing transitions to Condition blocks; several Condition blocks from the same Pivot equal an OR.
+    - A Condition block can only receive incoming transitions from Pivot blocks and only emit outgoing transitions to Scene or End blocks; it carries a structured condition: kind (choice / artefact / skill / flag), optional reference to an Artefact agent, label. Two Condition blocks from the same Pivot equal an OR (chaining Condition blocks, Condition → Condition, is not allowed).
     - Attachment to journeys: blocks (not transitions) are attached to journeys. No orphan block: every block belongs to at least one journey; every newly created block is attached to the active journey if the journey filter is enabled, to the default journey otherwise; a block cannot be removed from its last journey.
     - Deleting a block cascades to its transitions, participations, anchored relationships and journey attachments.
 - **Acceptance criteria**:
@@ -68,14 +68,14 @@
 ## SU004: Manage a Transition Between Blocks
 - **Description**: As an author, I can create, annotate, edit or delete a transition between two blocks in order to define the sequences of my story.
 - **Details**:
-    - A transition is directed from a source block to a target block; chaining is free, including cycles (e.g. Scene → Pivot → Condition → the same Scene).
+    - A transition is directed from a source block to a target block; chaining is constrained by the block-type matrix: Start → Scene or Pivot; Scene → Scene, Pivot or End; Pivot → Condition; Condition → Scene or End; End → none. Cycles remain allowed (e.g. Scene → Pivot → Condition → the same Scene).
     - There can be only one transition per ordered pair of blocks.
     - A transition carries a text note, shown in a tooltip on hover. It carries no condition: the structured condition is carried by the Condition block.
     - Derived journey membership: a transition belongs to a journey if and only if both its blocks belong to it.
     - Deleting a transition deletes its journey attachments; it is independent of block deletion, except for the cascade defined in SU003.
 - **Acceptance criteria**:
     - The user can start creating a transition from the "Project" menu or the context menu: select the source block, a temporary trace follows the cursor until the click on the target block's port.
-    - The application prevents creating a duplicate transition between two blocks already linked.
+    - The application prevents creating a duplicate transition between two blocks already linked, as well as any transition between two block types whose chaining is not allowed.
     - The user can annotate a transition with free text via an edit dialog.
     - The user can delete a transition with prior confirmation.
     - Any creation, modification or deletion of a transition marks the map, and therefore the project, as modified.

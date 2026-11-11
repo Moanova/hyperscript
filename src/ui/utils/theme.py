@@ -37,8 +37,10 @@ MENU_HOVER_BG = _get_config("menu_hover_bg", "#383838")
 ERROR_COLOR = _get_config("error_color", "#D19A66")
 FOCUS_COLOR = _get_config("focus_color", "#383838")
 
-# Narrative block type colors (values to be validated during the design
-# phase; planoscript used state #E5C07B / event #D19A66)
+# Narrative block type colors (adopted session 03: warm palette - gold, olive,
+# copper, red, off-white). Definitive values to be confirmed after the first
+# visual tests; stay within the same hues (dark grey, off-white, gold, sand...).
+# planoscript reference: state #E5C07B / event #D19A66
 BLOCK_START_COLOR = _get_config("block_start_color", "#E5C07B")
 BLOCK_SCENE_COLOR = _get_config("block_scene_color", "#E5C07B")
 BLOCK_PIVOT_COLOR = _get_config("block_pivot_color", "#D19A66")

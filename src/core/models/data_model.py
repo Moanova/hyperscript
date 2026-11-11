@@ -119,7 +119,7 @@ class Block:
 
 @dataclass
 class Transition:
-    """Directed transition between two blocks (block -> block; free chaining, cycles allowed - RG028)."""
+    """Directed transition between two blocks (block -> block; chaining constrained by the block-type matrix, cycles allowed - RG028)."""
 
     id: int
     from_block_id: int  # Reference to Block.id

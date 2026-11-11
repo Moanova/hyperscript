@@ -1,0 +1,740 @@
+# ---------------------------------------------------------------------
+# Application  : Hyperscript
+# Script       : connection.py
+# Version      : 1
+# Date         : 2026-11-11
+# Design       : TSC
+# Build        : Mistral Vibe
+# ---------------------------------------------------------------------
+"""
+Connection (transition) for Hyperscript.
+
+This module provides the Connection class, which represents a visual directed
+transition between two block nodes in the Journeys workspace. It inherits from
+QGraphicsPathItem and draws a 2 px arrow that follows the connected blocks.
+
+The connection automatically updates its path when the connected nodes move.
+It NEVER writes the business model (RG058): creation/deletion of the
+Transition entity goes through the view_management use cases (TSK08).
+"""
+import math
+
+from PySide6.QtWidgets import QGraphicsPathItem, QGraphicsItem, QToolTip
+from PySide6.QtCore import QPointF, QRectF, Qt
+from PySide6.QtGui import QPen, QColor, QPainterPath, QPainterPathStroker
+from typing import Optional, Any
+
+from core.models.view_model import ConnectionLayout, ConnectionStyle, PortPosition
+from core.services.layout_service import LayoutService
+from config.config_loader import get as _get_config
+from ui.nodes.base_node import BaseNode
+from ui.utils import theme
+
+
+class Connection(QGraphicsPathItem):
+    """
+    Visual representation of a transition between two block nodes.
+    
+    This class draws a directed arrow between the outgoing port of the source
+    block and the incoming port of the target block. The path follows the
+    blocks when they move (position observers) and routes around foreign
+    blocks (RG052).
+    
+    Attributes:
+        layout: The ConnectionLayout containing visual properties
+        source_node: The source BlockNode
+        target_node: The target BlockNode
+        source_port: The port on the source node (right)
+        target_port: The port on the target node (left)
+        transition: Reference to the business Transition entity (read-only;
+            the model is never written from the UI - RG058)
+    """
+    
+    # Default settings (TSK12 point 05: passive = solid soft gray line;
+    # selection/creation share short dashes; hover = solid line in the
+    # type tint of the connected nodes)
+    _CONNECTION_COLOR = theme.color("connection_color", theme.CONNECTION_COLOR)
+    DEFAULT_PEN = QPen(_CONNECTION_COLOR, 2)  # Solid gray line, 2px thick
+    # Short dashes, shared by the selection and creation feedback
+    DASH_PATTERN = [2.0, 3.0]
+    
+    # Arrow settings
+    ARROW_SIZE = 10.0
+
+    # Width (pixels) of the invisible clickable area around the line (see shape(), RG053)
+    # Sourced from config.json (Journeys view)
+    HIT_AREA_WIDTH = _get_config("journeys_view_hit_area_width_px", 12.0)
+
+    # RG052: clearance (pixels) between a routed transition and an obstacle block
+    ROUTE_MARGIN = 20.0
+
+    # RG052: radius of the rounded corners on orthogonal detour paths
+    CORNER_RADIUS = 15.0
+    
+    def __init__(
+        self,
+        layout: ConnectionLayout,
+        source_node: BaseNode,
+        target_node: BaseNode,
+        transition: Optional[Any] = None
+    ):
+        """
+        Initialize a Connection with its layout, connected nodes, and the
+        business Transition entity (read-only reference - RG058).
+        
+        Args:
+            layout: The ConnectionLayout containing visual properties
+            source_node: The source BlockNode
+            target_node: The target BlockNode
+            transition: Optional business Transition entity
+        """
+        super().__init__()
+        
+        # Store references
+        self.layout = layout
+        self.source_node = source_node
+        self.target_node = target_node
+        self.source_port = layout.source_port
+        self.target_port = layout.target_port
+        self.transition = transition
+        
+        # Set appearance from layout
+        self._init_appearance()
+        
+        # Enable selection
+        self.setFlag(QGraphicsItem.ItemIsSelectable, True)
+
+        # Enable hover events (blue line feedback, same as nodes)
+        self.setAcceptHoverEvents(True)
+        
+        # Set z-value to ensure connections are behind nodes
+        self.setZValue(-1)
+        
+        # Update initial path
+        self.update_path()
+        
+        # Connect to node movement signals
+        self._connect_node_signals()
+
+
+    def _init_appearance(self) -> None:
+        """Initialize the visual appearance from the layout."""
+        # Set pen from layout
+        if self.layout.color and self.layout.thickness > 0:
+            try:
+                color = QColor(self.layout.color)
+                if color.isValid():
+                    self.setPen(QPen(color, self.layout.thickness))
+                else:
+                    self.setPen(self.DEFAULT_PEN)
+            except (ValueError, AttributeError):
+                self.setPen(self.DEFAULT_PEN)
+        else:
+            self.setPen(self.DEFAULT_PEN)
+        
+        # Set selected state
+        self.setSelected(self.layout.selected)
+
+
+    def _connect_node_signals(self) -> None:
+        """
+        Register as a position observer on both nodes.
+
+        This ensures the connection updates its path when either node moves.
+        """
+        self.source_node.register_position_observer(self.update_path)
+        self.target_node.register_position_observer(self.update_path)
+
+
+    def update_path(self) -> None:
+        """
+        Update the connection path based on current node positions.
+
+        RG052: before falling back to the style-based path (straight, curved,
+        arrow), the method checks whether the straight segment between the
+        two port positions crosses a third-party block.  If it does, an
+        orthogonal detour path is produced instead (purely graphical).
+        """
+        if not self.source_node or not self.target_node:
+            return
+
+        # Get port positions
+        source_pos = self._get_port_position(self.source_node, self.source_port)
+        target_pos = self._get_port_position(self.target_node, self.target_port)
+
+        # RG052: detect obstacle blocks and route around them if needed
+        obstacle_rects = self._get_obstacle_rects()
+        if obstacle_rects and self._segment_blocked(source_pos, target_pos, obstacle_rects):
+            path = self._create_routed_path(source_pos, target_pos, obstacle_rects)
+        elif self.layout.style == ConnectionStyle.STRAIGHT:
+            path = self._create_straight_path(source_pos, target_pos)
+        elif self.layout.style == ConnectionStyle.CURVED:
+            path = self._create_curved_path(source_pos, target_pos)
+        elif self.layout.style in [ConnectionStyle.ARROW, ConnectionStyle.CURVED_ARROW]:
+            path = self._create_arrow_path(source_pos, target_pos)
+        else:  # Default to straight
+            path = self._create_straight_path(source_pos, target_pos)
+
+        self.setPath(path)
+
+
+    def _get_port_position(self, node: BaseNode, port: PortPosition) -> QPointF:
+        """
+        Get the scene position of a port on a node.
+        
+        Args:
+            node: The node
+            port: The port position (from PortPosition enum)
+            
+        Returns:
+            The position in scene coordinates
+        """
+        port_name = port.value if isinstance(port, PortPosition) else str(port).lower()
+        
+        if port_name == "left":
+            return node.get_left_port_position()
+        elif port_name == "right":
+            return node.get_right_port_position()
+
+
+    def _create_straight_path(self, start: QPointF, end: QPointF) -> QPainterPath:
+        """
+        Create a straight line path between two points.
+        
+        Args:
+            start: Start point in scene coordinates
+            end: End point in scene coordinates
+            
+        Returns:
+            QPainterPath for the straight line
+        """
+        path = QPainterPath()
+        path.moveTo(start)
+        path.lineTo(end)
+        return path
+
+
+    def _create_curved_path(self, start: QPointF, end: QPointF) -> QPainterPath:
+        """
+        Create a smooth curved path between two points using Bezier curves.
+        
+        Args:
+            start: Start point in scene coordinates
+            end: End point in scene coordinates
+            
+        Returns:
+            QPainterPath for the curved line
+        """
+        path = QPainterPath()
+        path.moveTo(start)
+        
+        # Calculate control points for a smooth curve
+        dx = end.x() - start.x()
+        dy = end.y() - start.y()
+        
+        # For a natural curve, control points are about 1/3 and 2/3 along the line
+        # with a vertical or horizontal offset based on the direction
+        if abs(dx) > abs(dy):  # More horizontal
+            offset = dy * 0.3
+            cp1 = QPointF(start.x() + dx * 0.3, start.y() + offset)
+            cp2 = QPointF(start.x() + dx * 0.7, end.y() - offset)
+        else:  # More vertical
+            offset = dx * 0.3
+            cp1 = QPointF(start.x() + offset, start.y() + dy * 0.3)
+            cp2 = QPointF(end.x() - offset, start.y() + dy * 0.7)
+        
+        path.cubicTo(cp1, cp2, end)
+        return path
+
+
+    def _create_arrow_path(self, start: QPointF, end: QPointF) -> QPainterPath:
+        """
+        Create a path with an arrowhead at the target end.
+        
+        Args:
+            start: Start point in scene coordinates
+            end: End point in scene coordinates
+            
+        Returns:
+            QPainterPath for the line with arrowhead
+        """
+        # For now, use straight line with arrow - can be enhanced later
+        path = self._create_straight_path(start, end)
+        return path
+
+
+    # -------------------------------------------------------------------------
+    # RG059: obstacle detection and orthogonal routing
+    # -------------------------------------------------------------------------
+
+    def _get_obstacle_rects(self) -> list:
+        """
+        Return the scene bounding rects of all nodes in the scene that are
+        neither the source nor the target of this connection.
+        """
+        scene = self.scene()
+        if not scene:
+            return []
+        rects = []
+        for item in scene.items():
+            if not hasattr(item, 'entity'):
+                continue
+            if item is self.source_node or item is self.target_node:
+                continue
+            rects.append(item.sceneBoundingRect())
+        return rects
+
+    @staticmethod
+    def _segment_blocked(start: QPointF, end: QPointF,
+                         obstacle_rects: list) -> bool:
+        """Return True if the straight segment start->end crosses any rect."""
+        straight = QPainterPath()
+        straight.moveTo(start)
+        straight.lineTo(end)
+        for rect in obstacle_rects:
+            if straight.intersects(rect):
+                return True
+        return False
+
+    def _create_routed_path(self, start: QPointF, end: QPointF,
+                            obstacle_rects: list) -> QPainterPath:
+        """
+        Build an orthogonal path with rounded corners that detours above or
+        below the blocking obstacles (RG052).
+
+        The path exits the source horizontally, bridges at *detour_y*
+        (above or below the combined obstacle band), then re-enters the
+        target horizontally.  Waypoints are pushed to the side of the
+        obstacle that is consistent with the connection direction, so the
+        path never traverses its own endpoint nodes.
+        """
+        # Combined bounding rect of all blocking obstacles
+        combined = obstacle_rects[0].normalized()
+        for rect in obstacle_rects[1:]:
+            combined = combined.united(rect.normalized())
+
+        # Choose detour direction: above or below, whichever is closer
+        mid_y = (start.y() + end.y()) / 2
+        if mid_y <= combined.center().y():
+            detour_y = combined.top() - self.ROUTE_MARGIN
+        else:
+            detour_y = combined.bottom() + self.ROUTE_MARGIN
+
+        # Snap detour_y to grid for visual consistency (RG046)
+        detour_y = LayoutService.snap_to_grid(detour_y)
+
+        # Connection direction determines which side of the obstacle each
+        # waypoint is pushed to, so the path never backtracks through its
+        # own endpoint nodes.
+        goes_right = end.x() >= start.x()
+
+        # Source-side waypoint
+        wp1_x = start.x()
+        if combined.left() <= wp1_x <= combined.right():
+            if goes_right:
+                wp1_x = combined.right() + self.ROUTE_MARGIN
+            else:
+                wp1_x = combined.left() - self.ROUTE_MARGIN
+
+        # Target-side waypoint
+        wp2_x = end.x()
+        if combined.left() <= wp2_x <= combined.right():
+            if goes_right:
+                wp2_x = combined.left() - self.ROUTE_MARGIN
+            else:
+                wp2_x = combined.right() + self.ROUTE_MARGIN
+
+        # Clamp corner radius to half the shortest segment so rounded
+        # corners never overlap each other on very short segments.
+        segments = [
+            abs(wp1_x - start.x()),
+            abs(detour_y - start.y()),
+            abs(wp2_x - wp1_x),
+            abs(end.y() - detour_y),
+            abs(end.x() - wp2_x),
+        ]
+        min_seg = min((s for s in segments if s > 0), default=0)
+        r = min(self.CORNER_RADIUS, min_seg / 2) if min_seg else 0
+
+        # Direction sign of each segment: -1, 0, or 1
+        def _sign(v):
+            return (v > 0) - (v < 0)
+
+        s_h1 = _sign(wp1_x - start.x())     # start  → wp1  (horizontal)
+        s_v1 = _sign(detour_y - start.y())   # wp1   → detour (vertical)
+        s_h2 = _sign(wp2_x - wp1_x)         # wp1   → wp2  (horizontal)
+        s_v2 = _sign(end.y() - detour_y)     # wp2   → end  (vertical)
+        s_h3 = _sign(end.x() - wp2_x)       # wp2   → end  (horizontal)
+
+        path = QPainterPath()
+        path.moveTo(start)
+
+        # Segment 1 → corner 1 (horizontal → vertical)
+        path.lineTo(QPointF(wp1_x - r * s_h1, start.y()))
+        path.quadTo(QPointF(wp1_x, start.y()),
+                    QPointF(wp1_x, start.y() + r * s_v1))
+
+        # Segment 2 → corner 2 (vertical → horizontal)
+        path.lineTo(QPointF(wp1_x, detour_y - r * s_v1))
+        path.quadTo(QPointF(wp1_x, detour_y),
+                    QPointF(wp1_x + r * s_h2, detour_y))
+
+        # Segment 3 → corner 3 (horizontal → vertical)
+        path.lineTo(QPointF(wp2_x - r * s_h2, detour_y))
+        path.quadTo(QPointF(wp2_x, detour_y),
+                    QPointF(wp2_x, detour_y + r * s_v2))
+
+        # Segment 4 → corner 4 (vertical → horizontal)
+        path.lineTo(QPointF(wp2_x, end.y() - r * s_v2))
+        path.quadTo(QPointF(wp2_x, end.y()),
+                    QPointF(wp2_x + r * s_h3, end.y()))
+
+        # Segment 5 → end
+        path.lineTo(end)
+
+        return path
+
+
+    def _hover_pen(self) -> QPen:
+        """Solid pen in the type tint of the connected blocks.
+
+        The first endpoint's block type color drives the tint.
+        """
+        width = self.layout.thickness or self.DEFAULT_PEN.width()
+        hover_pen = QPen(self._type_tint_color(), width)
+        hover_pen.setStyle(Qt.SolidLine)
+        return hover_pen
+
+    def _type_tint_color(self) -> QColor:
+        """Type tint of the connection: the type color of the first endpoint
+        block (block_*_color in config.json)."""
+        for node in (self.source_node, self.target_node):
+            if node is not None and getattr(node, 'entity', None) is not None \
+                    and hasattr(node.entity, 'typ'):
+                return QColor(theme.block_color(node.entity.typ))
+        return QColor(theme.CONNECTION_COLOR)
+
+    def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
+        """
+        Handle item changes (e.g., selection).
+
+        Wired the same way as BaseNode: the connection switches to the
+        selection pen as soon as its selection state changes, so the
+        user gets immediate visual feedback.
+        """
+        if change == QGraphicsItem.ItemSelectedChange:
+            self.layout.selected = bool(value)
+            self.set_selected_appearance(bool(value))
+        return super().itemChange(change, value)
+
+
+    def shape(self) -> QPainterPath:
+        """
+        Return a wider hit area than the visual line.
+
+        The default shape of a QGraphicsPathItem only covers the pen
+        width (2 px), which makes a connection nearly impossible to
+        click. Stroke the path with a generous, invisible width instead:
+        this drives hit testing (selection and context menu) while the
+        on-screen appearance is unchanged.
+        """
+        stroker = QPainterPathStroker()
+        stroker.setWidth(self.HIT_AREA_WIDTH)
+        stroker.setJoinStyle(Qt.RoundJoin)
+        stroker.setCapStyle(Qt.RoundCap)
+        return stroker.createStroke(self.path()).simplified()
+
+
+    def boundingRect(self) -> QRectF:
+        """
+        Extend the default bounding rect so the wider hit area (see
+        shape()) stays within it. The scene indexes items by bounding
+        rect and would otherwise miss clicks in the outer band.
+        """
+        margin = self.HIT_AREA_WIDTH / 2
+        rect = super().boundingRect()
+        return rect.adjusted(-margin, -margin, margin, margin)
+
+
+    def paint(self, painter, option, widget=None) -> None:
+        """
+        Paint the connection with optional arrowhead.
+
+        The line is drawn manually instead of calling
+        QGraphicsPathItem::paint: the default implementation adds a
+        dashed selection rectangle around the whole bounding box, which
+        hugs a rectangular node's contour but not a line. The dashed
+        selection feedback is therefore applied to the line itself (see
+        set_selected_appearance), matching the node behaviour.
+        """
+        # Draw the line
+        painter.setPen(self.pen())
+        painter.setBrush(self.brush())
+        painter.drawPath(self.path())
+
+        # Draw arrowhead if needed
+        if self.layout.style in [ConnectionStyle.ARROW, ConnectionStyle.CURVED_ARROW]:
+            self._draw_arrowhead(painter)
+
+
+    def _draw_arrowhead(self, painter) -> None:
+        """
+        Draw an arrowhead at the target end of the connection.
+        
+        Args:
+            painter: The QPainter to use for drawing
+        """
+        if not self.path() or self.path().elementCount() < 2:
+            return
+        
+        # For simplicity, get the last segment's end point and direction
+        start_point = self._get_port_position(self.source_node, self.source_port)
+        end_point = self._get_port_position(self.target_node, self.target_port)
+        
+        # Calculate the direction vector
+        dx = end_point.x() - start_point.x()
+        dy = end_point.y() - start_point.y()
+        
+        # Normalize the direction vector
+        length = math.sqrt(dx * dx + dy * dy)
+        if length == 0:
+            return
+        
+        ux = dx / length
+        uy = dy / length
+        
+        # Calculate arrow points
+        arrow_length = self.ARROW_SIZE
+        arrow_width = self.ARROW_SIZE * 0.6
+        
+        # Point 1: end point
+        p1 = end_point
+        
+        # Point 2: left side of arrow
+        p2 = QPointF(
+            end_point.x() - ux * arrow_length - uy * arrow_width,
+            end_point.y() - uy * arrow_length + ux * arrow_width
+        )
+        
+        # Point 3: right side of arrow
+        p3 = QPointF(
+            end_point.x() - ux * arrow_length + uy * arrow_width,
+            end_point.y() - uy * arrow_length - ux * arrow_width
+        )
+        
+        # Draw the arrow triangle
+        arrow_path = QPainterPath()
+        arrow_path.moveTo(p1)
+        arrow_path.lineTo(p2)
+        arrow_path.lineTo(p3)
+        arrow_path.closeSubpath()
+        
+        # Fill the arrow with the line color
+        pen = self.pen()
+        painter.setPen(Qt.NoPen)
+        painter.setBrush(pen.color())
+        painter.drawPath(arrow_path)
+
+
+    def _restore_layout_pen(self) -> None:
+        """
+        Restore the passive pen from the layout properties: a solid
+        line (TSK12 point 05).
+
+        Do not call _init_appearance() here: it calls setSelected(),
+        which would recurse while itemChange(ItemSelectedChange) is
+        being processed.
+        """
+        if self.layout.color and self.layout.thickness > 0:
+            color = QColor(self.layout.color)
+            if color.isValid():
+                self.setPen(QPen(color, self.layout.thickness))
+            else:
+                self.setPen(self.DEFAULT_PEN)
+        else:
+            self.setPen(self.DEFAULT_PEN)
+
+
+    def set_selected_appearance(self, selected: bool) -> None:
+        """
+        Update the connection's appearance based on selection state
+        (TSK12 point 05).
+
+        Selected: short-dashed line in the connection's own color (the
+        same appearance as the creation feedback). Deselected: passive
+        solid pen.
+
+        Args:
+            selected: Whether the connection is selected
+        """
+        if selected:
+            # Rebuild the pen from the layout (not from the current pen,
+            # which may be the hover pen) so it stays stable across
+            # hover/selection sequences.
+            self._restore_layout_pen()
+            selected_pen = QPen(self.pen())
+            selected_pen.setStyle(Qt.DashLine)
+            selected_pen.setDashPattern(self.DASH_PATTERN)
+            self.setPen(selected_pen)
+        else:
+            self._restore_layout_pen()
+
+
+    def hoverEnterEvent(self, event) -> None:
+        """
+        Handle hover enter events: draw a solid line in the type tint
+        of the connected nodes while not selected (TSK12 point 05) and
+        show the transition note in an immediate tooltip (FN021, RG054).
+        """
+        if not self.isSelected():
+            self.setPen(self._hover_pen())
+        # Immediate tooltip (AGENTS.md pattern): the workspace swallows
+        # Qt's delayed automatic tooltip event
+        note = getattr(self.transition, 'note', None) if self.transition else None
+        if note:
+            self.setToolTip(str(note))
+            QToolTip.showText(event.screenPos(), str(note))
+        super().hoverEnterEvent(event)
+
+
+    def hoverLeaveEvent(self, event) -> None:
+        """
+        Handle hover leave events: restore the passive solid pen, or
+        keep the short-dashed selected pen if the connection is
+        selected.
+        """
+        if self.isSelected():
+            self.set_selected_appearance(True)
+        else:
+            self._restore_layout_pen()
+        QToolTip.hideText()
+        super().hoverLeaveEvent(event)
+
+
+    def update_layout(self) -> None:
+        """
+        Update the layout object with the connection's current properties.
+        
+        This should be called when the connection is modified to
+        persist the changes to the layout model.
+        """
+        self.layout.selected = self.isSelected()
+
+
+    def set_source_node(self, node: BaseNode, port: PortPosition = PortPosition.RIGHT) -> None:
+        """
+        Set the source node and port.
+        
+        Args:
+            node: The new source node
+            port: The port to use on the source node
+        """
+        self.source_node = node
+        self.source_port = port
+        self.layout.source_node_id = node.entity.id
+        self.layout.source_port = port
+        self.update_path()
+
+
+    def set_target_node(self, node: BaseNode, port: PortPosition = PortPosition.LEFT) -> None:
+        """
+        Set the target node and port.
+        
+        Args:
+            node: The new target node
+            port: The port to use on the target node
+        """
+        self.target_node = node
+        self.target_port = port
+        self.layout.target_node_id = node.entity.id
+        self.layout.target_port = port
+        self.update_path()
+
+
+    def set_transition(self, transition: Any) -> None:
+        """Set the business Transition entity (read-only reference - RG058)."""
+        self.transition = transition
+        if transition:
+            self.layout.relation_id = transition.id
+        else:
+            self.layout.relation_id = None
+
+
+    def set_style(self, style: ConnectionStyle) -> None:
+        """
+        Set the connection style and update the path.
+        
+        Args:
+            style: The new connection style
+        """
+        self.layout.style = style
+        self.update_path()
+
+
+    def set_color(self, color: str) -> None:
+        """
+        Set the connection color.
+        
+        Args:
+            color: Hex color string (e.g., "#FF0000")
+        """
+        self.layout.color = color
+        try:
+            qcolor = QColor(color)
+            if qcolor.isValid():
+                current_pen = self.pen()
+                self.setPen(QPen(qcolor, current_pen.width()))
+        except (ValueError, AttributeError):
+            pass
+
+
+    def set_thickness(self, thickness: float) -> None:
+        """
+        Set the connection thickness.
+        
+        Args:
+            thickness: The new thickness in pixels
+        """
+        self.layout.thickness = thickness
+        current_pen = self.pen()
+        self.setPen(QPen(current_pen.color(), thickness))
+
+
+    def set_label(self, text: str) -> None:
+        """
+        Set the connection label.
+        
+        Args:
+            text: The new label text
+        """
+        self.layout.label = text  # RG058: the model is never written from the UI (use UpdateTransitionUseCase)
+
+
+    def get_source_node(self) -> Optional[BaseNode]:
+        """Get the source node."""
+        return self.source_node
+
+
+    def get_target_node(self) -> Optional[BaseNode]:
+        """Get the target node."""
+        return self.target_node
+
+
+    def get_label(self) -> Optional[str]:
+        """Get the connection label."""
+        return self.layout.label
+
+
+    def get_transition(self) -> Optional[Any]:
+        """Get the business Transition entity (read-only)."""
+        return self.transition
+
+
+    def get_relation_id(self) -> Optional[int]:
+        """Get the Transition entity ID."""
+        return self.layout.relation_id
+
+
+    def get_relation_type(self) -> Optional[str]:
+        """Get the relation type ("Transition")."""
+        return self.layout.relation_type

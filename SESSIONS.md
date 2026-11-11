@@ -9,6 +9,47 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 
 --
 
+## Séance n°03 (2026-11-11)
+
+### Travaux
+- Analyse de la reformulation des règles d'enchaînement des types de blocs narratifs (matrice source → cibles) : vérification de cohérence interne (coquille « entrantes/sortantes » relevée sur la règle Condition ; contradictions Début→Pivot et Condition→Fin levées par décision TSC) et alignement avec RG025–RG031, SU003/SU004, FN020/FN035, `07_data_model`, `03_conception` §3/§4.
+- Mises à jour des spécifications FR/EN : `02_business_rules` (RG025 complétée, RG027, RG028 réécrite avec la matrice, RG030 et RG031 réécrites, mentions « sujettes à révision » levées), `01_user_stories` (SU003/SU004), `03_features` (FN020, FN035 sans la promotion), `07_data_model` (description de `Transition`), `03_conception` (matrice ajoutée en §4, promotion et invariant de degré du Pivot supprimés), `docs/projet/implementation-FR/EN.md` (lignes RG028/RG030/RG031/FN035 + date), `src/core/models/data_model.py` (docstring de `Transition`).
+- Matrice d'enchaînement actée : Début → {Scène, Pivot} ; Scène → {Scène, Pivot, Fin} ; Pivot → {Condition} ; Condition → {Scène, Fin} ; Fin → aucune. Cycles autorisés (ex. Scène → Pivot → Condition → la même Scène).
+- Kanban : TSK08–TSK13 déclarées (chantier vue « Journeys ») ; TSK08 passée en Doing (TSK07 en Review) avec fiche `docs/projet/tasks/TSK08_map_services_usecases.md` (plan d'implémentation : `transition_service` matrice RG028 + cascades RG023, `journey_sequence_service` RG044, `journey_filter_service` RG041/RG048, `participation_badge_service`, use cases `view_management` + tests unitaires ; ajout de la clé `journey_filter_opacity` dans `config.json`) ; TSK09–TSK13 en To do avec dépendances (TSK09/TSK10 → #TSK08 ; TSK11 → #TSK08,#TSK10 ; TSK12 → #TSK09,#TSK11 ; TSK13 → #TSK11,#TSK12).
+- Rendu visuel des blocs (suite de séance) : code couleur par type acté (Début #E5C07B, Scène #A7C957, Pivot #D19A66, Condition #E06666, Fin #F0F0F0 — valeurs à confirmer après les premiers tests visuels, mêmes teintes : gris sombre, blanc cassé, or, sable…) ; le nœud affiche le **type** du bloc, libellé et note en infobulle au survol ; badge de participations conservé tel quel de planoscript (coin inférieur droit 2/3-1/3, Ø 16 px, remplissage fixe #E5C07B, masqué à 0, « 9+ », ligne « Agents: … » en infobulle), présent sur tous les blocs ; onglets nommés en anglais (« Journeys », « Agents », « Relationships », « Export »). Mises à jour : `04_interface` FR/EN (§3 onglets, §4 bloc narratif, §9 points 1-2), `src/config/config.json` (`block_scene_color` #A7C957, `block_condition_color` #E06666), `src/ui/utils/theme.py` (note conservée : valeurs définitives à confirmer après les premiers tests visuels).
+
+### Choix actés
+- Début → Pivot autorisé (entrantes du Pivot : Début ou Scène) ; Condition → Fin autorisée (sortantes de la Condition : Scène ou Fin ; entrantes de la Fin : Scène ou Condition).
+- Promotion automatique Scène → Pivot supprimée (ex-RG030) : le type du bloc reste choisi à la création et immuable (RG029) ; une Scène à plusieurs transitions sortantes reste une Scène.
+- ET entre conditions abandonné (Condition → Condition interdit par la matrice) ; le OU (plusieurs Condition issus d'un même Pivot) est conservé.
+- Seuils « carte finalisée et cohérente » (1 ou n) : contrôle de cohérence hors MVP ; en MVP, la création d'une transition n'est refusée que si la paire ordonnée de blocs existe déjà ou si la paire de types n'est pas dans la matrice (RG028, SU004, FN020).
+- Onglets de la barre d'onglets nommés en anglais dans l'UI (« Journeys », « Agents », « Relationships », « Export ») — point ouvert de la séance n°02 levé ; `04_interface-FR.md` reporté en conséquence (noms affichés en anglais, même en version FR, comme les entrées de menu).
+- Code couleur des types de blocs : palette chaude (or #E5C07B, vert olive #A7C957, cuivre #D19A66, rouge #E06666, blanc cassé #F0F0F0) ; valeurs définitives à confirmer après les premiers tests visuels, dans les mêmes teintes.
+- Badge de participations : remplissage fixe `badge_bg_color` (#E5C07B), quelle que soit la couleur du type du bloc ; apparence, position (coin inférieur droit 2/3-1/3) et comportement (masqué à 0, « 9+ », ligne « Agents: … » en infobulle) conservés de planoscript.
+- Nœud de bloc : affiche le type ; libellé et note déplacés en infobulle au survol (la troncature à 8 caractères de planoscript disparaît).
+
+- Implémentation TSK08–TSK13 (vue « Journeys ») lancée et menée à bien sur demande TSC :
+  - TSK08 : services `transition_service` (matrice RG028 + unicité + cascade RG023), `journey_service` (RG039/RG040/RG042), `journey_sequence_service` (RG044), `journey_filter_service` (RG041/RG048, clé `journey_filter_opacity` ajoutée à config.json), `participation_badge_service`, 7 use cases `view_management` + tests → 33 tests passed.
+  - TSK09 : 6 use cases `journey_management` (FN023–FN027, FN038) + tests → 40 tests passed.
+  - TSK10 : nœuds `base_node.py` (type affiché, tooltip lb+note, couleurs par type via `theme.block_color`), `block_node.py` (fusion State/Event + badge participations conservé), `connection.py` (transition fléchée, **sans** écriture du modèle RG058) ; `view_model` : style ARROW par défaut ; `layout_service` : résidus plano corrigés (`create_empty_layout`, `create_connection_layout`).
+  - TSK11 : `journeys_workspace.py` (grille, scène extensible, auto-scroll, sélection unique, tracé de transition, filtre RG048, menu contextuel via signaux), `tab_bar.py` (onglets Journeys/Agents/Relationships/Export), `main_window.py` (onglets, actions Project câblées sur les use cases, Display>Journey dynamique, menu contextuel construit depuis les QAction du menu général RG055, persistance layouts RG060 au save/load).
+  - TSK12 : dialogues `block_dialog.py` (FN015/RG042/FN035), `transition_dialog.py`, `journey_dialog.py`, `journey_selection_dialog.py` + câblage `blocks_edit`/`transitions_edit`/`journeys_edit`/`journeys_set_default`.
+  - TSK13 : matrice de traçabilité FR/EN mise à jour ; smoke offscreen jetable (`/tmp/offscreen_journeys_smoke.py`, non commité).
+- **44 tests unitaires passed** (`pytest tests/ -q`) ; `py_compile` OK sur tout `src/` ; imports locaux résolus (vérif AST) ; aucun import Qt dans `core/`/`usecases/` (RG058).
+
+### État en fin de séance
+- **Aucun commit ni push** (demande TSC) — `git status` liste tous les fichiers modifiés/nouveaux.
+- Kanban : TSK08–TSK13 en Review ; TSK07 en Review. Prochaine étape : validation TSC (tests manuels en réel : `python src/main.py` sur poste de dev + smoke offscreen), passage en Done, puis commit/push sur demande.
+- Point noté pour TSK09 : SU004/FN022 (« suppression d'une transition supprime ses rattachements aux parcours ») = résidu planoscript, incompatible avec RG041 (appartenance dérivée) — à corriger dans les specs.
+
+### Problèmes rencontrés
+- Sandbox : `libGL.so.1` absent (pas de droits root) → PySide6 non importable ici : tests Qt offscreen **non exécutés** (script jetable prêt) ; `pytest` installé via pip (9.2.0).
+
+### Problèmes rencontrés
+- Aucun.
+
+---
+
 ## Séance n°02 (2026-11-10)
 
 ### Travaux

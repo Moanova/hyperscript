@@ -248,7 +248,7 @@
       "Transition": {
          "type": "object",
          "category": "relationship",
-         "description": "Directed transition block → block; free chaining, cycles allowed (e.g. S1 → P1 → C1 → S1); no condition key",
+         "description": "Directed transition block → block; chaining constrained by the allowed block-type matrix (RG028), cycles allowed (e.g. S1 → P1 → C1 → S1); no condition key",
          "properties": {
             "id": {
                "type": "integer",
