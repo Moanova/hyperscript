@@ -29,6 +29,7 @@ from config.config_loader import get as _get_config
 from core.models.data_model import Block
 from core.models.view_model import NodeLayout
 from core.services.participation_badge_service import ParticipationBadgeService
+from core.services.transition_service import type_allows_incoming, type_allows_outgoing
 from ui.nodes.base_node import TypedNode
 from ui.utils import theme
 
@@ -45,7 +46,17 @@ class BlockNode(TypedNode):
     def __init__(self, block: Block, layout: NodeLayout):
         super().__init__(block, layout)
         self._update_colors()
+        self._apply_conditional_ports()
         self._init_participation_badge()
+
+    def _apply_conditional_ports(self) -> None:
+        """TSK14: hide the ports the block type can never use, derived from the
+        RG028 matrix (Start: no incoming port, End: no outgoing port). The type
+        is immutable (RG029), so this is applied once at creation."""
+        if not type_allows_incoming(self.entity.typ):
+            self.input_port.hide()
+        if not type_allows_outgoing(self.entity.typ):
+            self.output_port.hide()
 
     def _init_participation_badge(self) -> None:
         """Create the participation badge items, hidden by default."""

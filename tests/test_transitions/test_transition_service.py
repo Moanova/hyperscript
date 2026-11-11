@@ -150,3 +150,23 @@ def test_rg023_delete_block_cascade():
     assert all(r.block_id != s.id for r in nm.relationship)
     assert all(jn.block_id != s.id for jn in nm.journey_node)
     assert TransitionService.delete_block_cascade(nm, 999) is None
+
+
+def test_tsk14_port_visibility_derived_from_matrix():
+    # TSK14: port visibility is derived from the RG028 matrix (single source
+    # of truth) - RG025: Start never incoming; RG028: End never outgoing
+    from core.services.transition_service import type_allows_incoming, type_allows_outgoing
+    assert type_allows_outgoing("Start") is True
+    assert type_allows_outgoing("Scene") is True
+    assert type_allows_outgoing("Pivot") is True
+    assert type_allows_outgoing("Condition") is True
+    assert type_allows_outgoing("End") is False
+    assert type_allows_incoming("Start") is False
+    assert type_allows_incoming("Scene") is True
+    assert type_allows_incoming("Pivot") is True
+    assert type_allows_incoming("Condition") is True
+    assert type_allows_incoming("End") is True
+    # consistency with the matrix itself
+    for typ, targets in ALLOWED_TARGET_TYPES.items():
+        assert type_allows_outgoing(typ) == bool(targets)
+        assert type_allows_incoming(typ) == any(typ in tgts for tgts in ALLOWED_TARGET_TYPES.values())

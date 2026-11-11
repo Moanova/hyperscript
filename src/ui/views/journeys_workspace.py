@@ -370,11 +370,12 @@ class JourneysWorkspace(QGraphicsView, QObject):
                 break
             if isinstance(candidate, BlockNode):
                 mouse_scene_pos = self.mapToScene(event.position().toPoint())
-                if (mouse_scene_pos - candidate.get_right_port_position()).manhattanLength() < _PORT_CLICK_THRESHOLD:
+                # TSK14: an edge without a visible port (Start left, End right) counts as off-port
+                if candidate.has_output_port() and (mouse_scene_pos - candidate.get_right_port_position()).manhattanLength() < _PORT_CLICK_THRESHOLD:
                     node = candidate
                     is_output = True
                     break
-                if (mouse_scene_pos - candidate.get_left_port_position()).manhattanLength() < _PORT_CLICK_THRESHOLD:
+                if candidate.has_input_port() and (mouse_scene_pos - candidate.get_left_port_position()).manhattanLength() < _PORT_CLICK_THRESHOLD:
                     node = candidate
                     is_output = False
                     break

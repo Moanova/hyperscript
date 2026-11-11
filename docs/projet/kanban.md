@@ -19,7 +19,7 @@
 ## Chaîne critique (déroulement de référence)
 
 - TSK01 (modèle de données) → TSK02 (scenarii) → TSK03 (fonctionnalités) → TSK04 (menu) → TSK05 (interface) → TSK06 (règles de gestion), puis 99_périmètre MVP.
-- Puis chantier vue « Journeys » (vue Parcours) : TSK08 (services/use cases de la carte) → TSK09 (use cases parcours) + TSK10 (nœuds graphiques) → TSK11 (workspace + intégration) → TSK12 (dialogues + menus Project) → TSK13 (tests offscreen + traçabilité) ; puis TSK14 (ports conditionnels Début/Fin, acté 11-11-2026) déclaré en To do ; TSK15 (correctif z-order : grille sous les transitions, 11-11-2026) implémenté et passé en Review.
+- Puis chantier vue « Journeys » (vue Parcours) : TSK08 (services/use cases de la carte) → TSK09 (use cases parcours) + TSK10 (nœuds graphiques) → TSK11 (workspace + intégration) → TSK12 (dialogues + menus Project) → TSK13 (tests offscreen + traçabilité) ; puis TSK14 (ports conditionnels Début/Fin, acté 11-11-2026) implémenté et passé en Review 11-11-2026 ; TSK15 (correctif z-order : grille sous les transitions, 11-11-2026) implémenté et passé en Review.
 
 
 ---
@@ -28,13 +28,13 @@
 
 ### To do
 
-- [ ] TSK14 — Ports conditionnels selon le type de bloc dans la vue « Journeys » : bloc Début sans port entrant, blocs Fin sans port sortant (ports masqués dans `block_node.py`/`base_node.py`, garde-fous `has_input_port()`/`has_output_port()` et refus explicite à la création de transition dans `journeys_workspace.py` ; spec `04_interface` §4 actée 11-11-2026 ; aucun impact modèle, RG025/RG028 déjà en vigueur) → #TSK10, #TSK11 — fiche `tasks/TSK14_conditional_ports.md` (à créer au passage en Doing)
 
 ### Doing
 
 
 ### Review
 
+- [ ] TSK14 — Ports conditionnels selon le type de bloc dans la vue « Journeys » : bloc Début sans port entrant, blocs Fin sans port sortant (ports **masqués** dans `block_node.py`, garde-fous `has_input_port()`/`has_output_port()` dans `base_node.py` et `_handle_port_selection` dans `journeys_workspace.py` ; visibilité dérivée de la matrice RG028 via `type_allows_incoming/outgoing` dans `transition_service.py` + test unitaire ; spec `04_interface` §4 actée 11-11-2026 ; aucun impact modèle, RG025/RG028 déjà en vigueur) → #TSK10, #TSK11 — fiche `tasks/TSK14_conditional_ports.md` — créée 11-11-2026, passée en Doing 11-11-2026 (TSK10/TSK11 en Review), implémentée et passée en Review 11-11-2026 (py_compile OK, 45 tests passed ; smoke offscreen TSK14 à valider sur poste de dev)
 - [ ] TSK15 — Correctif z-order dans la vue « Journeys » : lignes de grille à `setZValue(-2)` (strictement sous les `Connection` à z=-1) dans `_draw_grid()` de `journeys_workspace.py`, pour qu'un redessin de la grille (scroll/auto-scroll pendant un déplacement de bloc, resize) ne surimprime plus les flèches (lignes sombres #333333/#4A4A4A par-dessus la flèche #CCCCCC = flèche « grise ») → #TSK11 — fiche `tasks/TSK15_grid_zorder_fix.md` — créée 11-11-2026, passée en Doing 11-11-2026 (TSK11 en Review), implémentée et passée en Review 11-11-2026 (py_compile OK, 44 tests passed ; validation visuelle offscreen à faire sur poste de dev, libGL absent dans le sandbox)
 - [ ] TSK13 — Tests offscreen de la vue « Journeys » (script jetable non commité) + matrice de traçabilité `docs/projet/implementation-FR/EN.md` → #TSK11, #TSK12 — fiche `tasks/TSK13_offscreen_tests.md` — créée 11-11-2026, passée en Doing 11-11-2026, implémentée et passée en Review 11-11-2026 (44 tests passed ; smoke offscreen rédigé, bloqué dans le sandbox : libGL absent — à valider sur poste de dev)
 - [ ] TSK12 — Dialogues (`block_dialog.py` FN015/RG042/FN035, `transition_dialog.py` FN021, `journey_dialog.py` FN024, `journey_selection_dialog.py` FN038) + câblage des entrées restantes de `Project` → #TSK09, #TSK11 — fiche `tasks/TSK12_dialogs_menus.md` — créée 11-11-2026, passée en Doing 11-11-2026, implémentée et passée en Review 11-11-2026 (py_compile OK, 44 tests passed)

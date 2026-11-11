@@ -32,6 +32,18 @@ ALLOWED_TARGET_TYPES: Dict[str, set] = {
 }
 
 
+def type_allows_outgoing(block_type: str) -> bool:
+    """RG028: the block type may be the source of a transition (outgoing port).
+    End has no outgoing transition (empty target set)."""
+    return bool(ALLOWED_TARGET_TYPES.get(block_type, set()))
+
+
+def type_allows_incoming(block_type: str) -> bool:
+    """RG025/RG028: the block type may be the target of a transition (incoming
+    port). Start is never the target of any transition."""
+    return any(block_type in targets for targets in ALLOWED_TARGET_TYPES.values())
+
+
 class TransitionService:
     """Pure business logic on transitions; no Qt dependency (RG058)."""
 

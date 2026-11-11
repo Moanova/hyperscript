@@ -511,6 +511,14 @@ class BaseNode(QGraphicsRectItem):
         rect = self.sceneBoundingRect()
         return QPointF(rect.right(), rect.center().y())
 
+    def has_input_port(self) -> bool:
+        """TSK14: the incoming (left) port is visible (hidden for Start blocks)."""
+        return self.input_port is not None and self.input_port.isVisible()
+
+    def has_output_port(self) -> bool:
+        """TSK14: the outgoing (right) port is visible (hidden for End blocks)."""
+        return self.output_port is not None and self.output_port.isVisible()
+
 
     def add_port(self, name: str, position: QPointF) -> None:
         """
