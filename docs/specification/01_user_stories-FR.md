@@ -73,7 +73,7 @@
     - Il ne peut exister qu'une seule transition par paire ordonnée de blocs.
     - Une transition porte une note textuelle, affichée en infobulle au survol. Elle ne porte pas de condition : la condition structurée est portée par le bloc Condition.
     - Appartenance aux parcours dérivée : une transition appartient à un parcours si et seulement si ses deux blocs y appartiennent.
-    - La suppression d'une transition supprime ses rattachements aux parcours ; elle est indépendante de la suppression des blocs, hormis la cascade définie en SU003.
+    - La suppression d'une transition ne supprime aucun rattachement de parcours (l'appartenance aux parcours est dérivée des blocs, RG041) ; elle est indépendante de la suppression des blocs, hormis la cascade définie en SU003.
 - **Critères d'acceptation** :
     - L'utilisateur peut initier la création d'une transition depuis le menu « Project » ou le menu contextuel : sélection du bloc source, tracé temporaire suivant le curseur jusqu'au clic sur le port du bloc cible.
     - L'application empêche la création d'une transition en double entre deux blocs déjà reliés, ainsi que toute transition entre deux types de blocs dont l'enchaînement n'est pas autorisé.

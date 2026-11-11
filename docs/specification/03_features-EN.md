@@ -237,7 +237,7 @@
 - **References**: SU004 ; menu "Project › Transitions › Delete...".
 - **Expected behavior**:
     - A confirmation is requested before deletion.
-    - Deleting a transition deletes the journey attachments referencing it; it is independent of block deletion (except for the FN018 cascade).
+    - Deleting a transition removes no journey attachment (membership is derived from the blocks, RG041); it is independent of block deletion (except for the FN018 cascade).
     - Any deletion marks the map, and therefore the project, as modified.
 
 

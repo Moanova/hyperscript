@@ -238,7 +238,7 @@
 - **Références** : SU004 ; menu « Project › Transitions › Delete... ».
 - **Comportement attendu** :
     - Une confirmation est demandée avant la suppression.
-    - La suppression d'une transition supprime les rattachements de parcours qui la référençaient ; elle est indépendante de la suppression des blocs (hors cascade de FN018).
+    - La suppression d'une transition ne supprime aucun rattachement de parcours (l'appartenance est dérivée des blocs, RG041) ; elle est indépendante de la suppression des blocs (hors cascade de FN018).
     - Toute suppression marque la carte, et donc le projet, comme modifié.
 
 

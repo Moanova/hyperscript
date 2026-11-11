@@ -72,7 +72,7 @@
     - There can be only one transition per ordered pair of blocks.
     - A transition carries a text note, shown in a tooltip on hover. It carries no condition: the structured condition is carried by the Condition block.
     - Derived journey membership: a transition belongs to a journey if and only if both its blocks belong to it.
-    - Deleting a transition deletes its journey attachments; it is independent of block deletion, except for the cascade defined in SU003.
+    - Deleting a transition removes no journey attachment (journey membership is derived from the blocks, RG041); it is independent of block deletion, except for the cascade defined in SU003.
 - **Acceptance criteria**:
     - The user can start creating a transition from the "Project" menu or the context menu: select the source block, a temporary trace follows the cursor until the click on the target block's port.
     - The application prevents creating a duplicate transition between two blocks already linked, as well as any transition between two block types whose chaining is not allowed.

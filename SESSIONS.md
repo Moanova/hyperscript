@@ -39,11 +39,13 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
   - TSK12 : dialogues `block_dialog.py` (FN015/RG042/FN035), `transition_dialog.py`, `journey_dialog.py`, `journey_selection_dialog.py` + câblage `blocks_edit`/`transitions_edit`/`journeys_edit`/`journeys_set_default`.
   - TSK13 : matrice de traçabilité FR/EN mise à jour ; smoke offscreen jetable (`/tmp/offscreen_journeys_smoke.py`, non commité).
 - **44 tests unitaires passed** (`pytest tests/ -q`) ; `py_compile` OK sur tout `src/` ; imports locaux résolus (vérif AST) ; aucun import Qt dans `core/`/`usecases/` (RG058).
+- Corrections de specs en fin de séance (demande TSC) : SU004 et FN022 (FR + EN) alignées sur RG041 — la suppression d'une transition ne supprime **aucun** rattachement de parcours (l'appartenance est dérivée des blocs) ; résidu planoscript levé.
 
 ### État en fin de séance
-- Commits + push sur `dev` effectués sur demande TSC (11-11-2026) : `0c2ad64` (séance n°03 complète, 72 fichiers, +5336/−282) puis `7df6c5c` (TSK14 acté dans `04_interface` FR/EN + kanban/SESSIONS, correctif TSK15 z-order grille à -2 — tests : py_compile OK, 44 passed), puis troisième commit (implémentation TSK14 : helpers matrice + masquage des ports Début/Fin — 45 tests passed).
-- Kanban : TSK08–TSK15 en Review ; TSK07 en Review ; To do vide. Prochaine étape : validation TSC (tests manuels en réel : `python src/main.py` sur poste de dev + smoke offscreen, dont rendu QImage avant/après `_draw_grid()` pour TSK15 et visibilité des ports pour TSK14), passage en Done, puis commit/push sur demande.
-- Point noté pour TSK09 : SU004/FN022 (« suppression d'une transition supprime ses rattachements aux parcours ») = résidu planoscript, incompatible avec RG041 (appartenance dérivée) — à corriger dans les specs.
+- Commits + push sur `dev` effectués sur demande TSC (11-11-2026) : `0c2ad64` (séance n°03 complète, 72 fichiers, +5336/−282), `7df6c5c` (TSK14 acté dans `04_interface` FR/EN + correctif TSK15 z-order grille à -2 — 44 tests passed), `ba2e370` (implémentation TSK14 : helpers matrice + masquage des ports Début/Fin — 45 tests passed), puis quatrième commit (corrections SU004/FN022 FR/EN sur RG041 + kanban TSK15 en Done + SESSIONS.md).
+- Kanban : **TSK15 en Done** (validée TSC) ; TSK08–TSK14 en Review ; TSK07 en Review ; To do vide. Tâches d'implémentation laissées en Review en attente des retours de test TSC.
+- Point SU004/FN022 vs RG041 : **corrigé** (quatrième commit). Reste ouvert pour la prochaine séance : SU003 (FR ligne 50 / EN ligne 49) dit encore « chaque bloc dispose de deux ports » — à aligner sur TSK14 (Début sans port entrant, Fin sans port sortant, `04_interface` §4).
+- Prochaine séance : retours de tests manuels TSC (`python src/main.py` sur poste de dev + smoke offscreen `/tmp/offscreen_journeys_smoke.py`, dont rendu QImage avant/après `_draw_grid()` pour TSK15 et visibilité des ports pour TSK14) → passage des tâches Review en Done, puis commit/push sur demande. **Séance clôturée le 11-11-2026.**
 
 ### Problèmes rencontrés
 - Sandbox : `libGL.so.1` absent (pas de droits root) → PySide6 non importable ici : tests Qt offscreen **non exécutés** (script jetable prêt) ; `pytest` installé via pip (9.2.0).
