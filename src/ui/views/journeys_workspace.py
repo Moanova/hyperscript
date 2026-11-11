@@ -133,7 +133,12 @@ class JourneysWorkspace(QGraphicsView, QObject):
     # ------------------------------------------------------------------
 
     def _draw_grid(self):
-        """Draw grid lines only for the visible viewport area."""
+        """Draw grid lines only for the visible viewport area.
+
+        Grid lines sit at z=-2, strictly below the connections (z=-1):
+        same-z items are painted in insertion order, so a grid redraw
+        (scroll / resize) must never overprint the transition arrows.
+        """
         for line in self.grid_lines:
             if self.scene.items().count(line):
                 self.scene.removeItem(line)
@@ -150,12 +155,12 @@ class JourneysWorkspace(QGraphicsView, QObject):
         start_x = int(scene_rect.left() - (scene_rect.left() % _GRID_MINOR_SIZE))
         for x in range(start_x, int(scene_rect.right()) + _GRID_MINOR_SIZE, _GRID_MINOR_SIZE):
             line = self.scene.addLine(x, scene_rect.top(), x, scene_rect.bottom(), pen_main)
-            line.setZValue(-1)
+            line.setZValue(-2)
             self.grid_lines.append(line)
         start_y = int(scene_rect.top() - (scene_rect.top() % _GRID_MINOR_SIZE))
         for y in range(start_y, int(scene_rect.bottom()) + _GRID_MINOR_SIZE, _GRID_MINOR_SIZE):
             line = self.scene.addLine(scene_rect.left(), y, scene_rect.right(), y, pen_main)
-            line.setZValue(-1)
+            line.setZValue(-2)
             self.grid_lines.append(line)
 
         pen_sub = QPen(QColor(_GRID_MAJOR_COLOR))
@@ -163,12 +168,12 @@ class JourneysWorkspace(QGraphicsView, QObject):
         start_x = int(scene_rect.left() - (scene_rect.left() % _GRID_MAJOR_SIZE))
         for x in range(start_x, int(scene_rect.right()) + _GRID_MAJOR_SIZE, _GRID_MAJOR_SIZE):
             line = self.scene.addLine(x, scene_rect.top(), x, scene_rect.bottom(), pen_sub)
-            line.setZValue(-1)
+            line.setZValue(-2)
             self.grid_lines.append(line)
         start_y = int(scene_rect.top() - (scene_rect.top() % _GRID_MAJOR_SIZE))
         for y in range(start_y, int(scene_rect.bottom()) + _GRID_MAJOR_SIZE, _GRID_MAJOR_SIZE):
             line = self.scene.addLine(scene_rect.left(), y, scene_rect.right(), y, pen_sub)
-            line.setZValue(-1)
+            line.setZValue(-2)
             self.grid_lines.append(line)
 
     def resizeEvent(self, event):

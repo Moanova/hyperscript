@@ -27,6 +27,8 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 - Code couleur des types de blocs : palette chaude (or #E5C07B, vert olive #A7C957, cuivre #D19A66, rouge #E06666, blanc cassé #F0F0F0) ; valeurs définitives à confirmer après les premiers tests visuels, dans les mêmes teintes.
 - Badge de participations : remplissage fixe `badge_bg_color` (#E5C07B), quelle que soit la couleur du type du bloc ; apparence, position (coin inférieur droit 2/3-1/3) et comportement (masqué à 0, « 9+ », ligne « Agents: … » en infobulle) conservés de planoscript.
 - Nœud de bloc : affiche le type ; libellé et note déplacés en infobulle au survol (la troncature à 8 caractères de planoscript disparaît).
+- Ports conditionnels actés (→ TSK14) : bloc Début sans port entrant, blocs Fin sans port sortant dans la vue « Journeys » — ports masqués (pas grisés), garde-fous `has_input_port()`/`has_output_port()` à la création de transition (un clic près du bord d'un bloc sans le port requis = hors port) ; aucun impact modèle (RG025/RG028 déjà en vigueur). Mises à jour : `04_interface` FR/EN §4 (lignes « Bloc narratif » et « Transition ») ; kanban : TSK14 déclaré en To do (→ #TSK10, #TSK11).
+- Bug visuel signalé par TSC (flèches de transition « grises » + grille en surimpression après certains déplacements de blocs) → TSK15 : cause racine = z-value partagée -1 entre lignes de grille (`_draw_grid`) et `Connection`, l'ordre d'insertion faisant passer la grille (recréée au scroll/auto-scroll/resize) au-dessus des flèches. Correctif : grille à `setZValue(-2)` (4 lignes, `journeys_workspace.py`), conforme à `agents_workspace.py` de planoscript. Couleurs nominales conservées telles quelles (gel TSC jusqu'à la séance de tests utilisateur). py_compile OK, 44 tests passed. Fiche `tasks/TSK15_grid_zorder_fix.md` ; TSK15 passée en Review.
 
 - Implémentation TSK08–TSK13 (vue « Journeys ») lancée et menée à bien sur demande TSC :
   - TSK08 : services `transition_service` (matrice RG028 + unicité + cascade RG023), `journey_service` (RG039/RG040/RG042), `journey_sequence_service` (RG044), `journey_filter_service` (RG041/RG048, clé `journey_filter_opacity` ajoutée à config.json), `participation_badge_service`, 7 use cases `view_management` + tests → 33 tests passed.
@@ -38,8 +40,8 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 - **44 tests unitaires passed** (`pytest tests/ -q`) ; `py_compile` OK sur tout `src/` ; imports locaux résolus (vérif AST) ; aucun import Qt dans `core/`/`usecases/` (RG058).
 
 ### État en fin de séance
-- **Aucun commit ni push** (demande TSC) — `git status` liste tous les fichiers modifiés/nouveaux.
-- Kanban : TSK08–TSK13 en Review ; TSK07 en Review. Prochaine étape : validation TSC (tests manuels en réel : `python src/main.py` sur poste de dev + smoke offscreen), passage en Done, puis commit/push sur demande.
+- Commits + push sur `dev` effectués sur demande TSC (11-11-2026) : `0c2ad64` (séance n°03 complète, 72 fichiers, +5336/−282) puis second commit (TSK14 acté dans `04_interface` FR/EN + kanban/SESSIONS, correctif TSK15 z-order grille à -2 — tests : py_compile OK, 44 passed).
+- Kanban : TSK08–TSK13 et TSK15 en Review ; TSK07 en Review ; TSK14 en To do (ports conditionnels Début/Fin). Prochaine étape : validation TSC (tests manuels en réel : `python src/main.py` sur poste de dev + smoke offscreen, dont rendu QImage avant/après `_draw_grid()` pour TSK15), passage en Done, puis commit/push sur demande.
 - Point noté pour TSK09 : SU004/FN022 (« suppression d'une transition supprime ses rattachements aux parcours ») = résidu planoscript, incompatible avec RG041 (appartenance dérivée) — à corriger dans les specs.
 
 ### Problèmes rencontrés
