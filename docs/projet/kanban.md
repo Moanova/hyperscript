@@ -28,9 +28,13 @@
 
 ### To do
 
+- [ ] TSK18 — Dialogues agents (création/édition `agent_dialog.py`, « Associate agents... » `agent_association_dialog.py`, sélection `agent_selection_dialog.py` — reprise planoscript adaptée) + câblage du menu `Project › Agents` (New.../Edit.../Copy/Delete.../Associate with Block...) → #TSK17 — fiche `tasks/TSK18_agent_dialogs_menus.md`
+- [ ] TSK19 — Vue « Agents » : matrice agents × blocs conforme RG058 (le workspace émet des signaux, MainWindow applique les use cases — pas d'appel direct comme dans planoscript), réordonnancement persisté (RG060, `agents_view_*_order` + `resolve_matrix_order`, bloc Début épinglé RG036), filtre de parcours (RG048), focus croisé (RG056), grille et cellules (clés `agents_view_*`) ; + entrée « Associate agents... » du menu contextuel de bloc dans la vue « Journeys » (FN030) + rafraîchissement des badges de participation → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19_agents_view.md`
+- [ ] TSK20 — Relations agent-agent (FN034, RG035, SU011) : use cases CRUD relation (binaire, dirigée, typée depuis la liste config FN037, ancrée à un bloc, unicité par (bloc, paire, type)) + dialogue + entrées `Project › Relationships` ; la vue « Relationships » (SU012) fera l'objet d'une tâche ultérieure → #TSK17 — fiche `tasks/TSK20_relationships.md`
 
 ### Doing
 
+- [ ] TSK17 — Services et use cases agents & participations (SU008, FN030/FN031 ; RG032/RG033) : reprise des use cases planoscript adaptés au vocabulaire hyperscript (Subject/Object → Character/Artefact, State_agent_rel → Participation) + `core/services/participation_service.py` (Qt-free : unicité RG032, cascades RG033) + use cases `agent_management` (create/update/duplicate/delete agent) et `participation_management` (associate/dissociate) + tests unitaires `tests/test_agents/` → #TSK08 — fiche `tasks/TSK17_agent_participation_usecases.md` — créée 17-11-2026, passée en Doing 17-11-2026 (TSK08 en Done), plan d'implémentation établi dans la fiche
 
 ### Review
 
@@ -73,3 +77,7 @@
 - [x] TSK14 — Ports conditionnels Début/Fin dans la vue « Journeys » (masquage des ports + garde-fous de création de transition) → #TSK10, #TSK11 — fiche `tasks/TSK14_conditional_ports.md`
 - [ ] TSK15 — Correctif z-order grille (z=-2) sous les transitions (z=-1) dans `_draw_grid()` → #TSK11 — fiche `tasks/TSK15_grid_zorder_fix.md`
 - [x] TSK16 — Retours de tests visuels TSC (séance n°04) : couleurs (config.json + theme.py), position du bloc Start à la création, tirets de sélection, survol des transitions, libellés des menus Project et contextuel, ligne « Type » du dialogue d'édition → #TSK10, #TSK11, #TSK12 — fiche `tasks/TSK16_visual_feedback.md`
+- [ ] TSK17 — Services et use cases agents & participations (FN030/FN031, RG032/RG033) + tests unitaires → #TSK08 — fiche `tasks/TSK17_agent_participation_usecases.md`
+- [ ] TSK18 — Dialogues agents + menu `Project › Agents` → #TSK17 — fiche `tasks/TSK18_agent_dialogs_menus.md`
+- [ ] TSK19 — Vue « Agents » (matrice, RG058) + menu contextuel bloc « Associate agents... » + badges → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19_agents_view.md`
+- [ ] TSK20 — Relations agent-agent (FN034/RG035) : use cases + dialogue + menu `Project › Relationships` → #TSK17 — fiche `tasks/TSK20_relationships.md`

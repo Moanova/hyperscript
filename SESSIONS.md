@@ -38,8 +38,8 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 ### État en fin de séance
 - `py_compile` OK sur les fichiers modifiés, `json.tool`/`yaml.safe_load` OK, **45 tests passed** (`QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q`).
 - Kanban : sur demande TSC (17-11-2026), **toutes les tâches en Review (TSK07–TSK14, TSK16) validées et passées en Done** ; To do, Doing et Review vides.
-- Commits + push sur `dev` effectués sur demande TSC (3 commits : TSK16 initial `eeb3e42`, correctif option B `621bc03`, passage des tâches Review en Done).
-- Prochaine séance : analyse de la reprise du code planoscript (figé `faa8fdd`) pour la **gestion des agents** (vue « Agents », CRUD agents, participations/badges, relations agent-agent) — première piste tracée ci-dessous.
+- Commits + push sur `dev` effectués sur demande TSC (4 commits : TSK16 initial `eeb3e42`, correctif option B `621bc03`, passage des tâches Review en Done `cc0a077`, création TSK17–TSK20 + fiche TSK17).
+- Prochaine étape : implémentation de **TSK17** (plan dans `docs/projet/tasks/TSK17_agent_participation_usecases.md`) sur demande explicite TSC.
 - Smoke offscreen Qt (rendu QImage des points visuels TSK16) à exécuter sur le poste de dev : libGL absent dans le sandbox, PySide6 non importable ici.
 
 ### Problèmes rencontrés
