@@ -88,9 +88,11 @@ class AgentsWorkspace(QGraphicsView, QObject):
         # background unless WA_StyledBackground is set
         self.setAttribute(Qt.WA_StyledBackground, True)
 
-        # Initial scene size 4000x4000 so the scrollbars are active by default
+        # Initial scene size 4000x4000 so the scrollbars are active by default.
+        # Set on the SCENE (items read scene.sceneRect() to constrain their
+        # moves) and mirrored on the view (scroll range)
         self.scene_rect_margin = 200
-        self.setSceneRect(0, 0, 4000, 4000)
+        self._set_scene_rect(0, 0, 4000, 4000)
 
         # Scrollbars always visible
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
@@ -132,11 +134,17 @@ class AgentsWorkspace(QGraphicsView, QObject):
         super().resizeEvent(event)
         self.viewport().update()
 
+    def _set_scene_rect(self, x: float, y: float, w: float, h: float):
+        """Set the scene rect on the scene (items constrain their moves with
+        scene.sceneRect()) and mirror it on the view (scroll range)."""
+        self.scene.setSceneRect(x, y, w, h)
+        self.setSceneRect(x, y, w, h)
+
     def _expand_scene_to_include(self, x: float, y: float, margin: int = None):
         """Dynamically expand the sceneRect to include the point (x, y)."""
         if margin is None:
             margin = self.scene_rect_margin
-        new_rect = self.sceneRect()
+        new_rect = self.scene.sceneRect()
         expanded = False
         if x - margin < new_rect.left():
             new_rect.setLeft(x - margin)
@@ -151,6 +159,7 @@ class AgentsWorkspace(QGraphicsView, QObject):
             new_rect.setBottom(y + margin)
             expanded = True
         if expanded:
+            self.scene.setSceneRect(new_rect)
             self.setSceneRect(new_rect)
 
     def ensure_visible(self, x: float, y: float, margin: int = 200):

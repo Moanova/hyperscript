@@ -22,8 +22,10 @@ RG065). Single selection (RG049), dashed selection outline in the card
 color (charter 98: selection > hover > type), hit-testing via shape()
 (RG053).
 
-The card accent color reuses the gold accent (block_start_color, #D19A66):
-planoscript reference — agent cards used the event tint (copper).
+The card accent color is the sand accent (block_scene_color, #E5C07B) —
+TSC feedback session 04: the card outline is sand, not gold (the gold
+#D19A66 was the initial choice, planoscript reference: agent cards used
+the event tint copper).
 """
 
 from typing import Any, Optional
@@ -57,7 +59,7 @@ class AgentCardItem(QGraphicsRectItem):
 
     # Colors (dark theme via ui.utils.theme; no hard-coded values)
     DEFAULT_BG_COLOR = theme.color("bg_surface", theme.BG_SURFACE)
-    CARD_BORDER_COLOR = theme.color("block_start_color", theme.BLOCK_START_COLOR)
+    CARD_BORDER_COLOR = theme.color("block_scene_color", theme.BLOCK_SCENE_COLOR)  # sand (TSC session 04)
     HOVER_BORDER_COLOR = theme.color("hover_color", theme.HOVER_COLOR)
     TEXT_COLOR = theme.color("text_primary", theme.TEXT_PRIMARY)
     TYPE_COLOR = theme.color("text_secondary", theme.TEXT_SECONDARY)
@@ -85,6 +87,14 @@ class AgentCardItem(QGraphicsRectItem):
         self.layout = layout
 
         self.setPos(layout.x, layout.y)
+
+        # Drag bookkeeping: Qt recomputes each ItemPositionChange proposal
+        # from the last RETURNED (snapped) position, so the unsnapped
+        # position is accumulated here to keep the drag smooth; without it
+        # a slow drag whose per-event delta lands back on the previous dot
+        # never moves the card (the proposal is swallowed by the snap)
+        self._free_pos = QPointF(layout.x, layout.y)
+        self._applied_pos = QPointF(layout.x, layout.y)
 
         # Movable + selectable; no ports on an agent card (RG066)
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
@@ -236,9 +246,16 @@ class AgentCardItem(QGraphicsRectItem):
         if change == QGraphicsItem.ItemSelectedChange:
             self.set_selected_appearance(bool(value))
             self.layout.selected = bool(value)
+            # The selected card is raised above the others, so a card
+            # dragged over a neighbour never disappears behind it
+            self.setZValue(1.0 if value else 0.0)
         elif change == QGraphicsItem.ItemPositionChange:
             # Constrain the movement to the scene limits, then RG065: snap
-            # onto the nearest anchor dot
+            # onto the nearest anchor dot. The unsnapped position is
+            # accumulated from the delta against the last applied (snapped)
+            # position, because Qt bases each new proposal on that returned
+            # value — snapping the proposal directly would swallow small
+            # deltas and the card would not move.
             new_pos = value
             scene = self.scene()
             if scene:
@@ -246,23 +263,22 @@ class AgentCardItem(QGraphicsRectItem):
                 card_width = self.rect().width()
                 card_height = self.rect().height()
 
-                max_x = scene_rect.right() - card_width
-                max_y = scene_rect.bottom() - card_height
-                min_x = scene_rect.left()
-                min_y = scene_rect.top()
+                delta = new_pos - self._applied_pos
+                self._free_pos += delta
 
-                constrained_x = max(min_x, min(new_pos.x(), max_x))
-                constrained_y = max(min_y, min(new_pos.y(), max_y))
+                free_x = max(scene_rect.left(), min(self._free_pos.x(), scene_rect.right() - card_width))
+                free_y = max(scene_rect.top(), min(self._free_pos.y(), scene_rect.bottom() - card_height))
+                self._free_pos = QPointF(free_x, free_y)
 
-                constrained_x = LayoutService.snap_to_grid(constrained_x, grid_size=self.DOT_SPACING)
-                constrained_y = LayoutService.snap_to_grid(constrained_y, grid_size=self.DOT_SPACING)
+                constrained_x = LayoutService.snap_to_grid(free_x, grid_size=self.DOT_SPACING)
+                constrained_y = LayoutService.snap_to_grid(free_y, grid_size=self.DOT_SPACING)
 
+                self._applied_pos = QPointF(constrained_x, constrained_y)
                 self.layout.x = constrained_x
                 self.layout.y = constrained_y
 
-                result = QPointF(constrained_x, constrained_y)
                 self._notify_position_observers()
-                return result
+                return self._applied_pos
 
         return super().itemChange(change, value)
 

@@ -89,7 +89,13 @@ class BaseNode(QGraphicsRectItem):
         # Store references to business and visual models
         self.entity = entity
         self.layout = layout
-        
+
+        # Drag bookkeeping: Qt recomputes each ItemPositionChange proposal
+        # from the last RETURNED (snapped) position, so the unsnapped
+        # position is accumulated here; snapping the proposal directly
+        # would swallow small deltas and the node would not move
+        self._free_pos = QPointF(layout.x, layout.y)
+
         # Set initial position from layout
         self.setPos(layout.x, layout.y)
         
@@ -407,7 +413,12 @@ class BaseNode(QGraphicsRectItem):
             self.set_selected_appearance(bool(value))
             self.layout.selected = bool(value)
         elif change == QGraphicsItem.ItemPositionChange:
-            # Constrains the movement to the limits of the scene (absolute limit)
+            # Constrains the movement to the limits of the scene (absolute
+            # limit), then RG046: snap to grid. The unsnapped position is
+            # accumulated from the delta against the last applied (snapped)
+            # position, because Qt bases each new proposal on that returned
+            # value — snapping the proposal directly would swallow small
+            # deltas and the node would not move.
             new_pos = value
             scene = self.scene()
             if scene:
@@ -415,19 +426,18 @@ class BaseNode(QGraphicsRectItem):
                 # Use self.rect() for dimensions (independent of position)
                 node_width = self.rect().width()
                 node_height = self.rect().height()
-                
+
+                delta = new_pos - QPointF(self.layout.x, self.layout.y)
+                self._free_pos += delta
+
                 # Constraints to keep the node ENTIRELY within the scene
-                max_x = scene_rect.right() - node_width
-                max_y = scene_rect.bottom() - node_height
-                min_x = scene_rect.left()
-                min_y = scene_rect.top()
-                
-                constrained_x = max(min_x, min(new_pos.x(), max_x))
-                constrained_y = max(min_y, min(new_pos.y(), max_y))
+                free_x = max(scene_rect.left(), min(self._free_pos.x(), scene_rect.right() - node_width))
+                free_y = max(scene_rect.top(), min(self._free_pos.y(), scene_rect.bottom() - node_height))
+                self._free_pos = QPointF(free_x, free_y)
 
                 # RG046: snap to grid after scene constraints
-                constrained_x = LayoutService.snap_to_grid(constrained_x)
-                constrained_y = LayoutService.snap_to_grid(constrained_y)
+                constrained_x = LayoutService.snap_to_grid(free_x)
+                constrained_y = LayoutService.snap_to_grid(free_y)
 
                 # Update the layout with the constrained position.
                 self.layout.x = constrained_x

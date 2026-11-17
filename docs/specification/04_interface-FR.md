@@ -69,7 +69,7 @@
 
 ### 5. Vue « Agents » — re-conçue séance 04 (SU009, TSK19b)
 - Espace de travail dédié aux agents (niveau projet), distinct du graphe des blocs : fond `bg_primary` **identique à la vue « Journeys »**, mais habillé de **points d'ancrage à la place d'une grille** (espacement/rayon/couleur en config, dessinés sur la zone visible uniquement) (RG065).
-- Chaque agent du projet est représenté par une **carte** (`agents_view_card_width`×`agents_view_card_height`, plus grande qu'un bloc 80×40, **sans ports**) affichant libellé et type ; note en infobulle au survol (RG054) ; **aucun badge de comptage** sur la carte — les participations et relations sont traitées dans d'autres vues (RG066).
+- Chaque agent du projet est représenté par une **carte** (`agents_view_card_width`×`agents_view_card_height`, plus grande qu'un bloc 80×40, **sans ports**) affichant libellé et type ; contour de la carte en `block_scene_color` (sable, retour TSC séance 04) ; note en infobulle au survol (RG054) ; **aucun badge de comptage** sur la carte — les participations et relations sont traitées dans d'autres vues (RG066).
 - Les cartes sont déplaçables librement ; la position est **toujours forcée sur le point d'ancrage le plus proche** (RG065). Sélection unique (RG049) ; hit-testing par `shape()` élargie (RG053) ; infobulles immédiates (RG054).
 - Menu contextuel aligné sur le menu applicatif (RG055) : Edit.../Copy/Delete.../Associate with Block... pour une carte agent.
 - Les filtres (parcours, agent) ne s'appliquent pas à cette vue (RG048/RG063).

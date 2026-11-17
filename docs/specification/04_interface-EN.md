@@ -69,7 +69,7 @@
 
 ### 5. "Agents" view — re-designed session 04 (SU009, TSK19b)
 - Workspace dedicated to agents (project level), distinct from the block graph: `bg_primary` background **identical to the "Journeys" view**, but dressed with **anchor dots instead of a grid** (spacing/radius/color in config, drawn on the visible area only) (RG065).
-- Each project agent is represented by a **card** (`agents_view_card_width`×`agents_view_card_height`, larger than the 80×40 blocks, **no ports**) displaying label and type; note in a tooltip on hover (RG054); **no participation-count badge** on the card — participations and relationships are handled in other views (RG066).
+- Each project agent is represented by a **card** (`agents_view_card_width`×`agents_view_card_height`, larger than the 80×40 blocks, **no ports**) displaying label and type; card outline in `block_scene_color` (sand, TSC feedback session 04); note in a tooltip on hover (RG054); **no participation-count badge** on the card — participations and relationships are handled in other views (RG066).
 - Cards are freely movable; the position is **always forced onto the nearest anchor dot** (RG065). Single selection (RG049); hit-testing through an enlarged `shape()` (RG053); immediate tooltips (RG054).
 - Context menu aligned with the application menu (RG055): Edit.../Copy/Delete.../Associate with Block... for an agent card.
 - The filters (journey, agent) do not apply to this view (RG048/RG063).

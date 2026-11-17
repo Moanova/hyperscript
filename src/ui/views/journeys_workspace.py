@@ -98,8 +98,11 @@ class JourneysWorkspace(QGraphicsView, QObject):
         # background unless WA_StyledBackground is set
         self.setAttribute(Qt.WA_StyledBackground, True)
 
-        # Initial scene size 4000x4000 so the scrollbars are active by default
+        # Initial scene size 4000x4000 so the scrollbars are active by default.
+        # Set on the SCENE (items read scene.sceneRect() to constrain their
+        # moves) and mirrored on the view (scroll range)
         self.scene_rect_margin = 200
+        self.scene.setSceneRect(0, 0, 4000, 4000)
         self.setSceneRect(0, 0, 4000, 4000)
         self._draw_grid()
 
@@ -188,7 +191,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
         """Dynamically expand the sceneRect to include the point (x, y)."""
         if margin is None:
             margin = self.scene_rect_margin
-        new_rect = self.sceneRect()
+        new_rect = self.scene.sceneRect()
         expanded = False
         if x - margin < new_rect.left():
             new_rect.setLeft(x - margin)
@@ -203,6 +206,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
             new_rect.setBottom(y + margin)
             expanded = True
         if expanded:
+            self.scene.setSceneRect(new_rect)
             self.setSceneRect(new_rect)
 
     def ensure_visible(self, x: float, y: float, margin: int = 200):
