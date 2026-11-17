@@ -48,6 +48,8 @@
   "agents_view_dot_spacing_px": 20,
   "agents_view_dot_radius_px": 1.5,
   "agents_view_dot_color": "#4A4A4A",
+  "agents_view_snap_step_x_px": 200,
+  "agents_view_snap_step_y_px": 120,
   "agents_view_card_width": 160,
   "agents_view_card_height": 100,
   "agent_list_all_label": "All agents",

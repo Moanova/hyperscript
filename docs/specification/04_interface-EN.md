@@ -28,7 +28,7 @@
 - Font: Segoe UI; sizes in config (`menu_font_size_px` 12, `node_font_size_px` 13, `node_label_font_size_px` 9, `node_title_font_size_px` 14).
 - Node (block): 80×40 px (`node_default_width`/`node_default_height`), corner radius 6 px.
 - Grid: minor 20 px / major 80 px (`grid_minor_size`/`grid_major_size`), colors `#333333`/`#4A4A4A`, always visible, redrawn on the visible area only.
-- "Agents" view: anchor dots instead of a grid — spacing `agents_view_dot_spacing_px`, radius `agents_view_dot_radius_px`, color `agents_view_dot_color`; agent cards `agents_view_card_width`×`agents_view_card_height` (larger than the 80×40 blocks, no ports) — adopted session 04 (TSK19b).
+- "Agents" view: dots instead of a grid (decorative) — spacing `agents_view_dot_spacing_px`, radius `agents_view_dot_radius_px`, color `agents_view_dot_color`; **invisible major snap grid** — steps `agents_view_snap_step_x_px`/`agents_view_snap_step_y_px` (slightly larger than the card); agent cards `agents_view_card_width`×`agents_view_card_height` (larger than the 80×40 blocks, no ports) — adopted session 04 (TSK19b).
 - **Colors per narrative block type** (node border color): Start `#D19A66` (gold), Scene `#E5C07B` (sand), Pivot `#E06666` (red), Condition `#E06666` (red), End `#E5C07B` (sand) — adopted session 04 from the TSC visual test feedback (TSK16); Pivot and Condition deliberately share the same red, the type displayed inside the node tells them apart.
 
 
@@ -70,7 +70,7 @@
 ### 5. "Agents" view — re-designed session 04 (SU009, TSK19b)
 - Workspace dedicated to agents (project level), distinct from the block graph: `bg_primary` background **identical to the "Journeys" view**, but dressed with **anchor dots instead of a grid** (spacing/radius/color in config, drawn on the visible area only) (RG065).
 - Each project agent is represented by a **card** (`agents_view_card_width`×`agents_view_card_height`, larger than the 80×40 blocks, **no ports**) displaying label and type; card outline in `block_scene_color` (sand, TSC feedback session 04); note in a tooltip on hover (RG054); **no participation-count badge** on the card — participations and relationships are handled in other views (RG066).
-- Cards are freely movable; the position is **always forced onto the nearest anchor dot** (RG065). Single selection (RG049); hit-testing through an enlarged `shape()` (RG053); immediate tooltips (RG054).
+- Cards are freely movable; the position is **always forced onto the nearest cell of the invisible major grid** (steps `agents_view_snap_step_x_px`/`agents_view_snap_step_y_px`, slightly larger than the card; the visible dots stay purely decorative) (RG065). Single selection (RG049); hit-testing through an enlarged `shape()` (RG053); immediate tooltips (RG054).
 - Context menu aligned with the application menu (RG055): Edit.../Copy/Delete.../Associate with Block... for an agent card.
 - The filters (journey, agent) do not apply to this view (RG048/RG063).
 - Card positions are persisted **at project level** in the graphics metadata (project layout file, distinct from the per-map layouts — structure matching the business model: agents belong to the project, RG067), restored on reopening; no business value.

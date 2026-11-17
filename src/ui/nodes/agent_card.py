@@ -17,10 +17,11 @@ other views). The card shows the agent label and type; the note is shown
 in an immediate hover tooltip (RG054).
 
 The card is freely movable, but its position is always forced onto the
-nearest anchor dot (snap with agents_view_dot_spacing_px as the grid step,
-RG065). Single selection (RG049), dashed selection outline in the card
-color (charter 98: selection > hover > type), hit-testing via shape()
-(RG053).
+nearest cell of an INVISIBLE major grid (snap steps agents_view_snap_step_x_px
+/ agents_view_snap_step_y_px, slightly larger than the card; the visible dots
+stay purely decorative, RG065). Single selection (RG049), dashed selection
+outline in the card color (charter 98: selection > hover > type),
+hit-testing via shape() (RG053).
 
 The card accent color is the sand accent (block_scene_color, #E5C07B) —
 TSC feedback session 04: the card outline is sand, not gold (the gold
@@ -54,8 +55,10 @@ class AgentCardItem(QGraphicsRectItem):
     # Dash pattern of the selection outline (config.json, TSK16)
     SELECTION_DASH_PATTERN = _get_config("node_selection_dash_pattern", [4.0, 4.0])
 
-    # Anchor-dot grid step used to snap the card position (RG065)
-    DOT_SPACING = _get_config("agents_view_dot_spacing_px", 20)
+    # Invisible major-grid steps used to snap the card position (RG065):
+    # slightly larger than the card, so two snapped cards never overlap
+    SNAP_STEP_X = _get_config("agents_view_snap_step_x_px", 200.0)
+    SNAP_STEP_Y = _get_config("agents_view_snap_step_y_px", 120.0)
 
     # Colors (dark theme via ui.utils.theme; no hard-coded values)
     DEFAULT_BG_COLOR = theme.color("bg_surface", theme.BG_SURFACE)
@@ -251,11 +254,12 @@ class AgentCardItem(QGraphicsRectItem):
             self.setZValue(1.0 if value else 0.0)
         elif change == QGraphicsItem.ItemPositionChange:
             # Constrain the movement to the scene limits, then RG065: snap
-            # onto the nearest anchor dot. The unsnapped position is
-            # accumulated from the delta against the last applied (snapped)
-            # position, because Qt bases each new proposal on that returned
-            # value — snapping the proposal directly would swallow small
-            # deltas and the card would not move.
+            # onto the nearest cell of the invisible major grid (per-axis
+            # steps). The unsnapped position is accumulated from the delta
+            # against the last applied (snapped) position, because Qt bases
+            # each new proposal on that returned value — snapping the
+            # proposal directly would swallow small deltas and the card
+            # would not move.
             new_pos = value
             scene = self.scene()
             if scene:
@@ -270,8 +274,8 @@ class AgentCardItem(QGraphicsRectItem):
                 free_y = max(scene_rect.top(), min(self._free_pos.y(), scene_rect.bottom() - card_height))
                 self._free_pos = QPointF(free_x, free_y)
 
-                constrained_x = LayoutService.snap_to_grid(free_x, grid_size=self.DOT_SPACING)
-                constrained_y = LayoutService.snap_to_grid(free_y, grid_size=self.DOT_SPACING)
+                constrained_x = LayoutService.snap_to_grid(free_x, grid_size=self.SNAP_STEP_X)
+                constrained_y = LayoutService.snap_to_grid(free_y, grid_size=self.SNAP_STEP_Y)
 
                 self._applied_pos = QPointF(constrained_x, constrained_y)
                 self.layout.x = constrained_x

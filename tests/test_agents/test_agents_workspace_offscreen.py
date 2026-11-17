@@ -36,11 +36,15 @@ try:
 except Exception as e:  # libGL missing, no display, ...
     pytest.skip(f"Qt not usable in this environment: {e}", allow_module_level=True)
 
+from config.config_loader import get as _get_config
 from core.services.project_service import ProjectService
 from usecases.project_management import CreateProjectUseCase
 from usecases.agent_management import CreateAgentUseCase
 from ui.views.agents_workspace import AgentsWorkspace
 from ui.nodes.agent_card import AgentCardItem
+
+SNAP_X = float(_get_config("agents_view_snap_step_x_px", 200.0))
+SNAP_Y = float(_get_config("agents_view_snap_step_y_px", 120.0))
 
 
 def make_workspace(n_agents: int) -> AgentsWorkspace:
@@ -87,33 +91,38 @@ def test_scene_rect_is_set_on_the_scene_not_only_the_view():
     assert ws.scene.sceneRect().height() >= 4000.0
 
 
-def test_card_drag_works_on_both_axes_and_snaps_to_dots():
+def test_card_drag_works_on_both_axes_and_snaps_to_the_major_grid():
     ws = make_workspace(1)
     card = cards_of(ws)[0]
-    assert (card.pos().x(), card.pos().y()) == (80.0, 80.0)
-    drag(ws, card, 0, 100)  # vertical must work
-    assert card.pos().y() > 80.0, "vertical drag did not move the card"
-    assert card.pos().y() % 20 == 0, "card not snapped to an anchor dot"
+    # initial placement on the invisible major grid (RG065)
+    assert (card.pos().x(), card.pos().y()) == (SNAP_X, SNAP_Y)
+    drag(ws, card, 0, int(SNAP_Y) + 40)  # vertical: past half a cell -> next row
+    assert card.pos().y() > SNAP_Y, "vertical drag did not move the card"
+    assert card.pos().y() % SNAP_Y == 0, "card not snapped to the major grid"
     y_after_v = card.pos().y()
-    drag(ws, card, 60, 0)  # horizontal must work
-    assert card.pos().x() > 80.0, "horizontal drag did not move the card"
+    drag(ws, card, int(SNAP_X) + 40, 0)  # horizontal: past half a cell -> next column
+    assert card.pos().x() > SNAP_X, "horizontal drag did not move the card"
     assert card.pos().y() == y_after_v
-    assert card.pos().x() % 20 == 0, "card not snapped to an anchor dot"
+    assert card.pos().x() % SNAP_X == 0, "card not snapped to the major grid"
 
 
 def test_card_drag_vertical_works_with_several_cards():
     ws = make_workspace(3)
-    card = cards_of(ws)[1]  # middle card
-    drag(ws, card, 0, 120)
-    assert card.pos().y() > 80.0, f"vertical drag did not move the card (y={card.pos().y()})"
-    assert card.pos().y() % 20 == 0
+    cards = cards_of(ws)
+    # all cards placed on the invisible major grid, one cell apart, no overlap
+    assert [c.pos().x() for c in cards] == [SNAP_X, 2 * SNAP_X, 3 * SNAP_X]
+    assert all(c.pos().y() == SNAP_Y for c in cards)
+    card = cards[1]  # middle card
+    drag(ws, card, 0, int(SNAP_Y) + 40)
+    assert card.pos().y() > SNAP_Y, f"vertical drag did not move the card (y={card.pos().y()})"
+    assert card.pos().y() % SNAP_Y == 0
 
 
 def test_selected_card_is_raised_above_neighbours():
     ws = make_workspace(3)
     cards = cards_of(ws)
-    drag(ws, cards[0], 200, 0)  # dragged over the neighbours
-    assert cards[0].pos().x() > 240.0, "card did not move over the neighbour"
+    drag(ws, cards[0], int(SNAP_X), 0)  # dragged one major cell to the right
+    assert cards[0].pos().x() == 2 * SNAP_X, "card did not land on the next major cell"
     assert cards[0].zValue() == 1.0
     assert all(c.zValue() == 0.0 for c in cards[1:])
 
@@ -126,4 +135,4 @@ def test_collect_project_layout_reports_card_positions():
     card_layout = layout.get_agent_card_layout(cards[0].entity.id)
     assert card_layout is not None
     assert (card_layout.x, card_layout.y) == (cards[0].pos().x(), cards[0].pos().y())
-    assert card_layout.x % 20 == 0 and card_layout.y % 20 == 0
+    assert card_layout.x % SNAP_X == 0 and card_layout.y % SNAP_Y == 0
