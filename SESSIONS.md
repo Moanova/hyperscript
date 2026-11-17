@@ -47,14 +47,13 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 - Docs historiques (conception, fiches TSK01–TSK15) laissés en l'état ; seules les specs `docs/specification/` et la matrice `docs/projet/implementation-*` suivent les nouveaux noms de menu.
 
 ### État en fin de séance
-- `py_compile` OK sur les fichiers modifiés, `json.tool`/`yaml.safe_load` OK, **45 tests passed** (`QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q`).
-- Kanban : TSK01–TSK16 en **Done** ; **TSK17, TSK18, TSK19a et TSK19b en Review** ; TSK20 en To do.
-- Commits + push sur `dev` effectués sur demande TSC (12 commits : précédents + commits TSK19a, TSK19b, correctif, pas majeur et couloirs).
-- Prochaine étape : **TSK20** (relations agent-agent, FN034/RG035) ; validation TSC des tâches en Review ; smoke offscreen Qt des vues (TSK16, TSK19a, TSK19b) sur le poste de dev.
-- Smoke offscreen Qt (rendu QImage des points visuels TSK16) à exécuter sur le poste de dev : libGL absent dans le sandbox, PySide6 non importable ici.
+- `py_compile` OK sur les fichiers modifiés, `json.tool` OK, **79 tests passed avec Qt offscreen** (`LD_LIBRARY_PATH=... QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q` — 8 tests offscreen Agents), **71 passed + 8 skipped sans Qt** (`QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q`).
+- Kanban : TSK01–TSK16 en **Done** ; **TSK17, TSK18, TSK19a et TSK19b en Review** (en attente de validation TSC) ; TSK20 en To do.
+- Commits + push sur `dev` effectués sur demande TSC (12 commits : précédents + commits TSK19a, TSK19b, correctif TSK19b, pas majeur et couloirs).
+- Prochaine séance : **retour TSC sur le mécanisme des couloirs** de la vue « Agents » (TSK19b), puis validation des tâches en Review, puis **TSK20** (relations agent-agent, FN034/RG035) ; smoke offscreen Qt des vues (TSK16, TSK19a, TSK19b) à confirmer sur le poste de dev.
 
 ### Problèmes rencontrés
-- Sandbox : `libGL.so.1` absent (pas de droits root) → PySide6 non importable : vérifications Qt offscreen non exécutées ici (comme en séance n°03) ; `pytest` réinstallé via pip (9.2.0).
+- Sandbox : `libGL.so.1` et libs X absent au départ → contourné en séance n°04 : `pip install PySide6` (6.12.0) + libs système téléchargées sans root (`apt-get -o Dir::State::Lists=/tmp/apt ... download` + `dpkg -x` dans /tmp/qtlibs, `LD_LIBRARY_PATH=/tmp/qtlibs/root/usr/lib/x86_64-linux-gnu:/tmp/qtlibs/stub`) → **Qt 6.12 fonctionne offscreen dans le sandbox** : repro QTest des drags, rendu QImage (pixel contour carte `#e5c07b`), 8 tests offscreen exécutés (79 passed). Les tests offscreen restent skippés proprement quand Qt/libGL est absent (sandbox standard, CI).
 
 ---
 
