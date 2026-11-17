@@ -105,9 +105,9 @@
 | RG062 | L'auteur peut à tout moment désigner l'un des parcours de la carte comme… | implemented | usecases/journey_management/set_default_journey_usecase.py; ui/dialogs/journey_selection_dialog.py | tests/test_journeys/test_journey_usecases.py | désignation remplace le défaut, actif inchangé |
 | RG063 | Filtre agent dans les vues de la carte ; non appliqué à la vue « Agents » ; désactivé par défaut, non persisté,… | implemented | core/services/agent_filter_service.py; ui/views/journeys_workspace.py (_item_in_filter, apply_filters, set_agent_filter); ui/main_window.py (Display › Agent, _rebuild_agent_menu, _set_agent_filter) | tests/test_agents/test_agent_filter_service.py | rendu visuel (opacité + désactivation) à valider offscreen |
 | RG064 | Filtre de parcours + filtre agent actifs ensemble : intersection des deux filtres | implemented | ui/views/journeys_workspace.py (_item_in_filter : ET des deux filtres) | tests/test_agents/test_agent_filter_service.py (intersection RG064) | — |
-| RG065 | Vue « Agents » : même fond sombre que « Journeys », points d'ancrage à la place de la grille ; cartes déplaçables, position forcée sur le point le plus proche | not-started | — | — | — |
-| RG066 | Carte agent dans la vue « Agents » : plus grande qu'un bloc, sans ports, libellé + type, sélection unique, note en infobulle ; pas de badge de comptage | not-started | — | — | — |
-| RG067 | Positions des cartes agent persistées au niveau projet dans les métadonnées graphiques (fichier layout projet), restaurées à la réouverture ; sans valeur métier | not-started | — | — | — |
+| RG065 | Vue « Agents » : même fond sombre que « Journeys », points d'ancrage à la place de la grille ; cartes déplaçables, position forcée sur le point le plus proche | implemented | ui/views/agents_workspace.py (drawBackground : points sur la zone visible, config agents_view_dot_*) ; ui/nodes/agent_card.py (itemChange : snap LayoutService.snap_to_grid(v, agents_view_dot_spacing_px)) | tests/test_agents/test_project_layout.py (snap) | rendu visuel offscreen à valider |
+| RG066 | Carte agent dans la vue « Agents » : plus grande qu'un bloc, sans ports, libellé + type, sélection unique, note en infobulle ; pas de badge de comptage | implemented | ui/nodes/agent_card.py AgentCardItem (agents_view_card_width/height, sans ports ni badge, shape() RG053, sélection unique RG049, infobulle immédiate RG054) ; ui/views/agents_workspace.py (_select_item_only) | — | rendu visuel offscreen à valider |
+| RG067 | Positions des cartes agent persistées au niveau projet dans les métadonnées graphiques (fichier layout projet), restaurées à la réouverture ; sans valeur métier | implemented | core/models/view_model.py (AgentCardLayout, ProjectLayout) ; core/services/layout_service.py (save/load_project_layout → layouts/project.json) ; ui/views/agents_workspace.py (collect_project_layout, populate_agents) ; ui/main_window.py (_do_save, _init_workspace) | tests/test_agents/test_project_layout.py | — |
 
 ## B. Fonctionnalités (`03_features-*.md`)
 
@@ -187,7 +187,7 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN030 | Associer des agents à un bloc | partial | Associate agents... (menu contextuel du bloc, vue « Journeys ») ; Associate with Block... (Projet › Agents) | usecases/participation_management/ (associate/dissociate) ; core/services/participation_service.py ; ui/dialogs/agent_association_dialog.py ; ui/main_window.py | — | — | tests/test_agents/test_participation_usecases.py ; menu contextuel bloc : TSK19b ; filtre agent : TSK19a |
+| FN030 | Associer des agents à un bloc | implemented | Associate agents... (menu contextuel du bloc, vue « Journeys », TSK19b) ; Associate with Block... (Projet › Agents) | usecases/participation_management/ (associate/dissociate) ; core/services/participation_service.py ; ui/dialogs/agent_association_dialog.py ; ui/main_window.py (_open_association_dialog, _show_workspace_context_menu) | — | — | tests/test_agents/test_participation_usecases.py |
 | FN031 | Gérer les agents du projet | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Associate with Block...) | usecases/agent_management/ (create/update/duplicate/delete) ; ui/dialogs/agent_dialog.py, agent_selection_dialog.py ; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
 | FN032 | Naviguer entre les vues (navigation croisée) | not-started | — | — | — | — | — |
 | FN033 | Aperçu d'export (espace de travail « Export ») | not-started | — | — | — | — | — |
@@ -254,12 +254,12 @@
 | Projet › Vue › Agents | Agents |  | stub | menu_actions['view_agents'] |
 | Projet › Vue › Relations | Relations |  | stub | menu_actions['view_relationships'] |
 | Projet › Vue › Export | Export |  | stub | menu_actions['view_export'] |
-| Projet › Agents | Agents |  | stub | menu_actions['agents_*'] (stubs — vue Agents hors MVP) |
-| Projet › Agents › Nouveau... | Nouveau... |  | stub | menu_actions['agents_new'] |
-| Projet › Agents › Éditer... | Éditer... |  | stub | menu_actions['agents_edit'] |
-| Projet › Agents › Copier | Copier |  | stub | menu_actions['agents_copy'] |
-| Projet › Agents › Supprimer... | Supprimer... |  | stub | menu_actions['agents_delete'] |
-| Projet › Agents › Associer à un bloc... | Associer à un bloc... |  | stub | menu_actions['agents_associate'] |
+| Projet › Agents | Agents |  | implemented | menu_actions['agents_*'] (TSK18 ; AGENT_DEPENDENT pour edit/copy/delete/associate) |
+| Projet › Agents › Nouveau... | Nouveau... |  | implemented | main_window._new_agent (dialogue + use case + carte ajoutée dans la vue « Agents », TSK19b) |
+| Projet › Agents › Éditer... | Éditer... |  | implemented | main_window._edit_agent (agent optionnel = carte du menu contextuel, TSK19b) |
+| Projet › Agents › Copier | Copier |  | implemented | main_window._copy_agent |
+| Projet › Agents › Supprimer... | Supprimer... |  | implemented | main_window._delete_agent (confirmation RG033 comptée, carte retirée TSK19b) |
+| Projet › Agents › Associer à un bloc... | Associer à un bloc... |  | implemented | main_window._associate_agent_with_block → _open_association_dialog (FN030) |
 | Projet › Blocs | Blocs |  | implemented | menu_actions['blocks_*'] |
 | Projet › Blocs › Nouveau | Nouveau |  | implemented | menu_actions['blocks_new'] |
 | Projet › Blocs › Nouveau › Scène | Scène |  | implemented | menu_actions['blocks_new_scene'] |
@@ -298,8 +298,8 @@
 | SU005 | Gérer un parcours | FN019, FN023, FN024, FN025, FN026, FN027, FN038 | implemented |
 | SU006 | Visualiser la carte narrative (vue « Parcours ») | FN017, FN028, FN029 | partial |
 | SU007 | Exporter la carte narrative | FN013, FN033 | not-started |
-| SU008 | Gérer les participations agent-bloc | FN030, FN031 | partial |
-| SU009 | Gérer la vue agents — re-conçue séance 04 (points d'ancrage + cartes agent, TSK19b) | FN031, FN032 | not-started |
+| SU008 | Gérer les participations agent-bloc | FN030, FN031 | implemented |
+| SU009 | Gérer la vue agents — re-conçue séance 04 (points d'ancrage + cartes agent, TSK19b) | FN031, FN032 | implemented |
 | SU010 | Visualiser l'aperçu d'export — initialisé, à finaliser après la phase de conception | FN033 | not-started |
 | SU011 | Gérer une relation entre agents | FN034, FN037 | not-started |
 | SU012 | Gérer la vue « Relations » — initialisée, à finaliser après la phase de conception | FN032, FN036 | not-started |

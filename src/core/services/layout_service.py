@@ -16,10 +16,13 @@ separately from the business data model.
 
 Layout files are stored in a subdirectory named after the project file:
     {project_file_dir}/{project_file_stem}/layouts/{narrative_map_id}.json
+plus the project-level layout (agent card positions, RG067):
+    {project_file_dir}/{project_file_stem}/layouts/project.json
 
 Example:
     /user/projects/my_project.json
     /user/projects/my_project/layouts/a1b2c3d4-5678-90ef-ghij-klmnopqrstuv.json
+    /user/projects/my_project/layouts/project.json
 
 This ensures that:
 - All files related to a project are grouped together
@@ -37,8 +40,10 @@ logger = logging.getLogger(__name__)
 
 from core.models.view_model import (
     WorkspaceLayout,
+    ProjectLayout,
     NodeLayout,
     ConnectionLayout,
+    AgentCardLayout,
     PortPosition,
     ConnectionStyle
 )
@@ -121,15 +126,21 @@ class LayoutService:
         {project_file_dir}/
         └── {project_file_stem}/
             └── layouts/
-                └── {narrative_map_id}.json
-    
+                ├── {narrative_map_id}.json   (per-map workspace layouts)
+                └── project.json               (project-level layout, RG067)
+
     Example:
         /user/docs/my_project.json
         /user/docs/my_project/layouts/a1b2c3d4-5678-90ef-ghij-klmnopqrstuv.json
+        /user/docs/my_project/layouts/project.json
     """
     
     # Subdirectory name for layouts within project directory
     LAYOUT_SUBDIR = "layouts"
+
+    # Project-level layout file (RG067): agents belong to the project, so
+    # their card positions live in a project file, not in a per-map layout
+    PROJECT_LAYOUT_FILENAME = "project.json"
     
     @classmethod
     def _get_project_dir(cls, project_filepath: str) -> Path:
@@ -191,6 +202,88 @@ class LayoutService:
         layout_dir = cls._get_layout_dir(project_filepath)
         safe_map_id = narrative_map_id.replace("/", "_").replace("\\", "_")
         return layout_dir / f"{safe_map_id}.json"
+
+    @classmethod
+    def _get_project_layout_filepath(cls, project_filepath: str) -> Path:
+        """
+        Generate the filepath of the project-level layout (RG067).
+
+        Structure: {project_dir}/layouts/project.json
+
+        Args:
+            project_filepath: Full path to the project JSON file
+
+        Returns:
+            Path to the project layout JSON file
+        """
+        return cls._get_layout_dir(project_filepath) / cls.PROJECT_LAYOUT_FILENAME
+
+    @classmethod
+    def save_project_layout(
+        cls,
+        project_filepath: str,
+        layout: ProjectLayout
+    ) -> bool:
+        """
+        Save the project-level layout (agent card positions, RG067) to a
+        JSON file next to the per-map workspace layouts.
+
+        Args:
+            project_filepath: Full path to the project JSON file
+            layout: ProjectLayout instance to save
+
+        Returns:
+            True if the layout was saved successfully, False otherwise
+
+        Raises:
+            ValueError: If project_filepath is empty
+            IOError: If the file cannot be written
+        """
+        if not project_filepath:
+            raise ValueError("project_filepath cannot be empty")
+
+        filepath = cls._get_project_layout_filepath(project_filepath)
+
+        try:
+            with open(filepath, 'w', encoding='utf-8') as f:
+                json.dump(
+                    layout.to_dict(),
+                    f,
+                    indent=2,
+                    ensure_ascii=False
+                )
+            return True
+        except IOError as e:
+            logger.error("Error saving project layout to %s: %s", filepath, e)
+            return False
+
+    @classmethod
+    def load_project_layout(
+        cls,
+        project_filepath: str
+    ) -> Optional[ProjectLayout]:
+        """
+        Load the project-level layout (RG067) from its JSON file.
+
+        Args:
+            project_filepath: Full path to the project JSON file
+
+        Returns:
+            ProjectLayout instance if the file exists and is valid,
+            None otherwise
+        """
+        filepath = cls._get_project_layout_filepath(project_filepath)
+
+        if not filepath.exists():
+            return None
+
+        try:
+            with open(filepath, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            return ProjectLayout.from_dict(data)
+        except (IOError, json.JSONDecodeError, KeyError) as e:
+            logger.error("Error loading project layout from %s: %s", filepath, e)
+            return None
 
     @classmethod
     def get_project_dir(cls, project_filepath: str) -> Path:
@@ -357,12 +450,14 @@ class LayoutService:
         
         layouts = []
         for filepath in layout_dir.glob("*.json"):
+            if filepath.name == cls.PROJECT_LAYOUT_FILENAME:
+                continue  # RG067: project-level layout, not a map layout
             # Le nom du fichier est directement l'UUID de la NarrativeMap
             narrative_map_id = filepath.stem
             # Revert sanitization (replace underscores with hyphens for UUIDs)
             narrative_map_id = narrative_map_id.replace("_", "-")
             layouts.append(narrative_map_id)
-        
+
         return layouts
 
     @classmethod
@@ -394,11 +489,13 @@ class LayoutService:
             return 0
 
         # Sanitize keep_ids the same way _get_layout_filepath does,
-        # so the comparison matches the filenames on disk
+        # so the comparison matches the filenames on disk. The project-level
+        # layout (RG067) is not a map layout: it is always kept.
         keep_filenames = {
             narrative_map_id.replace("/", "_").replace("\\", "_") + ".json"
             for narrative_map_id in keep_ids
         }
+        keep_filenames.add(cls.PROJECT_LAYOUT_FILENAME)
 
         deleted = 0
         try:

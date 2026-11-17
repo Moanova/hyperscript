@@ -1,6 +1,6 @@
 # TSK19b — Vue « Agents » re-conçue : points d'ancrage + cartes agent (RG065/RG066/RG067)
 
-- **Créée** : 2026-11-17 — en To do (passera en Doing quand TSK19a sera en Review/Done)
+- **Créée** : 2026-11-17 — passée en Doing 2026-11-17 (TSK19a en Review)
 - **Dépendances** : → #TSK11, → #TSK17, → #TSK18
 
 ## Objectif
@@ -32,3 +32,4 @@ Filtre agent (TSK19a) ; relations (TSK20) ; vue « Relationships » ; badge de c
 ## Journal
 
 - 2026-11-17 : fiche créée avec le plan ; tâche en To do (dépendances TSK11 Done, TSK17/TSK18 en Review).
+- 2026-11-17 : **travaux réalisés** — `view_model.py` : `AgentCardLayout` + `ProjectLayout` (to_dict/from_dict, clés Agent.id) ; `layout_service.py` : `save_project_layout`/`load_project_layout` → `layouts/project.json` (RG067), `project.json` exclu de `list_project_layouts` et conservé par `delete_stale_layouts` ; `ui/nodes/agent_card.py` `AgentCardItem` (160×100 config, arrondi `node_corner_radius_px`, **sans ports ni badge**, libellé + type, infobulle immédiate lb+note RG054, `shape()` RG053, sélection unique RG049 tirets `node_selection_dash_pattern`, `itemChange` snap sur point `agents_view_dot_spacing_px` + contraintes scène + expansion 4 directions) ; `ui/views/agents_workspace.py` `AgentsWorkspace` (fond `bg_primary`, points dessinés dans `drawBackground` sur la zone visible uniquement, scène 4000×4000 extensible, scrollbars toujours visibles, populate depuis `project.agent` + positions du layout projet sinon `find_non_overlapping_position` sur la trame de points, `collect_project_layout()`, signaux vers MainWindow RG058, aucun filtre appliqué RG048) ; `main_window.py` : placeholder « Agents » remplacé par le workspace, save/load du layout projet (`_do_save`/`_init_workspace`), menus contextuels (carte → Edit.../Copy/Delete.../Associate with Block... appliqués à l'agent de la carte via les handlers TSK18 avec paramètre agent optionnel ; grille vide → New...), entrée « Associate agents... » au menu contextuel de bloc dans la vue Journeys (FN030), refresh des cartes après CRUD agent ; `04_interface` §3 (onglet Agents = espace dédié, plus « vue matrice ») ; matrices FR/EN (RG065/RG066/RG067/FN030/SU008/SU009/Projet›Agents → implemented). py_compile OK, **71 tests passed** (7 nouveaux : sérialisation ProjectLayout, save/load project.json, exclusion de project.json des listings, snap sur points), RG058 OK (aucun import Qt dans core/usecases). Rendu visuel (points, cartes, snap, persistance save/reopen, menus contextuels) à valider offscreen sur poste de dev. Passée en Review.

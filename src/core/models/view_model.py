@@ -10,7 +10,9 @@
 View model of Hyperscript: visual layout of the workspaces (RG060).
 
 Purely visual data (positions, sizes, styles, zoom, scroll), stored in a
-dedicated file per narrative map, separate from the business model.
+dedicated file per narrative map, separate from the business model. Agent
+card positions belong to the project (RG057) and are stored in a
+project-level file (RG067).
 Node dimensions are sourced from config.json (single source of truth).
 """
 
@@ -23,6 +25,10 @@ from config.config_loader import get as _get_config
 # Node dimensions sourced from config.json (single source of truth).
 _NODE_DEFAULT_WIDTH = _get_config("node_default_width", 80.0)
 _NODE_DEFAULT_HEIGHT = _get_config("node_default_height", 40.0)
+
+# Agent card dimensions sourced from config.json (Agents view, RG066).
+_AGENT_CARD_DEFAULT_WIDTH = _get_config("agents_view_card_width", 160.0)
+_AGENT_CARD_DEFAULT_HEIGHT = _get_config("agents_view_card_height", 100.0)
 
 
 class BlockType(Enum):
@@ -256,3 +262,96 @@ class WorkspaceLayout:
         self.zoom_level = 1.0
         self.scroll_x = 0.0
         self.scroll_y = 0.0
+
+
+@dataclass
+class AgentCardLayout:
+    """
+    Visual layout of a single agent card in the "Agents" view (RG066/RG067).
+
+    Attributes:
+        agent_id: The ID of the business entity (Agent.id)
+        x: X position in pixels (workspace coordinates, snapped to an anchor dot)
+        y: Y position in pixels (workspace coordinates, snapped to an anchor dot)
+        width: Width of the card in pixels (agents_view_card_width)
+        height: Height of the card in pixels (agents_view_card_height)
+        selected: Whether the card is currently selected
+    """
+    agent_id: int
+    x: float
+    y: float
+    width: float = _AGENT_CARD_DEFAULT_WIDTH
+    height: float = _AGENT_CARD_DEFAULT_HEIGHT
+    selected: bool = False
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return {
+            'agent_id': self.agent_id,
+            'x': self.x,
+            'y': self.y,
+            'width': self.width,
+            'height': self.height,
+            'selected': self.selected
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'AgentCardLayout':
+        """Create an AgentCardLayout from a dictionary."""
+        return cls(
+            agent_id=int(data['agent_id']),
+            x=float(data['x']),
+            y=float(data['y']),
+            width=float(data.get('width', _AGENT_CARD_DEFAULT_WIDTH)),
+            height=float(data.get('height', _AGENT_CARD_DEFAULT_HEIGHT)),
+            selected=bool(data.get('selected', False))
+        )
+
+
+@dataclass
+class ProjectLayout:
+    """
+    Project-level visual layout (RG067).
+
+    Agents belong to the project (RG057), not to a narrative map, so the
+    positions of their cards in the "Agents" view are stored in a dedicated
+    project-level file (layouts/project.json), separate from the per-map
+    workspace layouts. Purely visual data: no business value.
+
+    Attributes:
+        agent_cards: Dict keyed by Agent.id
+    """
+    agent_cards: Dict[int, AgentCardLayout] = field(default_factory=dict)
+
+    def to_dict(self) -> Dict[str, Any]:
+        """Convert to dictionary for JSON serialization."""
+        return {
+            'agent_cards': {str(k): v.to_dict() for k, v in self.agent_cards.items()},
+        }
+
+    @classmethod
+    def from_dict(cls, data: Dict[str, Any]) -> 'ProjectLayout':
+        """Create a ProjectLayout from a dictionary."""
+        return cls(
+            agent_cards={int(k): AgentCardLayout.from_dict(v)
+                         for k, v in data.get('agent_cards', {}).items()},
+        )
+
+    def get_agent_card_layout(self, agent_id: int) -> Optional[AgentCardLayout]:
+        """Get the layout of an agent card by Agent.id."""
+        return self.agent_cards.get(agent_id)
+
+    def add_agent_card(self, card_layout: AgentCardLayout) -> None:
+        """Add or update an agent card layout."""
+        self.agent_cards[card_layout.agent_id] = card_layout
+
+    def remove_agent_card(self, agent_id: int) -> bool:
+        """Remove an agent card layout by Agent.id."""
+        if agent_id in self.agent_cards:
+            del self.agent_cards[agent_id]
+            return True
+        return False
+
+    def clear(self) -> None:
+        """Clear all agent card layouts."""
+        self.agent_cards.clear()

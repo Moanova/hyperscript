@@ -105,9 +105,9 @@
 | RG062 | The author can at any time designate one of the map's journeys as the default… | implemented | usecases/journey_management/set_default_journey_usecase.py; ui/dialogs/journey_selection_dialog.py | tests/test_journeys/test_journey_usecases.py | designation replaces the default, active unchanged |
 | RG063 | Agent filter in the map views; not applied to the Agents view; off by default, not persisted,… | implemented | core/services/agent_filter_service.py; ui/views/journeys_workspace.py (_item_in_filter, apply_filters, set_agent_filter); ui/main_window.py (Display > Agent, _rebuild_agent_menu, _set_agent_filter) | tests/test_agents/test_agent_filter_service.py | visual rendering (opacity + disabled) to validate offscreen |
 | RG064 | Journey filter + agent filter active at once: intersection of the two filters | implemented | ui/views/journeys_workspace.py (_item_in_filter: AND of both filters) | tests/test_agents/test_agent_filter_service.py (RG064 intersection) | — |
-| RG065 | "Agents" view: same dark background as "Journeys", anchor dots instead of a grid; cards freely movable, position forced onto the nearest dot | not-started | — | — | — |
-| RG066 | Agent card in the "Agents" view: larger than a block, no ports, label + type, single selection, note tooltip; no participation-count badge | not-started | — | — | — |
-| RG067 | Agent card positions persisted at project level in the graphics metadata (project layout file), restored on reopening; no business value | not-started | — | — | — |
+| RG065 | "Agents" view: same dark background as "Journeys", anchor dots instead of a grid; cards freely movable, position forced onto the nearest dot | implemented | ui/views/agents_workspace.py (drawBackground: dots on the visible area, config agents_view_dot_*) ; ui/nodes/agent_card.py (itemChange: snap LayoutService.snap_to_grid(v, agents_view_dot_spacing_px)) | tests/test_agents/test_project_layout.py (snap) | visual rendering offscreen to validate |
+| RG066 | Agent card in the "Agents" view: larger than a block, no ports, label + type, single selection, note tooltip; no participation-count badge | implemented | ui/nodes/agent_card.py AgentCardItem (agents_view_card_width/height, no ports no badge, shape() RG053, single selection RG049, immediate tooltip RG054) ; ui/views/agents_workspace.py (_select_item_only) | — | visual rendering offscreen to validate |
+| RG067 | Agent card positions persisted at project level in the graphics metadata (project layout file), restored on reopening; no business value | implemented | core/models/view_model.py (AgentCardLayout, ProjectLayout) ; core/services/layout_service.py (save/load_project_layout → layouts/project.json) ; ui/views/agents_workspace.py (collect_project_layout, populate_agents) ; ui/main_window.py (_do_save, _init_workspace) | tests/test_agents/test_project_layout.py | — |
 
 ## B. Features (`03_features-*.md`)
 
@@ -187,7 +187,7 @@
 
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN030 | Associate agents with a block | partial | Associate agents... (block context menu, Journeys view); Associate with Block... (Project > Agents) | usecases/participation_management/ (associate/dissociate); core/services/participation_service.py; ui/dialogs/agent_association_dialog.py; ui/main_window.py | — | — | tests/test_agents/test_participation_usecases.py ; block context menu : TSK19b ; agent filter : TSK19a |
+| FN030 | Associate agents with a block | implemented | Associate agents... (block context menu, Journeys view, TSK19b); Associate with Block... (Project > Agents) | usecases/participation_management/ (associate/dissociate); core/services/participation_service.py; ui/dialogs/agent_association_dialog.py; ui/main_window.py (_open_association_dialog, _show_workspace_context_menu) | — | — | tests/test_agents/test_participation_usecases.py |
 | FN031 | Manage the project's agents | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Associate with Block...) | usecases/agent_management/ (create/update/duplicate/delete); ui/dialogs/agent_dialog.py, agent_selection_dialog.py; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
 | FN032 | Cross-view navigation | not-started | — | — | — | — | — |
 | FN033 | Export preview (workspace "Export") | not-started | — | — | — | — | — |
@@ -254,12 +254,12 @@
 | Project › View › Agents | Agents |  | stub | menu_actions['view_agents'] |
 | Project › View › Relationships | Relationships |  | stub | menu_actions['view_relationships'] |
 | Project › View › Export | Export |  | stub | menu_actions['view_export'] |
-| Project › Agents | Agents |  | stub | menu_actions['agents_*'] (stubs — Agents view out of MVP) |
-| Project › Agents › New... | New... |  | stub | menu_actions['agents_new'] |
-| Project › Agents › Edit... | Edit... |  | stub | menu_actions['agents_edit'] |
-| Project › Agents › Copy | Copy |  | stub | menu_actions['agents_copy'] |
-| Project › Agents › Delete... | Delete... |  | stub | menu_actions['agents_delete'] |
-| Project › Agents › Associate with Block... | Associate with Block... |  | stub | menu_actions['agents_associate'] |
+| Project › Agents | Agents |  | implemented | menu_actions['agents_*'] (TSK18; AGENT_DEPENDENT for edit/copy/delete/associate) |
+| Project › Agents › New... | New... |  | implemented | main_window._new_agent (dialog + use case + card added in the "Agents" view, TSK19b) |
+| Project › Agents › Edit... | Edit... |  | implemented | main_window._edit_agent (optional agent = card of the context menu, TSK19b) |
+| Project › Agents › Copy | Copy |  | implemented | main_window._copy_agent |
+| Project › Agents › Delete... | Delete... |  | implemented | main_window._delete_agent (counted RG033 confirmation, card removed TSK19b) |
+| Project › Agents › Associate with Block... | Associate with Block... |  | implemented | main_window._associate_agent_with_block → _open_association_dialog (FN030) |
 | Project › Blocks | Blocks |  | implemented | menu_actions['blocks_*'] |
 | Project › Blocks › New | New |  | implemented | menu_actions['blocks_new'] |
 | Project › Blocks › New › Scene | Scene |  | implemented | menu_actions['blocks_new_scene'] |
@@ -298,8 +298,8 @@
 | SU005 | Manage a Journey | FN019, FN023, FN024, FN025, FN026, FN027, FN038 | implemented |
 | SU006 | Visualize the Narrative Map (view "Journeys") | FN017, FN028, FN029 | partial |
 | SU007 | Export the Narrative Map | FN013, FN033 | not-started |
-| SU008 | Manage agent-block Participations | FN030, FN031 | partial |
-| SU009 | Manage the agents view — re-designed session 04 (anchor dots + agent cards, TSK19b) | FN031, FN032 | not-started |
+| SU008 | Manage agent-block Participations | FN030, FN031 | implemented |
+| SU009 | Manage the agents view — re-designed session 04 (anchor dots + agent cards, TSK19b) | FN031, FN032 | implemented |
 | SU010 | Preview the export — initialized, to be finalized after the design phase | FN033 | not-started |
 | SU011 | Manage a Relationship Between Agents | FN034, FN037 | not-started |
 | SU012 | Manage the "Relationships" view — initialized, to be finalized after the design phase | FN032, FN036 | not-started |

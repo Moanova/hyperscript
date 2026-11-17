@@ -28,12 +28,13 @@
 
 ### To do
 
-- [ ] TSK19b — Vue « Agents » re-conçue (RG065/RG066/RG067) : espace dédié fond `bg_primary` identique à « Journeys », habillé de points d'ancrage (config `agents_view_dot_*`) au lieu d'une grille, dessinés sur la zone visible ; cartes agent `AgentCardItem` (`agents_view_card_width/height`, sans ports, libellé+type, note en infobulle, sélection unique, snap sur le point le plus proche) ; pas de badge de comptage ; menu contextuel carte (Edit.../Copy/Delete.../Associate with Block...) ; + entrée « Associate agents... » au menu contextuel de bloc dans la vue « Journeys » (FN030) ; positions persistées au niveau projet (fichier layout projet `layouts/project.json`, RG067) ; filtres non appliqués à cette vue (RG048) → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19b_agents_view.md`
 - [ ] TSK20 — Relations agent-agent (FN034, RG035, SU011) : use cases CRUD relation (binaire, dirigée, typée depuis la liste config FN037, ancrée à un bloc, unicité par (bloc, paire, type)) + dialogue + entrées `Project › Relationships` ; la vue « Relationships » (SU012) fera l'objet d'une tâche ultérieure → #TSK17 — fiche `tasks/TSK20_relationships.md`
 
 ### Doing
 
 ### Review
+
+- [ ] TSK19b — Vue « Agents » re-conçue (RG065/RG066/RG067) : `AgentsWorkspace` fond `bg_primary`, points d'ancrage `agents_view_dot_*` dessinés dans `drawBackground` (zone visible) ; cartes `AgentCardItem` (`agents_view_card_width/height`, sans ports ni badge, snap sur le point le plus proche) ; menu contextuel carte (Edit.../Copy/Delete.../Associate with Block... sur l'agent de la carte) ; entrée « Associate agents... » au menu contextuel de bloc (FN030) ; positions persistées au niveau projet `layouts/project.json` (RG067, `ProjectLayout` + `save/load_project_layout`) ; filtres non appliqués à cette vue (RG048) → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19b_agents_view.md` — passée en Doing 17-11-2026 (TSK19a en Review) — implémentée et passée en Review 17-11-2026 (py_compile OK, 71 tests passed ; smoke offscreen à valider sur poste de dev)
 
 - [ ] TSK19a — Filtre agent dans la vue « Journeys » (FN039, RG063/RG064) : service Qt-free `agent_filter_service.py` + tests unitaires ; workspace Journeys généralisé (`apply_filters()`, filtre de parcours × filtre agent = intersection RG064) ; menu dynamique `Display › Agent` (liste cochable, « All agents » `agent_list_all_label`, non persisté RG047) → #TSK11, #TSK17 — fiche `tasks/TSK19a_agent_filter.md` — passée en Doing 17-11-2026 — implémentée et passée en Review 17-11-2026 (py_compile OK, 64 tests passed ; rendu visuel offscreen à valider sur poste de dev)
 

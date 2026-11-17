@@ -48,7 +48,7 @@
 ### 3. Tab bar (center)
 - Height 40 px, dark theme. Named tabs, without numbering:
   - **Journeys** — default active (main view, graph of blocks and transitions);
-  - **Agents** — matrix view (see section 5);
+  - **Agents** — dedicated agents workspace, anchor dots + cards (see section 5, re-designed session 04);
   - **Relationships** — agent-relationship graph view (see section 6);
   - **Export** — in-app reading preview (see section 7).
 - The bar is visible only when a project is open. Views are activated via the tab bar; the "Project › View" menu entries are stubs.

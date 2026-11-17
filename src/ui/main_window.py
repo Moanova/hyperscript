@@ -17,9 +17,10 @@ quit with save confirmation - FN002/FN005/FN006/FN008/FN009/FN010) and the
 About dialogs (FN003/FN004).
 
 The workspaces (views "Journeys"/"Agents"/"Relationships"/"Export") are
-activated by the tab bar; only "Journeys" is implemented in the MVP (TSK11):
-blocks/transitions graph, journey filter (FN029), context menus dynamically
-aligned with the application menu (RG055), layout persistence (RG060).
+activated by the tab bar; "Journeys" (TSK11) and "Agents" (TSK19b) are
+implemented: blocks/transitions graph with journey + agent filters
+(FN029/FN039), agent cards on anchor dots, context menus dynamically
+aligned with the application menu (RG055), layout persistence (RG060/RG067).
 The other tabs show a placeholder page.
 """
 
@@ -35,9 +36,10 @@ from PySide6.QtGui import QCloseEvent
 
 from ui.widgets.info_bar import InfoBar
 from ui.widgets.tab_bar import TabBar
-from ui.views import JourneysWorkspace
+from ui.views import JourneysWorkspace, AgentsWorkspace
 from ui.nodes.block_node import BlockNode
 from ui.nodes.connection import Connection
+from ui.nodes.agent_card import AgentCardItem
 from ui.utils import theme
 from ui.dialogs.about_dialog import AboutDialog
 from ui.dialogs.change_log_dialog import ChangeLogDialog
@@ -151,13 +153,18 @@ class MainWindow(QMainWindow):
         self.welcome_page = QWidget()
         self.pages.addWidget(self.welcome_page)
 
-        # View pages (project open); only "Journeys" is implemented in the MVP
+        # View pages (project open); "Journeys" (TSK11) and "Agents" (TSK19b)
+        # get a workspace when a project is opened, the others a placeholder
         self.view_pages = {}
         self.journeys_page = QWidget()
         QVBoxLayout(self.journeys_page).setContentsMargins(0, 0, 0, 0)
         self.pages.addWidget(self.journeys_page)
         self.view_pages["Journeys"] = self.journeys_page
-        for name in ("Agents", "Relationships", "Export"):
+        self.agents_page = QWidget()
+        QVBoxLayout(self.agents_page).setContentsMargins(0, 0, 0, 0)
+        self.pages.addWidget(self.agents_page)
+        self.view_pages["Agents"] = self.agents_page
+        for name in ("Relationships", "Export"):
             page = QWidget()
             page_layout = QVBoxLayout(page)
             label = QLabel(f"{name} view — handled by a later task.")
@@ -172,6 +179,7 @@ class MainWindow(QMainWindow):
 
         # Workspace state (created when a project is opened)
         self.journeys_workspace = None
+        self.agents_workspace = None
         self.journey_filter_active = False  # RG047/RG048: off by default, not persisted
         self.agent_filter_agent_id = None  # RG047/RG063: agent filter off by default, not persisted
 
@@ -229,11 +237,11 @@ class MainWindow(QMainWindow):
         self.menu_actions['view_relationships'] = view_menu.addAction("Relationships", lambda: None)
         self.menu_actions['view_export'] = view_menu.addAction("Export", lambda: None)
         agents_menu = project_menu.addMenu("Agents")
-        self.menu_actions['agents_new'] = agents_menu.addAction("New...", self._new_agent)
-        self.menu_actions['agents_edit'] = agents_menu.addAction("Edit...", self._edit_agent)
-        self.menu_actions['agents_copy'] = agents_menu.addAction("Copy", self._copy_agent)
-        self.menu_actions['agents_delete'] = agents_menu.addAction("Delete...", self._delete_agent)
-        self.menu_actions['agents_associate'] = agents_menu.addAction("Associate with Block...", self._associate_agent_with_block)
+        self.menu_actions['agents_new'] = agents_menu.addAction("New...", lambda: self._new_agent())
+        self.menu_actions['agents_edit'] = agents_menu.addAction("Edit...", lambda: self._edit_agent())
+        self.menu_actions['agents_copy'] = agents_menu.addAction("Copy", lambda: self._copy_agent())
+        self.menu_actions['agents_delete'] = agents_menu.addAction("Delete...", lambda: self._delete_agent())
+        self.menu_actions['agents_associate'] = agents_menu.addAction("Associate with Block...", lambda: self._associate_agent_with_block())
         blocks_menu = project_menu.addMenu("Blocks")
         new_block_menu = blocks_menu.addMenu("New")
         self.menu_actions['blocks_new_scene'] = new_block_menu.addAction("Scene", lambda: self._create_new_block("Scene"))
@@ -464,6 +472,10 @@ class MainWindow(QMainWindow):
                     nm = self.project_service.current_project.narrative_maps[0]
                     LayoutService.save_workspace_layout(
                         file_path, nm.id, self.journeys_workspace.collect_workspace_layout())
+                # RG067: agent card positions are persisted at project level
+                if self.agents_workspace is not None:
+                    LayoutService.save_project_layout(
+                        file_path, self.agents_workspace.collect_project_layout())
                 project = self.project_service.current_project
                 self.setWindowTitle(f"{_get_config('app_window_title', 'Hyperscript')} : {project.lb} ({file_path})")
                 self._update_menu_state()  # is_modified is now False: Save is disabled (RG006)
@@ -528,12 +540,13 @@ class MainWindow(QMainWindow):
         return project.narrative_maps[0] if project else None  # MVP: single map
 
     def _init_workspace(self):
-        """Create the Journeys workspace and populate it from the saved layout
-        (RG060) or with default positions (FN028)."""
+        """Create the Journeys and Agents workspaces and populate them from
+        the saved layouts (RG060/RG067) or with default positions (FN028)."""
         nm = self._current_narrative_map()
         if nm is None:
             return
         self._teardown_workspace()
+        project = self.project_service.current_project
         workspace = JourneysWorkspace(narrative_map=nm, info_bar=self.info_bar, main_window=self)
         workspace.transition_created.connect(self._on_transition_created)
         workspace.workspace_modified.connect(self._on_workspace_modified)
@@ -549,7 +562,20 @@ class MainWindow(QMainWindow):
         else:
             workspace.populate_default(nm)
 
+        # Agents view (TSK19b): one card per project agent, positions from
+        # the project-level layout (RG067) or free anchor-dot positions
+        agents_workspace = AgentsWorkspace(project=project, info_bar=self.info_bar, main_window=self)
+        agents_workspace.workspace_modified.connect(self._on_workspace_modified)
+        agents_workspace.context_menu_requested.connect(self._show_agents_context_menu)
+        self.agents_page.layout().addWidget(agents_workspace)
+        self.agents_workspace = agents_workspace
+        saved_project_layout = None
+        if self.project_service.file_path:
+            saved_project_layout = LayoutService.load_project_layout(self.project_service.file_path)
+        agents_workspace.populate_agents(project, saved_project_layout)
+
         # RG047/RG048/RG063: the filters are disabled by default, not persisted
+        # (map views only — never applied to the "Agents" view)
         self.journey_filter_active = False
         workspace.set_journey_filter_active(False)
         self.agent_filter_agent_id = None
@@ -564,6 +590,10 @@ class MainWindow(QMainWindow):
             self.journeys_workspace.setParent(None)
             self.journeys_workspace.deleteLater()
             self.journeys_workspace = None
+        if self.agents_workspace is not None:
+            self.agents_workspace.setParent(None)
+            self.agents_workspace.deleteLater()
+            self.agents_workspace = None
         self.journey_filter_active = False
         self.agent_filter_agent_id = None
         self.tab_bar.hide()
@@ -781,15 +811,19 @@ class MainWindow(QMainWindow):
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
         values = dialog.get_values()
-        self.create_agent_usecase.execute(lb=values['lb'], typ=values['typ'],
-                                          note=values['note'], content=values['content'])
+        agent = self.create_agent_usecase.execute(lb=values['lb'], typ=values['typ'],
+                                                  note=values['note'], content=values['content'])
+        if self.agents_workspace is not None:
+            self.agents_workspace.add_agent_card(agent)  # TSK19b: one card per agent
         self.info_bar.show_message(f"Agent '{values['lb']}' created")
         self._rebuild_agent_menu()
         self._update_menu_state()
 
-    def _edit_agent(self):
-        """FN031: edit the selected agent (selection dialog + edition dialog)."""
-        agent = self._select_agent("Edit Agent")
+    def _edit_agent(self, agent=None):
+        """FN031: edit an agent (selection dialog + edition dialog). The agent
+        can be passed directly (context menu of an agent card, TSK19b)."""
+        if agent is None:
+            agent = self._select_agent("Edit Agent")
         if agent is None:
             return
         dialog = AgentDialog(agent, parent=self)
@@ -798,25 +832,33 @@ class MainWindow(QMainWindow):
         values = dialog.get_values()
         self.update_agent_usecase.execute(agent, lb=values['lb'], typ=values['typ'],
                                           note=values['note'], content=values['content'])
+        if self.agents_workspace is not None:
+            self.agents_workspace.refresh_agent_card(agent)  # TSK19b
         self.info_bar.show_message(f"Agent '{agent.lb}' updated")
         self._refresh_participation_badges()  # agent labels appear in the block tooltips
         self._rebuild_agent_menu()
         self._update_menu_state()
 
-    def _copy_agent(self):
-        """FN031: duplicate the selected agent."""
-        agent = self._select_agent("Copy Agent")
+    def _copy_agent(self, agent=None):
+        """FN031: duplicate an agent (the agent can be passed directly from
+        the context menu of an agent card, TSK19b)."""
+        if agent is None:
+            agent = self._select_agent("Copy Agent")
         if agent is None:
             return
         copy = self.duplicate_agent_usecase.execute(agent)
+        if self.agents_workspace is not None:
+            self.agents_workspace.add_agent_card(copy)  # TSK19b
         self.info_bar.show_message(f"Agent '{copy.lb}' created")
         self._rebuild_agent_menu()
         self._update_menu_state()
 
-    def _delete_agent(self):
-        """FN031/RG033: delete the selected agent, with a confirmation reporting
-        the number of cascaded elements; the cascade itself is done by the use case."""
-        agent = self._select_agent("Delete Agent")
+    def _delete_agent(self, agent=None):
+        """FN031/RG033: delete an agent, with a confirmation reporting
+        the number of cascaded elements; the cascade itself is done by the use case.
+        The agent can be passed directly (context menu of an agent card, TSK19b)."""
+        if agent is None:
+            agent = self._select_agent("Delete Agent")
         if agent is None:
             return
         project = self.project_service.current_project
@@ -845,13 +887,18 @@ class MainWindow(QMainWindow):
         else:
             self.info_bar.show_message("Agent deleted")
         self._refresh_participation_badges()
+        if self.agents_workspace is not None:
+            self.agents_workspace.remove_agent_card(agent.id)  # TSK19b
         self._rebuild_agent_menu()
         self._update_menu_state()
 
-    def _associate_agent_with_block(self):
-        """FN030: 'Associate with Block...' - pick an agent, then the block
-        currently selected in the Journeys view, and open the association dialog."""
-        agent = self._select_agent("Associate Agent with Block")
+    def _associate_agent_with_block(self, agent=None):
+        """FN030: 'Associate with Block...' - pick an agent (or take the one
+        of the agent card that opened the context menu, TSK19b), then the
+        block currently selected in the Journeys view, and open the
+        association dialog."""
+        if agent is None:
+            agent = self._select_agent("Associate Agent with Block")
         if agent is None:
             return
         item = self._get_selected_item()
@@ -895,6 +942,9 @@ class MainWindow(QMainWindow):
         agent = self.create_agent_usecase.execute(lb=values['lb'], typ=values['typ'],
                                                   note=values['note'], content=values['content'])
         self.associate_participation_usecase.execute(agent.id, block.id)
+        if self.agents_workspace is not None:
+            self.agents_workspace.add_agent_card(agent)  # TSK19b
+        self._rebuild_agent_menu()
         dialog.set_status(f"Agent '{agent.lb}' created and associated")
         self._refresh_participation_badges()
         dialog.refresh(self.project_service.current_project.agent,
@@ -980,6 +1030,13 @@ class MainWindow(QMainWindow):
         if isinstance(item, BlockNode):
             for key in ('blocks_edit', 'blocks_copy', 'blocks_delete'):
                 menu.addAction(self.menu_actions[key])
+            # FN030 (TSK19b): context-menu label on a block, same handler as
+            # Project > Agents > Associate with Block...
+            project = self.project_service.current_project
+            has_agents = project is not None and bool(project.agent)
+            associate_action = menu.addAction(
+                "Associate agents...", lambda: self._open_association_dialog(item.entity))
+            associate_action.setEnabled(has_agents)
         elif isinstance(item, Connection):
             for key in ('transitions_edit', 'transitions_delete'):
                 menu.addAction(self.menu_actions[key])
@@ -992,6 +1049,27 @@ class MainWindow(QMainWindow):
             for key in ('blocks_new_scene', 'blocks_new_pivot', 'blocks_new_condition', 'blocks_new_ending'):
                 new_block_menu.addAction(self.menu_actions[key])
             menu.addAction("New Transition", self._start_transition_creation)
+        menu.exec(global_pos)
+
+    def _show_agents_context_menu(self, item, global_pos):
+        """Context menu of the "Agents" view (RG055): same labels and enabled
+        states as the application menu (Project > Agents), with the handlers
+        applied to the agent of the card under the cursor (TSK19b); on the
+        empty area, the creation entry ("New...")."""
+        menu = QMenu(self)
+        menu.setStyleSheet(theme.CONTEXT_MENU_STYLESHEET)
+        if isinstance(item, AgentCardItem):
+            agent = item.entity
+            for key, handler in (('agents_edit', self._edit_agent),
+                                 ('agents_copy', self._copy_agent),
+                                 ('agents_delete', self._delete_agent),
+                                 ('agents_associate', self._associate_agent_with_block)):
+                src = self.menu_actions[key]
+                action = menu.addAction(src.text())
+                action.setEnabled(src.isEnabled())
+                action.triggered.connect(lambda _checked=False, h=handler, a=agent: h(a))
+        else:
+            menu.addAction(self.menu_actions['agents_new'])
         menu.exec(global_pos)
 
     # ---------------------------------------------------------------------
