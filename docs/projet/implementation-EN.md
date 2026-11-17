@@ -58,8 +58,8 @@
 | RG029 | A block's type is chosen at creation and immutable afterwards. | implemented | core/models/data_model.py (Block.__post_init__); usecases/view_management/update_block_usecase.py | tests/test_blocks/test_block_usecases.py | type not editable on update |
 | RG030 | A Pivot block: incoming from Start/Scene only, outgoing to Condition… | implemented | core/services/transition_service.py (matrix) | tests/test_transitions/test_transition_service.py | revised session 03: Scene->Pivot promotion removed |
 | RG031 | A Condition block: incoming from Pivot only, outgoing to Scene/End… | implemented | core/services/transition_service.py (matrix); core/models/data_model.py (condition) | tests/test_transitions/; tests/test_blocks/ | revised session 03: AND not expressible, OR kept |
-| RG032 | There can be only one participation per (block, agent) pair. | not-started | — | — | — |
-| RG033 | Deleting an agent cascades to all its participations and all its relationships,… | not-started | — | — | — |
+| RG032 | There can be only one participation per (block, agent) pair. | implemented | core/services/participation_service.py (find_participation); usecases/participation_management/associate_participation_usecase.py | tests/test_agents/test_participation_usecases.py | idempotent association |
+| RG033 | Deleting an agent cascades to all its participations and all its relationships,… | implemented | core/services/participation_service.py (cascade_delete_agent); usecases/agent_management/delete_agent_usecase.py | tests/test_agents/test_agent_usecases.py | counts returned for the UI information message |
 | RG034 | Deleting a journey reassigns to the default journey the attachments of the… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | reassignment to the default journey (no orphan block) |
 | RG035 | A relationship is binary (exactly two agents), directed and typed, and anchored… | not-started | — | — | — |
 | RG036 | In the "Agents" view, the columns (blocks) are ordered by default by creation… | not-started | — | — | To be re-designed with the "Agents" view. |
@@ -182,8 +182,8 @@
 
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN030 | Associate agents with a block | not-started | Associate agents... | — | — | — | — |
-| FN031 | Manage the project's agents | not-started | Project › Agents | — | — | — | — |
+| FN030 | Associate agents with a block | partial | Associate agents... (block context menu, Journeys view) | usecases/participation_management/ (associate/dissociate); core/services/participation_service.py | — | — | tests/test_agents/test_participation_usecases.py ; UI (dialog, matrix, context menu) : TSK18/TSK19 |
+| FN031 | Manage the project's agents | partial | Project › Agents | usecases/agent_management/ (create/update/duplicate/delete) | — | — | tests/test_agents/test_agent_usecases.py ; menu wiring + dialogs : TSK18 |
 | FN032 | Cross-view navigation | not-started | — | — | — | — | — |
 | FN033 | Export preview (workspace "Export") | not-started | — | — | — | — | — |
 
@@ -292,7 +292,7 @@
 | SU005 | Manage a Journey | FN019, FN023, FN024, FN025, FN026, FN027, FN038 | implemented |
 | SU006 | Visualize the Narrative Map (view "Journeys") | FN017, FN028, FN029 | partial |
 | SU007 | Export the Narrative Map | FN013, FN033 | not-started |
-| SU008 | Manage agent-block Participations | FN030, FN031 | not-started |
+| SU008 | Manage agent-block Participations | FN030, FN031 | partial |
 | SU009 | Manage the agents view — initialized, to be finalized after the design phase | FN031, FN032 | not-started |
 | SU010 | Preview the export — initialized, to be finalized after the design phase | FN033 | not-started |
 | SU011 | Manage a Relationship Between Agents | FN034, FN037 | not-started |

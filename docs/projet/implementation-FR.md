@@ -58,8 +58,8 @@
 | RG029 | Le type d'un bloc est choisi à sa création et immuable ensuite. | implemented | core/models/data_model.py (Block.__post_init__); usecases/view_management/update_block_usecase.py | tests/test_blocks/test_block_usecases.py | type non modifiable à l'édition |
 | RG030 | Un bloc Pivot : entrantes depuis Début/Scène uniquement, sortantes vers Condition… | implemented | core/services/transition_service.py (matrice) | tests/test_transitions/test_transition_service.py | révisée séance 03 : promotion Scène→Pivot supprimée |
 | RG031 | Un bloc Condition : entrantes depuis Pivot uniquement, sortantes vers Scène/Fin… | implemented | core/services/transition_service.py (matrice); core/models/data_model.py (condition) | tests/test_transitions/; tests/test_blocks/ | révisée séance 03 : ET non exprimable, OU conservé |
-| RG032 | Il ne peut exister qu'une seule participation par couple (bloc, agent). | not-started | — | — | — |
-| RG033 | La suppression d'un agent entraîne la suppression en cascade de toutes ses… | not-started | — | — | — |
+| RG032 | Il ne peut exister qu'une seule participation par couple (bloc, agent). | implemented | core/services/participation_service.py (find_participation) ; usecases/participation_management/associate_participation_usecase.py | tests/test_agents/test_participation_usecases.py | association idempotente |
+| RG033 | La suppression d'un agent entraîne la suppression en cascade de toutes ses… | implemented | core/services/participation_service.py (cascade_delete_agent) ; usecases/agent_management/delete_agent_usecase.py | tests/test_agents/test_agent_usecases.py | comptages retournés pour le message d'information UI |
 | RG034 | La suppression d'un parcours réaffecte au parcours par défaut les rattachements… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | réaffectation au parcours par défaut (aucun bloc orphelin) |
 | RG035 | Une relation est binaire (exactement deux agents), dirigée et typée, et ancrée… | not-started | — | — | — |
 | RG036 | Dans la vue « Agents », les colonnes (blocs) sont ordonnées par défaut par… | not-started | — | — | À re-concevoir avec la vue « Agents ». |
@@ -182,8 +182,8 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN030 | Associer des agents à un bloc | not-started | — | — | — | — | — |
-| FN031 | Gérer les agents du projet | not-started | Project › Agents | — | — | — | — |
+| FN030 | Associer des agents à un bloc | partial | Associate agents... (menu contextuel du bloc, vue « Journeys ») | usecases/participation_management/ (associate/dissociate) ; core/services/participation_service.py | — | — | tests/test_agents/test_participation_usecases.py ; UI (dialogue, matrice, menu contextuel) : TSK18/TSK19 |
+| FN031 | Gérer les agents du projet | partial | Project › Agents | usecases/agent_management/ (create/update/duplicate/delete) | — | — | tests/test_agents/test_agent_usecases.py ; câblage menu + dialogues : TSK18 |
 | FN032 | Naviguer entre les vues (navigation croisée) | not-started | — | — | — | — | — |
 | FN033 | Aperçu d'export (espace de travail « Export ») | not-started | — | — | — | — | — |
 
@@ -292,7 +292,7 @@
 | SU005 | Gérer un parcours | FN019, FN023, FN024, FN025, FN026, FN027, FN038 | implemented |
 | SU006 | Visualiser la carte narrative (vue « Parcours ») | FN017, FN028, FN029 | partial |
 | SU007 | Exporter la carte narrative | FN013, FN033 | not-started |
-| SU008 | Gérer les participations agent-bloc | FN030, FN031 | not-started |
+| SU008 | Gérer les participations agent-bloc | FN030, FN031 | partial |
 | SU009 | Gérer la vue agents — initialisé, à finaliser après la phase de conception | FN031, FN032 | not-started |
 | SU010 | Visualiser l'aperçu d'export — initialisé, à finaliser après la phase de conception | FN033 | not-started |
 | SU011 | Gérer une relation entre agents | FN034, FN037 | not-started |

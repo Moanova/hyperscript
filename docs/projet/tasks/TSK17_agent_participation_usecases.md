@@ -41,12 +41,20 @@ Couche modèle/services/use cases de la gestion des agents (SU008, FN031) et des
 
 Dialogues et menus (TSK18), vue « Agents » et menu contextuel de bloc (TSK19), relations (TSK20), badges (déjà en place côté vue Journeys, alimentés dès que les participations existent).
 
-## Vérifications prévues
+## Travaux réalisés
 
-- `python -m py_compile` sur tous les fichiers créés.
-- `QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q` : 45 tests existants + nouveaux tests agents tous passed.
-- Aucun import Qt dans `core/`/`usecases/` (vérif AST comme en séance n°03).
+1. `src/core/services/participation_service.py` (Qt-free) : `get_agent`, `get_block`, `find_participation` (RG032), `get_block_participations`, `get_agent_participations`, `get_agent_relationships`, `cascade_delete_agent` (RG033 : participations + relations, comptages retournés).
+2. `src/usecases/agent_management/` : `CreateAgentUseCase` (label défaut « Agent {id}", typ Character/Artefact), `UpdateAgentUseCase` (None = inchangé, label vide refusé), `DuplicateAgentUseCase` (« {lb} (copy) », participations/relations non copiées), `DeleteAgentUseCase` (RG033 via le service, comptages pour le message UI ; confirmation = responsabilité UI). Style hyperscript (retourne l'entité, `ValueError`), adapté de planoscript.
+3. `src/usecases/participation_management/` : `AssociateParticipationUseCase` (RG032 idempotent — retourne la participation existante), `DissociateParticipationUseCase` (None si aucune participation). Note de participation non éditable en MVP (comme planoscript).
+4. `tests/test_agents/` : `test_agent_usecases.py` (9 tests : FN031 create/update/duplicate/delete, RG033 cascade) + `test_participation_usecases.py` (5 tests : FN030 associate/dissociate, RG032 idempotence, helpers du service), adaptés de `planoscript/tests/test_agents/`.
+5. Matrice de traçabilité `docs/projet/implementation-FR/EN.md` : RG032/RG033 → `implemented`, FN030/FN031/SU008 → `partial` (UI en TSK18/TSK19).
+
+## Vérifications
+
+- `python -m py_compile` sur les 9 fichiers créés : OK.
+- `QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q` : **59 passed** (45 existants + 14 nouveaux).
+- Vérif AST : aucun import Qt dans `core/`/`usecases/` (RG058) : OK.
 
 ## Journal
 
-- 2026-11-17 : tâche créée et passée en Doing ; plan établi d'après l'analyse de reprise planoscript (séance n°04).
+- 2026-11-17 : tâche créée et passée en Doing ; plan établi d'après l'analyse de reprise planoscript (séance n°04). Implémentation réalisée sur feu vert TSC (feu vert reçu dans la séance) : 59 tests passed, tâche passée en Review.

@@ -34,9 +34,11 @@
 
 ### Doing
 
-- [ ] TSK17 — Services et use cases agents & participations (SU008, FN030/FN031 ; RG032/RG033) : reprise des use cases planoscript adaptés au vocabulaire hyperscript (Subject/Object → Character/Artefact, State_agent_rel → Participation) + `core/services/participation_service.py` (Qt-free : unicité RG032, cascades RG033) + use cases `agent_management` (create/update/duplicate/delete agent) et `participation_management` (associate/dissociate) + tests unitaires `tests/test_agents/` → #TSK08 — fiche `tasks/TSK17_agent_participation_usecases.md` — créée 17-11-2026, passée en Doing 17-11-2026 (TSK08 en Done), plan d'implémentation établi dans la fiche
 
 ### Review
+
+- [ ] TSK17 — Services et use cases agents & participations (SU008, FN030/FN031 ; RG032/RG033) : reprise des use cases planoscript adaptés au vocabulaire hyperscript (Subject/Object → Character/Artefact, State_agent_rel → Participation) + `core/services/participation_service.py` (Qt-free : unicité RG032, cascades RG033) + use cases `agent_management` (create/update/duplicate/delete agent) et `participation_management` (associate/dissociate) + tests unitaires `tests/test_agents/` → #TSK08 — fiche `tasks/TSK17_agent_participation_usecases.md` — créée 17-11-2026, passée en Doing 17-11-2026 (TSK08 en Done), plan d'implémentation établi dans la fiche — implémentée et passée en Review 17-11-2026 (py_compile OK, 59 tests passed ; aucun import Qt dans core/usecases, RG058 OK)
+
 
 
 ### Done
