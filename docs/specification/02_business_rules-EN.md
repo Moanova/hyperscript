@@ -281,7 +281,7 @@
 - **Classification** : 4. Visualization and interaction
 
 ## RG065
-- **Description** : In the "Agents" view, the workspace has the same dark background as the "Journeys" view but is dressed with dots instead of a grid (spacing, radius and color set in the configuration; purely decorative); agent cards can be moved freely, but their position is always forced onto the nearest cell of an **invisible major grid** (steps `agents_view_snap_step_x_px`/`agents_view_snap_step_y_px` set in the configuration, slightly larger than the card — TSC feedback session 04: snapping onto the dots made the moves awkward).
+- **Description** : In the "Agents" view, the workspace has the same dark background as the "Journeys" view but is dressed with dots instead of a grid (spacing, radius and color set in the configuration; purely decorative, **no magnetic snap** — TSC feedback session 04: snapping onto the dots, then onto a major grid, made the moves awkward); agent cards are freely movable, position free within the scene limits; during a move, the card slides only in a **horizontal or vertical corridor**: the dominant axis is locked when the drag starts and the other coordinate stays at its drag-start value.
 - **Classification** : 4. Visualization and interaction
 
 ## RG066

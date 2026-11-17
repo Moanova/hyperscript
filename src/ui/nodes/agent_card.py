@@ -16,12 +16,14 @@ participation-count badge (participations/relationships are handled in
 other views). The card shows the agent label and type; the note is shown
 in an immediate hover tooltip (RG054).
 
-The card is freely movable, but its position is always forced onto the
-nearest cell of an INVISIBLE major grid (snap steps agents_view_snap_step_x_px
-/ agents_view_snap_step_y_px, slightly larger than the card; the visible dots
-stay purely decorative, RG065). Single selection (RG049), dashed selection
-outline in the card color (charter 98: selection > hover > type),
-hit-testing via shape() (RG053).
+The card is freely movable WITHOUT magnetic snapping (RG065, TSC session 04:
+snapping on the dots or on a major grid made the moves awkward). During a
+drag, the movement is constrained to a single axis — a horizontal or
+vertical corridor: the dominant axis is locked when the drag starts and the
+other coordinate stays at its drag-start value. The visible dots stay purely
+decorative. Single selection (RG049), dashed selection outline in the card
+color (charter 98: selection > hover > type), hit-testing via shape()
+(RG053).
 
 The card accent color is the sand accent (block_scene_color, #E5C07B) —
 TSC feedback session 04: the card outline is sand, not gold (the gold
@@ -37,7 +39,6 @@ from PySide6.QtGui import QPen, QBrush, QColor, QFont, QPainterPath
 
 from core.models.data_model import Agent
 from core.models.view_model import AgentCardLayout
-from core.services.layout_service import LayoutService
 from config.config_loader import get as _get_config
 from ui.utils import theme
 
@@ -55,10 +56,10 @@ class AgentCardItem(QGraphicsRectItem):
     # Dash pattern of the selection outline (config.json, TSK16)
     SELECTION_DASH_PATTERN = _get_config("node_selection_dash_pattern", [4.0, 4.0])
 
-    # Invisible major-grid steps used to snap the card position (RG065):
-    # slightly larger than the card, so two snapped cards never overlap
-    SNAP_STEP_X = _get_config("agents_view_snap_step_x_px", 200.0)
-    SNAP_STEP_Y = _get_config("agents_view_snap_step_y_px", 120.0)
+    # Corridor (lane) drag: once the drag delta exceeds this threshold on an
+    # axis, that axis is locked for the whole drag and the card slides in a
+    # horizontal or vertical corridor (RG065 — no magnetic snap)
+    AXIS_LOCK_THRESHOLD_PX = 4.0
 
     # Colors (dark theme via ui.utils.theme; no hard-coded values)
     DEFAULT_BG_COLOR = theme.color("bg_surface", theme.BG_SURFACE)
@@ -92,12 +93,14 @@ class AgentCardItem(QGraphicsRectItem):
         self.setPos(layout.x, layout.y)
 
         # Drag bookkeeping: Qt recomputes each ItemPositionChange proposal
-        # from the last RETURNED (snapped) position, so the unsnapped
-        # position is accumulated here to keep the drag smooth; without it
-        # a slow drag whose per-event delta lands back on the previous dot
-        # never moves the card (the proposal is swallowed by the snap)
+        # from the last RETURNED position, so the unsnapped position is
+        # accumulated here to keep the drag smooth. _drag_start/_lock_axis
+        # implement the corridor (lane) drag: the dominant axis is locked at
+        # drag start, the other coordinate stays at its drag-start value
         self._free_pos = QPointF(layout.x, layout.y)
         self._applied_pos = QPointF(layout.x, layout.y)
+        self._drag_start = None
+        self._lock_axis = None
 
         # Movable + selectable; no ports on an agent card (RG066)
         self.setFlag(QGraphicsItem.ItemIsMovable, True)
@@ -217,9 +220,14 @@ class AgentCardItem(QGraphicsRectItem):
     def mousePressEvent(self, event) -> None:
         super().mousePressEvent(event)
         self.set_selected_appearance(self.isSelected())
+        # A new drag starts: remember the start position and reset the
+        # corridor axis lock
+        self._drag_start = QPointF(self.pos())
+        self._lock_axis = None
 
     def mouseReleaseEvent(self, event) -> None:
         super().mouseReleaseEvent(event)
+        self._lock_axis = None
         if self.isSelected():
             self.update_layout()
 
@@ -253,13 +261,13 @@ class AgentCardItem(QGraphicsRectItem):
             # dragged over a neighbour never disappears behind it
             self.setZValue(1.0 if value else 0.0)
         elif change == QGraphicsItem.ItemPositionChange:
-            # Constrain the movement to the scene limits, then RG065: snap
-            # onto the nearest cell of the invisible major grid (per-axis
-            # steps). The unsnapped position is accumulated from the delta
-            # against the last applied (snapped) position, because Qt bases
-            # each new proposal on that returned value — snapping the
-            # proposal directly would swallow small deltas and the card
-            # would not move.
+            # RG065 corridor drag: constrain to the scene limits, then, for a
+            # mouse drag, project onto the locked axis (horizontal or
+            # vertical corridor). NO magnetic snap: the position stays free.
+            # The unsnapped position is accumulated from the delta against
+            # the last applied position, because Qt bases each new proposal
+            # on that returned value — without this accumulation, small
+            # deltas would be swallowed and the card would not move.
             new_pos = value
             scene = self.scene()
             if scene:
@@ -274,12 +282,26 @@ class AgentCardItem(QGraphicsRectItem):
                 free_y = max(scene_rect.top(), min(self._free_pos.y(), scene_rect.bottom() - card_height))
                 self._free_pos = QPointF(free_x, free_y)
 
-                constrained_x = LayoutService.snap_to_grid(free_x, grid_size=self.SNAP_STEP_X)
-                constrained_y = LayoutService.snap_to_grid(free_y, grid_size=self.SNAP_STEP_Y)
+                # Corridor lock: once the drag exceeds the threshold on an
+                # axis, that axis dominates for the whole drag; the other
+                # coordinate stays at its drag-start value. Programmatic
+                # setPos (no drag in progress) is never locked.
+                if self._drag_start is not None:
+                    dx = self._free_pos.x() - self._drag_start.x()
+                    dy = self._free_pos.y() - self._drag_start.y()
+                    if self._lock_axis is None and (
+                            abs(dx) >= self.AXIS_LOCK_THRESHOLD_PX
+                            or abs(dy) >= self.AXIS_LOCK_THRESHOLD_PX):
+                        self._lock_axis = 'x' if abs(dx) >= abs(dy) else 'y'
+                    if self._lock_axis == 'x':
+                        free_y = self._drag_start.y()
+                    elif self._lock_axis == 'y':
+                        free_x = self._drag_start.x()
+                    self._free_pos = QPointF(free_x, free_y)
 
-                self._applied_pos = QPointF(constrained_x, constrained_y)
-                self.layout.x = constrained_x
-                self.layout.y = constrained_y
+                self._applied_pos = QPointF(free_x, free_y)
+                self.layout.x = free_x
+                self.layout.y = free_y
 
                 self._notify_position_observers()
                 return self._applied_pos

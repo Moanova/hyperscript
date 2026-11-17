@@ -16,9 +16,9 @@ anchor dots instead of a grid (spacing/radius/color from config.json),
 drawn in drawBackground over the visible area only (no scene items, so no
 z-order trap). Each project agent is shown as an AgentCardItem (larger
 than a block, no ports, no participation badge); cards are freely movable
-but their position is always forced onto the nearest cell of an invisible
-major grid (snap steps slightly larger than the card; the visible dots stay
-purely decorative, RG065).
+WITHOUT magnetic snapping — during a drag they slide in a horizontal or
+vertical corridor (axis locked at drag start, see AgentCardItem, RG065);
+the visible dots stay purely decorative.
 Card positions are persisted at project level (layouts/project.json,
 RG067).
 
@@ -47,17 +47,8 @@ _BG_PRIMARY = _get_config("bg_primary", theme.BG_PRIMARY)
 _DOT_SPACING = _get_config("agents_view_dot_spacing_px", 20)
 _DOT_RADIUS = _get_config("agents_view_dot_radius_px", 1.5)
 _DOT_COLOR = _get_config("agents_view_dot_color", "#4A4A4A")
-_SNAP_STEP_X = _get_config("agents_view_snap_step_x_px", 200.0)
-_SNAP_STEP_Y = _get_config("agents_view_snap_step_y_px", 120.0)
 _CARD_WIDTH = _get_config("agents_view_card_width", 160.0)
 _CARD_HEIGHT = _get_config("agents_view_card_height", 100.0)
-
-
-def _snap_pos(x: float, y: float):
-    """RG065: snap a position onto the invisible major grid (per-axis steps,
-    slightly larger than a card, so two snapped cards never overlap)."""
-    return (LayoutService.snap_to_grid(x, grid_size=_SNAP_STEP_X),
-            LayoutService.snap_to_grid(y, grid_size=_SNAP_STEP_Y))
 
 logger = logging.getLogger(__name__)
 
@@ -258,23 +249,16 @@ class AgentsWorkspace(QGraphicsView, QObject):
                 return item
         return None
 
-    def next_free_card_position(self, x: float = None, y: float = None):
-        """First major-grid-snapped, non-overlapping position for a new card
-        (RG050/RG065); defaults to the first cell of the invisible major
-        grid. Snapping onto the major grid (steps larger than the card)
-        guarantees that two snapped cards never overlap."""
-        if x is None:
-            x = _SNAP_STEP_X
-        if y is None:
-            y = _SNAP_STEP_Y
+    def next_free_card_position(self, x: float = 80.0, y: float = 80.0):
+        """First free (no snap — RG065 corridors, no magnetic grid),
+        non-overlapping position near (x, y) for a new card (RG050)."""
         existing_rects = []
         for item in self.scene.items():
             if isinstance(item, AgentCardItem):
                 r = item.rect()
                 pos = item.pos()
                 existing_rects.append((pos.x(), pos.y(), r.width(), r.height()))
-        x, y = LayoutService.find_non_overlapping_position(x, y, _CARD_WIDTH, _CARD_HEIGHT, existing_rects)
-        return _snap_pos(x, y)
+        return LayoutService.find_non_overlapping_position(x, y, _CARD_WIDTH, _CARD_HEIGHT, existing_rects)
 
     def create_agent_card(self, agent, layout: AgentCardLayout = None, select: bool = True,
                           skip_overlap_check: bool = False):
@@ -298,7 +282,6 @@ class AgentsWorkspace(QGraphicsView, QObject):
             layout.x, layout.y = LayoutService.find_non_overlapping_position(
                 layout.x, layout.y, layout.width, layout.height, existing_rects
             )
-            layout.x, layout.y = _snap_pos(layout.x, layout.y)
 
         card = AgentCardItem(agent, layout)
         self.add_item_at(layout.x, layout.y, card)
@@ -363,11 +346,10 @@ class AgentsWorkspace(QGraphicsView, QObject):
         for agent in project.agent:
             saved = project_layout.get_agent_card_layout(agent.id) if project_layout else None
             if saved is not None:
-                snap_x, snap_y = _snap_pos(saved.x, saved.y)
                 layout = AgentCardLayout(
                     agent_id=agent.id,
-                    x=snap_x,
-                    y=snap_y,
+                    x=saved.x,
+                    y=saved.y,
                     width=saved.width, height=saved.height)
                 self.create_agent_card(agent, layout, select=False, skip_overlap_check=True)
             else:
