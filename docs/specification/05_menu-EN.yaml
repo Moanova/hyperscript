@@ -67,7 +67,12 @@ menu:
           dynamic: true
           description: "Checkable list: an 'All journeys' entry on top (checked = filter disabled, default when a project is opened) plus one entry per journey of the narrative map; checking a journey activates it and the journey filter"
           references: "FN026, FN029, SU006"
-          note: "The filter applies to all views and is not persisted between sessions"
+          note: "The filter applies to the views bearing on the narrative map (Journeys, Relationships, Export), not to the Agents view; not persisted between sessions"
+        - name: Agent
+          dynamic: true
+          description: "Checkable list: an 'All agents' entry on top (checked = filter disabled, default when a project is opened) plus one entry per agent of the project; checking an agent activates the agent filter"
+          references: "FN039, SU006, SU008"
+          note: "Applies to the map views, not to the Agents view; combined with the journey filter, the intersection applies (RG064); not persisted between sessions"
         - name: Zoom
           items:
             - name: In

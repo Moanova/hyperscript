@@ -62,7 +62,6 @@
 | RG033 | Deleting an agent cascades to all its participations and all its relationships,… | implemented | core/services/participation_service.py (cascade_delete_agent); usecases/agent_management/delete_agent_usecase.py | tests/test_agents/test_agent_usecases.py | counts returned for the UI information message |
 | RG034 | Deleting a journey reassigns to the default journey the attachments of the… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | reassignment to the default journey (no orphan block) |
 | RG035 | A relationship is binary (exactly two agents), directed and typed, and anchored… | not-started | — | — | — |
-| RG036 | In the "Agents" view, the columns (blocks) are ordered by default by creation… | not-started | — | — | To be re-designed with the "Agents" view. |
 
 ### 3. Journey logic and membership
 
@@ -104,6 +103,11 @@
 | RG060 | Graphical representation metadata (block positions, column order) are stored in… | partial | core/services/layout_service.py; ui/main_window.py (_do_save / _init_workspace) | — | persistence wired at save/load; layout roundtrip to validate |
 | RG061 | The project is saved in a single structured file (JSON) containing metadata and… | implemented | project_service.py · save_project/load_project (JSON unique) | tests/test_project/test_project_service.py | fichier layouts séparé géré par LayoutService (RG060) |
 | RG062 | The author can at any time designate one of the map's journeys as the default… | implemented | usecases/journey_management/set_default_journey_usecase.py; ui/dialogs/journey_selection_dialog.py | tests/test_journeys/test_journey_usecases.py | designation replaces the default, active unchanged |
+| RG063 | Agent filter in the map views; not applied to the Agents view; off by default, not persisted,… | not-started | — | — | — |
+| RG064 | Journey filter + agent filter active at once: intersection of the two filters | not-started | — | — | — |
+| RG065 | "Agents" view: same dark background as "Journeys", anchor dots instead of a grid; cards freely movable, position forced onto the nearest dot | not-started | — | — | — |
+| RG066 | Agent card in the "Agents" view: larger than a block, no ports, label + type, single selection, note tooltip; no participation-count badge | not-started | — | — | — |
+| RG067 | Agent card positions persisted at project level in the graphics metadata (project layout file), restored on reopening; no business value | not-started | — | — | — |
 
 ## B. Features (`03_features-*.md`)
 
@@ -170,6 +174,7 @@
 | FN026 | Activate a journey | implemented | — | usecases/journey_management/activate_journey_usecase.py; ui/main_window.py (_activate_journey, Display > Journey) | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN027 | Delete a journey | implemented | — | usecases/journey_management/delete_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN038 | Set the default journey | not-started | Project › Journeys › Set as Default... | — | — | — | — |
+| FN039 | Filter the display by agent | not-started | Display › Agent | — | — | — | — |
 
 ### Visualization
 
@@ -182,7 +187,7 @@
 
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN030 | Associate agents with a block | partial | Associate agents... (block context menu, Journeys view); Associate with Block... (Project > Agents) | usecases/participation_management/ (associate/dissociate); core/services/participation_service.py; ui/dialogs/agent_association_dialog.py; ui/main_window.py | — | — | tests/test_agents/test_participation_usecases.py ; matrix + block context menu : TSK19 |
+| FN030 | Associate agents with a block | partial | Associate agents... (block context menu, Journeys view); Associate with Block... (Project > Agents) | usecases/participation_management/ (associate/dissociate); core/services/participation_service.py; ui/dialogs/agent_association_dialog.py; ui/main_window.py | — | — | tests/test_agents/test_participation_usecases.py ; block context menu : TSK19b ; agent filter : TSK19a |
 | FN031 | Manage the project's agents | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Associate with Block...) | usecases/agent_management/ (create/update/duplicate/delete); ui/dialogs/agent_dialog.py, agent_selection_dialog.py; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
 | FN032 | Cross-view navigation | not-started | — | — | — | — | — |
 | FN033 | Export preview (workspace "Export") | not-started | — | — | — | — | — |
@@ -238,6 +243,7 @@
 | Edit › Paste | Paste | Ctrl+V | greyed-MVP | — |
 | Display | Display |  | partial | — |
 | Display › Journey | Journey |  | implemented | main_window._rebuild_journey_menu (dynamic, checkable, FN026/FN029) |
+| Display › Agent | Agent |  | not-started | — |
 | Display › Zoom | Zoom |  | not-started | — |
 | Display › Zoom › In | In | Ctrl+= | greyed-MVP | — |
 | Display › Zoom › Out | Out | Ctrl+- | greyed-MVP | — |
@@ -293,7 +299,7 @@
 | SU006 | Visualize the Narrative Map (view "Journeys") | FN017, FN028, FN029 | partial |
 | SU007 | Export the Narrative Map | FN013, FN033 | not-started |
 | SU008 | Manage agent-block Participations | FN030, FN031 | partial |
-| SU009 | Manage the agents view — initialized, to be finalized after the design phase | FN031, FN032 | not-started |
+| SU009 | Manage the agents view — re-designed session 04 (anchor dots + agent cards, TSK19b) | FN031, FN032 | not-started |
 | SU010 | Preview the export — initialized, to be finalized after the design phase | FN033 | not-started |
 | SU011 | Manage a Relationship Between Agents | FN034, FN037 | not-started |
 | SU012 | Manage the "Relationships" view — initialized, to be finalized after the design phase | FN032, FN036 | not-started |

@@ -195,10 +195,6 @@ class WorkspaceLayout:
         transition_connections: Dict keyed by Transition.id
         zoom_level: Current zoom level of the workspace (1.0 = 100%)
         scroll_x / scroll_y: Current scroll position of the workspace
-        agents_view_column_order: Custom order of the agents view matrix
-            columns (Block IDs, RG036); empty = creation order
-        agents_view_row_order: Custom order of the agents view matrix rows
-            (Agent IDs, RG036); empty = creation order
     """
     narrative_map_id: str
     block_nodes: Dict[int, NodeLayout] = field(default_factory=dict)
@@ -206,8 +202,6 @@ class WorkspaceLayout:
     zoom_level: float = 1.0
     scroll_x: float = 0.0
     scroll_y: float = 0.0
-    agents_view_column_order: List[int] = field(default_factory=list)
-    agents_view_row_order: List[int] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
@@ -218,8 +212,6 @@ class WorkspaceLayout:
             'zoom_level': self.zoom_level,
             'scroll_x': self.scroll_x,
             'scroll_y': self.scroll_y,
-            'agents_view_column_order': list(self.agents_view_column_order),
-            'agents_view_row_order': list(self.agents_view_row_order)
         }
 
     @classmethod
@@ -232,8 +224,6 @@ class WorkspaceLayout:
             zoom_level=float(data.get('zoom_level', 1.0)),
             scroll_x=float(data.get('scroll_x', 0.0)),
             scroll_y=float(data.get('scroll_y', 0.0)),
-            agents_view_column_order=[int(i) for i in data.get('agents_view_column_order', [])],
-            agents_view_row_order=[int(i) for i in data.get('agents_view_row_order', [])]
         )
 
     def get_node_layout(self, node_type: BlockType, node_id: int) -> Optional[NodeLayout]:
@@ -266,5 +256,3 @@ class WorkspaceLayout:
         self.zoom_level = 1.0
         self.scroll_x = 0.0
         self.scroll_y = 0.0
-        self.agents_view_column_order.clear()
-        self.agents_view_row_order.clear()

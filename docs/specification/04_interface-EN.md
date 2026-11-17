@@ -28,6 +28,7 @@
 - Font: Segoe UI; sizes in config (`menu_font_size_px` 12, `node_font_size_px` 13, `node_label_font_size_px` 9, `node_title_font_size_px` 14).
 - Node (block): 80×40 px (`node_default_width`/`node_default_height`), corner radius 6 px.
 - Grid: minor 20 px / major 80 px (`grid_minor_size`/`grid_major_size`), colors `#333333`/`#4A4A4A`, always visible, redrawn on the visible area only.
+- "Agents" view: anchor dots instead of a grid — spacing `agents_view_dot_spacing_px`, radius `agents_view_dot_radius_px`, color `agents_view_dot_color`; agent cards `agents_view_card_width`×`agents_view_card_height` (larger than the 80×40 blocks, no ports) — adopted session 04 (TSK19b).
 - **Colors per narrative block type** (node border color): Start `#D19A66` (gold), Scene `#E5C07B` (sand), Pivot `#E06666` (red), Condition `#E06666` (red), End `#E5C07B` (sand) — adopted session 04 from the TSC visual test feedback (TSK16); Pivot and Condition deliberately share the same red, the type displayed inside the node tells them apart.
 
 
@@ -62,13 +63,19 @@
 - **Selection and editing**: single selection (no multi-selection); selection outline as dashes in the block's type color (`node_selection_dash_pattern`, e.g. `[4.0, 4.0]` — shorter dashes, adopted session 04, TSK16); blocks moved by drag-and-drop; graphical elements hit-tested through an enlarged area (`shape()`); immediate tooltips on hover (block label + note, transition note).
 - **Narrative block**: 80×40 px rectangle; border colored by type (color code above); active incoming (left) and outgoing (right) ports (8 px), **except the Start block (no incoming port) and End blocks (no outgoing port), whose port is hidden** (adopted 2026-11-11, TSK14; the business constraint is already covered by RG025/RG028); **type displayed** in the node, **label and note in a tooltip on hover**; badge with the participation count (agents present in the block): bottom-right corner of the node (2/3 of the badge inside the outline, 1/3 outside), 16 px diameter (`journeys_view_badge_diameter_px`), fixed `badge_bg_color` fill, `badge_border_color` outline, `badge_text_color` text; hidden at 0 participation, "9+" beyond 9; "Agents: …" line added to the tooltip.
 - **Transition**: directed arrow, 2 px (`connection_color`), follows the connected blocks, not movable as such; hover as a solid line in `connection_hover_color` (fixed sand, adopted session 04, TSK16); note shown in a tooltip on hover; created with a temporary trace from the source block's outgoing port to the target block's incoming port; creation must start on the source's outgoing port and end on the target's incoming port (a click near the edge of a block lacking the required port counts as off-port, TSK14).
-- **Journey filter**: applies to **all views**; disabled by default when a project is opened; not persisted between sessions. With the filter active, only the blocks of the active journey, the transitions whose two blocks belong to it, and the participations/relationships whose anchor block belongs to it remain at full opacity; other elements are dimmed (opacity 0.25) and non-interactive.
+- **Journey filter**: applies to the **views bearing on the narrative map** (not to the "Agents" view); disabled by default when a project is opened; not persisted between sessions. With the filter active, only the blocks of the active journey, the transitions whose two blocks belong to it, and the participations/relationships whose anchor block belongs to it remain at full opacity; other elements are dimmed (opacity 0.25) and non-interactive.
+- **Agent filter** (FN039/RG063): "Display > Agent" (checkable list, "All agents" on top, checked = filter disabled by default when a project is opened) filters the map views on the blocks the agent participates in (transitions whose two blocks are visible, participations/relationships whose anchor block is visible); with the journey filter active, **intersection** (RG064); not persisted; does not apply to the "Agents" view (RG048).
 - **Context menus**: **dynamically aligned** with the application menu (same actions and handlers) according to the active view and the selected graphical objects; right-click selects the item under the cursor before opening the menu, so actions apply to the clicked item; on the empty grid, the creation entries carry the labels "New Block" (type submenu) and "New Transition" (adopted session 04, TSK16).
 
-### 5. "Agents" view
-- *Specification left empty for now — re-design work to come* (SU009 initialized, to be finalized after the design phase).
+### 5. "Agents" view — re-designed session 04 (SU009, TSK19b)
+- Workspace dedicated to agents (project level), distinct from the block graph: `bg_primary` background **identical to the "Journeys" view**, but dressed with **anchor dots instead of a grid** (spacing/radius/color in config, drawn on the visible area only) (RG065).
+- Each project agent is represented by a **card** (`agents_view_card_width`×`agents_view_card_height`, larger than the 80×40 blocks, **no ports**) displaying label and type; note in a tooltip on hover (RG054); **no participation-count badge** on the card — participations and relationships are handled in other views (RG066).
+- Cards are freely movable; the position is **always forced onto the nearest anchor dot** (RG065). Single selection (RG049); hit-testing through an enlarged `shape()` (RG053); immediate tooltips (RG054).
+- Context menu aligned with the application menu (RG055): Edit.../Copy/Delete.../Associate with Block... for an agent card.
+- The filters (journey, agent) do not apply to this view (RG048/RG063).
+- Card positions are persisted **at project level** in the graphics metadata (project layout file, distinct from the per-map layouts — structure matching the business model: agents belong to the project, RG067), restored on reopening; no business value.
 
-### 6. "Relationships" view
+### 6.### 6. "Relationships" view
 - *Specification left empty for now — the mockup will be defined during the design phase* (SU012 / FN036). Reminder of the need: graph of agents, arcs labeled by type, annotated with anchor blocks, cross-navigation to the anchor block in the "Journeys" view.
 
 ### 7. "Export" view (in-app preview)

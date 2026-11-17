@@ -162,10 +162,6 @@
 - **Description** : Une relation est binaire (exactement deux agents), dirigée et typée, et ancrée à exactement un bloc ; son type est lu dans la liste de valeurs du fichier de configuration ; il ne peut exister qu'une seule relation par couple (bloc, paire d'agents, type).
 - **Classification** : 2. Structure de la carte narrative
 
-## RG036
-- **Description** : Dans la vue « Agents », les colonnes (blocs) sont ordonnées par défaut par ordre de création, avec réordonnancement manuel persistant entre les sessions ; le bloc Début occupe toujours la première colonne. *À re-concevoir avec la vue « Agents ».*
-- **Classification** : 2. Structure de la carte narrative
-
 ## 3. Logique des parcours et appartenance
 
 ## RG037
@@ -211,11 +207,11 @@
 - **Classification** : 4. Visualisation et interaction
 
 ## RG047
-- **Description** : La modification du niveau de zoom, de la position des barres de défilement ou de l'état du filtre de parcours ne constitue pas une modification de la carte ni du projet, et n'est pas persistée entre les sessions.
+- **Description** : La modification du niveau de zoom, de la position des barres de défilement ou de l'état d'un filtre (parcours ou agent) ne constitue pas une modification de la carte ni du projet, et n'est pas persistée entre les sessions.
 - **Classification** : 4. Visualisation et interaction
 
 ## RG048
-- **Description** : Le filtre de parcours affiche soit tous les parcours, soit un seul, dans toutes les vues ; il est désactivé par défaut à l'ouverture d'un projet ; sous filtre actif, seuls les blocs du parcours, les transitions dont les deux blocs y appartiennent et les participations/relations dont le bloc d'ancrage y appartient restent pleinement visibles — les autres éléments sont estompés (degré d'opacité défini en configuration) et non interactifs.
+- **Description** : Le filtre de parcours affiche soit tous les parcours, soit un seul, dans les vues portant sur la carte narrative (vues « Journeys », « Relationships », aperçu « Export ») — il ne s'applique pas à la vue « Agents » (agents de niveau projet, vue décorrélée des participations aux blocs) ; il est désactivé par défaut à l'ouverture d'un projet ; sous filtre actif, seuls les blocs du parcours, les transitions dont les deux blocs y appartiennent et les participations/relations dont le bloc d'ancrage y appartient restent pleinement visibles — les autres éléments sont estompés (degré d'opacité défini en configuration) et non interactifs.
 - **Classification** : 4. Visualisation et interaction
 
 ## RG049
@@ -275,3 +271,23 @@
 ## RG062
 - **Description** : L'auteur peut à tout moment désigner l'un des parcours de la carte comme parcours par défaut ; la désignation remplace le parcours par défaut courant et ne modifie pas le parcours actif. Il n'existe toujours qu'un seul parcours par défaut (RG039).
 - **Classification** : 3. Logique des parcours et appartenance
+
+## RG063
+- **Description** : Le filtre agent affiche, dans les vues portant sur la carte narrative, soit tous les éléments, soit seulement les blocs auxquels l'agent participe, les transitions dont les deux blocs sont ainsi visibles, et les participations/relations dont le bloc d'ancrage est visible ; les autres éléments sont estompés (même degré d'opacité que le filtre de parcours, défini en configuration) et non interactifs. Le filtre agent est désactivé par défaut à l'ouverture d'un projet, n'est pas persisté entre les sessions, ne marque ni la carte ni le projet comme modifiés, et ne s'applique pas à la vue « Agents ».
+- **Classification** : 4. Visualisation et interaction
+
+## RG064
+- **Description** : Lorsqu'un filtre de parcours et un filtre agent sont actifs simultanément, un élément n'est pleinement visible que s'il appartient au parcours filtré ET à la visibilité induite par l'agent (intersection des deux filtres).
+- **Classification** : 4. Visualisation et interaction
+
+## RG065
+- **Description** : Dans la vue « Agents », l'espace de travail a le même fond sombre que la vue « Journeys » mais est habillé de points d'ancrage à la place d'une grille (espacement, rayon et couleur définis en configuration) ; les cartes agent peuvent être déplacées librement, mais leur position est toujours forcée sur le point d'ancrage le plus proche.
+- **Classification** : 4. Visualisation et interaction
+
+## RG066
+- **Description** : Chaque agent du projet est représenté dans la vue « Agents » par une carte de dimensions supérieures à celles d'un bloc (définies en configuration), sans ports, affichant le libellé et le type ; sélection unique ; note en infobulle au survol ; menu contextuel aligné sur le menu applicatif (édition, copie, suppression, association à un bloc). Aucun badge de comptage des participations n'est affiché sur la carte : les participations et relations sont traitées dans d'autres vues.
+- **Classification** : 4. Visualisation et interaction
+
+## RG067
+- **Description** : Les positions des cartes agent de la vue « Agents » sont mémorisées au niveau projet dans le répertoire des métadonnées graphiques (fichier layout projet, distinct des layouts par carte narrative, conformément à la structure des données métier : les agents appartiennent au projet) et restaurées à la réouverture ; elles n'ont aucune valeur métier.
+- **Classification** : 5. Architecture technique et modèle de données

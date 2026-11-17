@@ -62,7 +62,6 @@
 | RG033 | La suppression d'un agent entraîne la suppression en cascade de toutes ses… | implemented | core/services/participation_service.py (cascade_delete_agent) ; usecases/agent_management/delete_agent_usecase.py | tests/test_agents/test_agent_usecases.py | comptages retournés pour le message d'information UI |
 | RG034 | La suppression d'un parcours réaffecte au parcours par défaut les rattachements… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | réaffectation au parcours par défaut (aucun bloc orphelin) |
 | RG035 | Une relation est binaire (exactement deux agents), dirigée et typée, et ancrée… | not-started | — | — | — |
-| RG036 | Dans la vue « Agents », les colonnes (blocs) sont ordonnées par défaut par… | not-started | — | — | À re-concevoir avec la vue « Agents ». |
 
 ### 3. Logique des parcours et appartenance
 
@@ -104,6 +103,11 @@
 | RG060 | Les métadonnées de représentation graphique (positions des blocs, ordre des… | partial | core/services/layout_service.py; ui/main_window.py (_do_save / _init_workspace) | — | persistance câblée au save/load ; roundtrip layout à valider |
 | RG061 | Le projet est enregistré dans un fichier unique structuré (JSON) contenant les… | implemented | project_service.py · save_project/load_project (JSON unique) | tests/test_project/test_project_service.py | fichier layouts séparé géré par LayoutService (RG060) |
 | RG062 | L'auteur peut à tout moment désigner l'un des parcours de la carte comme… | implemented | usecases/journey_management/set_default_journey_usecase.py; ui/dialogs/journey_selection_dialog.py | tests/test_journeys/test_journey_usecases.py | désignation remplace le défaut, actif inchangé |
+| RG063 | Filtre agent dans les vues de la carte ; non appliqué à la vue « Agents » ; désactivé par défaut, non persisté,… | not-started | — | — | — |
+| RG064 | Filtre de parcours + filtre agent actifs ensemble : intersection des deux filtres | not-started | — | — | — |
+| RG065 | Vue « Agents » : même fond sombre que « Journeys », points d'ancrage à la place de la grille ; cartes déplaçables, position forcée sur le point le plus proche | not-started | — | — | — |
+| RG066 | Carte agent dans la vue « Agents » : plus grande qu'un bloc, sans ports, libellé + type, sélection unique, note en infobulle ; pas de badge de comptage | not-started | — | — | — |
+| RG067 | Positions des cartes agent persistées au niveau projet dans les métadonnées graphiques (fichier layout projet), restaurées à la réouverture ; sans valeur métier | not-started | — | — | — |
 
 ## B. Fonctionnalités (`03_features-*.md`)
 
@@ -170,6 +174,7 @@
 | FN026 | Activer un parcours | implemented | — | usecases/journey_management/activate_journey_usecase.py; ui/main_window.py (_activate_journey, Display > Journey) | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN027 | Supprimer un parcours | implemented | — | usecases/journey_management/delete_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN038 | Définir le parcours par défaut | not-started | Project › Journeys › Set as Default... | — | — | — | — |
+| FN039 | Filtrer l'affichage par agent | not-started | Affichage › Agent | — | — | — | — |
 
 ### Visualisation
 
@@ -182,7 +187,7 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN030 | Associer des agents à un bloc | partial | Associate agents... (menu contextuel du bloc, vue « Journeys ») ; Associate with Block... (Projet › Agents) | usecases/participation_management/ (associate/dissociate) ; core/services/participation_service.py ; ui/dialogs/agent_association_dialog.py ; ui/main_window.py | — | — | tests/test_agents/test_participation_usecases.py ; matrice + menu contextuel bloc : TSK19 |
+| FN030 | Associer des agents à un bloc | partial | Associate agents... (menu contextuel du bloc, vue « Journeys ») ; Associate with Block... (Projet › Agents) | usecases/participation_management/ (associate/dissociate) ; core/services/participation_service.py ; ui/dialogs/agent_association_dialog.py ; ui/main_window.py | — | — | tests/test_agents/test_participation_usecases.py ; menu contextuel bloc : TSK19b ; filtre agent : TSK19a |
 | FN031 | Gérer les agents du projet | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Associate with Block...) | usecases/agent_management/ (create/update/duplicate/delete) ; ui/dialogs/agent_dialog.py, agent_selection_dialog.py ; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
 | FN032 | Naviguer entre les vues (navigation croisée) | not-started | — | — | — | — | — |
 | FN033 | Aperçu d'export (espace de travail « Export ») | not-started | — | — | — | — | — |
@@ -238,6 +243,7 @@
 | Édition › Coller | Coller | Ctrl+V | greyed-MVP | — |
 | Affichage | Affichage |  | partial | — |
 | Affichage › Parcours | Parcours |  | implemented | main_window._rebuild_journey_menu (dynamique, cochable, FN026/FN029) |
+| Affichage › Agent | Agent |  | not-started | — |
 | Affichage › Zoom | Zoom |  | not-started | — |
 | Affichage › Zoom › Avant | Avant | Ctrl+= | greyed-MVP | — |
 | Affichage › Zoom › Arrière | Arrière | Ctrl+- | greyed-MVP | — |
@@ -293,7 +299,7 @@
 | SU006 | Visualiser la carte narrative (vue « Parcours ») | FN017, FN028, FN029 | partial |
 | SU007 | Exporter la carte narrative | FN013, FN033 | not-started |
 | SU008 | Gérer les participations agent-bloc | FN030, FN031 | partial |
-| SU009 | Gérer la vue agents — initialisé, à finaliser après la phase de conception | FN031, FN032 | not-started |
+| SU009 | Gérer la vue agents — re-conçue séance 04 (points d'ancrage + cartes agent, TSK19b) | FN031, FN032 | not-started |
 | SU010 | Visualiser l'aperçu d'export — initialisé, à finaliser après la phase de conception | FN033 | not-started |
 | SU011 | Gérer une relation entre agents | FN034, FN037 | not-started |
 | SU012 | Gérer la vue « Relations » — initialisée, à finaliser après la phase de conception | FN032, FN036 | not-started |

@@ -28,11 +28,12 @@
 
 ### To do
 
-- [ ] TSK19 — Vue « Agents » : matrice agents × blocs conforme RG058 (le workspace émet des signaux, MainWindow applique les use cases — pas d'appel direct comme dans planoscript), réordonnancement persisté (RG060, `agents_view_*_order` + `resolve_matrix_order`, bloc Début épinglé RG036), filtre de parcours (RG048), focus croisé (RG056), grille et cellules (clés `agents_view_*`) ; + entrée « Associate agents... » du menu contextuel de bloc dans la vue « Journeys » (FN030) + rafraîchissement des badges de participation → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19_agents_view.md`
+- [ ] TSK19b — Vue « Agents » re-conçue (RG065/RG066/RG067) : espace dédié fond `bg_primary` identique à « Journeys », habillé de points d'ancrage (config `agents_view_dot_*`) au lieu d'une grille, dessinés sur la zone visible ; cartes agent `AgentCardItem` (`agents_view_card_width/height`, sans ports, libellé+type, note en infobulle, sélection unique, snap sur le point le plus proche) ; pas de badge de comptage ; menu contextuel carte (Edit.../Copy/Delete.../Associate with Block...) ; + entrée « Associate agents... » au menu contextuel de bloc dans la vue « Journeys » (FN030) ; positions persistées au niveau projet (fichier layout projet `layouts/project.json`, RG067) ; filtres non appliqués à cette vue (RG048) → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19b_agents_view.md`
 - [ ] TSK20 — Relations agent-agent (FN034, RG035, SU011) : use cases CRUD relation (binaire, dirigée, typée depuis la liste config FN037, ancrée à un bloc, unicité par (bloc, paire, type)) + dialogue + entrées `Project › Relationships` ; la vue « Relationships » (SU012) fera l'objet d'une tâche ultérieure → #TSK17 — fiche `tasks/TSK20_relationships.md`
 
 ### Doing
 
+- [ ] TSK19a — Filtre agent dans la vue « Journeys » (FN039, RG063/RG064) : service Qt-free (visibilité dérivée des participations) + tests unitaires ; workspace Journeys généralisé (filtre de parcours × filtre agent = intersection, RG064) ; menu dynamique `Display › Agent` (liste cochable, « All agents », non persisté RG047) ; les filtres ne s'appliquent pas à la vue « Agents » (RG048) → #TSK11, #TSK17 — fiche `tasks/TSK19a_agent_filter.md` — passée en Doing 17-11-2026 (TSK11 Done, TSK17 en Review)
 
 ### Review
 
@@ -83,5 +84,6 @@
 - [x] TSK16 — Retours de tests visuels TSC (séance n°04) : couleurs (config.json + theme.py), position du bloc Start à la création, tirets de sélection, survol des transitions, libellés des menus Project et contextuel, ligne « Type » du dialogue d'édition → #TSK10, #TSK11, #TSK12 — fiche `tasks/TSK16_visual_feedback.md`
 - [ ] TSK17 — Services et use cases agents & participations (FN030/FN031, RG032/RG033) + tests unitaires → #TSK08 — fiche `tasks/TSK17_agent_participation_usecases.md`
 - [ ] TSK18 — Dialogues agents + menu `Project › Agents` → #TSK17 — fiche `tasks/TSK18_agent_dialogs_menus.md`
-- [ ] TSK19 — Vue « Agents » (matrice, RG058) + menu contextuel bloc « Associate agents... » + badges → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19_agents_view.md`
+- [ ] TSK19a — Filtre agent dans la vue « Journeys » (FN039, RG063/RG064) + menu Display › Agent → #TSK11, #TSK17 — fiche `tasks/TSK19a_agent_filter.md`
+- [ ] TSK19b — Vue « Agents » re-conçue : points d'ancrage + cartes agent + persistance niveau projet + menu contextuel bloc « Associate agents... » (RG065–RG067, FN030) → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19b_agents_view.md`
 - [ ] TSK20 — Relations agent-agent (FN034/RG035) : use cases + dialogue + menu `Project › Relationships` → #TSK17 — fiche `tasks/TSK20_relationships.md`

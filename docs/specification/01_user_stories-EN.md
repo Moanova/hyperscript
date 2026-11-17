@@ -111,7 +111,7 @@
 - **Description**: As an author, I can visualize and navigate in the workspace of the narrative map — the "Journeys" view, graph of blocks and their transitions — in order to consult, structure and validate my story.
 - **Details**:
     - The workspace is virtually unlimited; navigation is done with horizontal and vertical scroll bars; the alignment grid is always visible and active.
-    - A journey filter allows displaying either all journeys or a selected journey; visibility follows derived membership (blocks of the journey, transitions whose two blocks belong to the journey, participations and relationships whose anchor block belongs to the journey).
+    - A journey filter allows displaying either all journeys or a selected journey; visibility follows derived membership (blocks of the journey, transitions whose two blocks belong to the journey, participations and relationships whose anchor block belongs to the journey). An agent filter (Display > Agent, FN039) displays only the blocks an agent participates in; when both filters are active, the intersection applies (RG064). No filter applies to the "Agents" view (project-level agents).
     - The scroll bars position is not business data and is not kept between sessions.
     - Zoom is to be defined during the design phase.
 - **Acceptance criteria**:
@@ -152,7 +152,7 @@
     - An agent is a project-level element, of type Character or Artefact. A block belongs to a narrative map. A participation links an agent to a block.
     - A participation is non-oriented; there can be only one per (agent, block) pair.
     - Derived journey membership: a participation belongs to a journey if and only if its block belongs to it.
-    - Two persistent entry points: the context menu of a block in the "Journeys" view ("Associate agents...") and the matrix of the agents view (SU009, initialized) — checking associates, unchecking dissociates; both entry points modify the same data and are immediately reflected in each other.
+    - Two persistent entry points: the context menu of a block in the "Journeys" view ("Associate agents...") and the "Project > Agents > Associate with Block..." entry — checking associates, unchecking dissociates; both entry points modify the same data and are immediately reflected in each other.
     - The participating agents of a block are represented by badges displayed on the block in the "Journeys" view.
     - Deleting an agent or a block cascades to its participations.
 - **Acceptance criteria**:
@@ -167,10 +167,14 @@
     - The note carried by a participation is not editable in the MVP.
 
 
-## SU009: Manage the agents view — initialized, to be finalized after the design phase
-- **Description**: As an author, I can visualize and edit the participations between the project's agents and the blocks of the narrative map in a second workspace, in order to manage the agents independently from the block graph.
-- **Status**: initialized scenario — to be finalized after the design phase. The MVP view scope is not decided yet (minimum: "Journeys" view and "Export" view).
-- **Elements to specify during design**: column order (the Start block first), manual reordering kept between sessions, cross-view navigation between the "Journeys" and agents views.
+## SU009: Manage the agents view — re-designed session 04
+- **Description**: As an author, I can visualize the project's agents in a second dedicated workspace, as freely movable cards (position forced onto anchor dots), in order to manage the agents independently from the block graph.
+- **Status**: adopted session 04 (TSK19b).
+- **Details**:
+    - Agents being project-level, the "Agents" view is decoupled from block participations; the filters (journey, agent) do not apply to it (RG048/RG063).
+    - Same dark background as the "Journeys" view, but dressed with anchor dots instead of a grid (RG065); each agent is a card larger than a block, with no ports, displaying label and type, note in a tooltip on hover (RG066); no participation-count badge on the card — participations and relationships are handled in other views.
+    - Single selection; context menu aligned with the application menu (edit, copy, delete, associate with a block).
+    - Card positions are persisted at project level in the graphics metadata, with no business value (RG067).
 
 
 ## SU010: Preview the export — initialized, to be finalized after the design phase

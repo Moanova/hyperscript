@@ -67,7 +67,12 @@ menu:
           dynamic: true
           description: "Liste cochable : une entrée « Tous les parcours » en tête (cochée = filtre désactivé, état par défaut à l'ouverture d'un projet) plus une entrée par parcours de la carte ; cocher un parcours l'active et active le filtre de parcours"
           references: "FN026, FN029, SU006"
-          note: "Le filtre s'applique à toutes les vues et n'est pas persisté entre les sessions"
+          note: "Le filtre s'applique aux vues portant sur la carte narrative (Parcours, Relations, aperçu Export), pas à la vue « Agents » ; non persisté entre les sessions"
+        - name: Agent
+          dynamic: true
+          description: "Liste cochable : une entrée « All agents » en tête (cochée = filtre désactivé, état par défaut à l'ouverture d'un projet) plus une entrée par agent du projet ; cocher un agent active le filtre agent"
+          references: "FN039, SU006, SU008"
+          note: "S'applique aux vues de la carte, pas à la vue « Agents » ; combiné au filtre de parcours, l'intersection s'applique (RG064) ; non persisté entre les sessions"
         - name: Zoom
           items:
             - name: Avant

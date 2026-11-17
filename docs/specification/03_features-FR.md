@@ -298,6 +298,15 @@
     - Toute désignation marque la carte, et donc le projet, comme modifié.
 
 
+## FN039 : Filtrer l'affichage par agent
+- **Description** : Afficher soit tous les blocs et transitions de la carte, soit seulement ceux auxquels un agent participe — dans les vues portant sur la carte narrative, pas dans la vue « Agents ».
+- **Références** : SU006, SU008 ; règles RG063 (filtre agent), RG064 (intersection avec le filtre de parcours).
+- **Comportement attendu** :
+    - Point d'entrée : case cochable « All agents » en tête de « Display › Agent » (cochée = filtre désactivé, état par défaut à l'ouverture d'un projet) ; cocher un agent active le filtre agent.
+    - Sous filtre agent actif, ne restent pleinement visibles que les blocs auxquels l'agent participe, les transitions dont les deux blocs sont visibles, et les participations/relations dont le bloc d'ancrage est visible ; les autres éléments sont estompés (opacité réduite) et non interactifs.
+    - Filtre agent et filtre de parcours actifs simultanément : intersection des deux filtres (RG064).
+    - Le filtre agent n'est pas persisté entre les sessions et ne marque pas la carte comme modifiée.
+
 ---
 
 # Visualisation
@@ -314,14 +323,14 @@
     - Le zoom est à définir en phase de conception.
 
 ## FN029 : Filtrer l'affichage par parcours
-- **Description** : Afficher soit tous les blocs et transitions de la carte, soit seulement ceux du parcours actif — dans toutes les vues.
+- **Description** : Afficher soit tous les blocs et transitions de la carte, soit seulement ceux du parcours actif — dans les vues portant sur la carte narrative (vues « Journeys », « Relationships », aperçu « Export »), pas dans la vue « Agents ».
 - **Références** : SU006.
 - **Comportement attendu** :
     - Le filtre permet de basculer entre « tout afficher » et « parcours actif ».
     - Point d'entrée : case cochable « All journeys » en tête de « Display › Journey » (cochée = filtre désactivé) ; cocher un parcours active ce parcours et le filtre.
     - **Le filtre est désactivé par défaut à l'ouverture d'un projet** et son état n'est pas persisté entre les sessions.
-    - **Le filtre s'applique à toutes les vues** (vue « Parcours », vue « Agents », vue « Relations », aperçu « Export ») : ne restent pleinement visibles que les blocs du parcours actif, les transitions dont les deux blocs y appartiennent, et les participations et relations dont le bloc d'ancrage y appartient ; les autres éléments sont estompés (opacité réduite) et non interactifs tant que le filtre est activé.
-    - La bascule d'un parcours à l'autre met à jour instantanément l'affichage de toutes les vues.
+    - **Le filtre s'applique aux vues portant sur la carte narrative** (vue « Journeys », vue « Relationships », aperçu « Export » — **pas à la vue « Agents »**, les agents étant de niveau projet) : ne restent pleinement visibles que les blocs du parcours actif, les transitions dont les deux blocs y appartiennent, et les participations et relations dont le bloc d'ancrage y appartient ; les autres éléments sont estompés (opacité réduite) et non interactifs tant que le filtre est activé.
+    - La bascule d'un parcours à l'autre met à jour instantanément l'affichage des vues concernées.
     - Le filtrage ne marque pas la carte comme modifiée.
 
 
@@ -330,12 +339,11 @@
 # Agents et participations
 
 ## FN030 : Associer des agents à un bloc
-- **Description** : Associer ou dissocier un ou plusieurs agents à un bloc de la carte narrative, depuis la vue « Parcours » ou depuis la vue « Agents ».
-- **Références** : SU008 ; menu contextuel d'un bloc « Associer des agents... » (vue « Parcours ») ; matrice agents × blocs (vue « Agents »).
+- **Description** : Associer ou dissocier un ou plusieurs agents à un bloc de la carte narrative.
+- **Références** : SU008 ; menu contextuel d'un bloc « Associate agents... » (vue « Journeys ») ; menu « Project › Agents › Associate with Block... ».
 - **Comportement attendu** :
     - Depuis la vue « Parcours », le menu contextuel d'un bloc ouvre un dialogue listant tous les agents du projet avec leur statut de participation courant pour ce bloc (coché/décoché). Cocher associe, décocher dissocie.
     - Le dialogue permet de créer un nouvel agent et de l'associer en une seule opération (règles de FN031).
-    - Depuis la vue « Agents », l'édition s'effectue en cochant/décochant la cellule de la matrice.
     - L'application empêche la création d'une participation en double (agent, bloc).
     - Les agents participants d'un bloc sont représentés par des badges sur le bloc dans la vue « Parcours ».
     - L'appartenance aux parcours est dérivée : une participation appartient à un parcours si et seulement si son bloc y appartient.

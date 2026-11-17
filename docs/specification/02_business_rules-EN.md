@@ -162,10 +162,6 @@
 - **Description** : A relationship is binary (exactly two agents), directed and typed, and anchored to exactly one block; its type is read from the configuration file value list; there can be only one relationship per (block, agent pair, type).
 - **Classification** : 2. Narrative map structure
 
-## RG036
-- **Description** : In the "Agents" view, the columns (blocks) are ordered by default by creation order, with persistent manual reordering between sessions; the Start block always occupies the first column. *To be re-designed with the "Agents" view.*
-- **Classification** : 2. Narrative map structure
-
 ## 3. Journey logic and membership
 
 ## RG037
@@ -211,11 +207,11 @@
 - **Classification** : 4. Visualization and interaction
 
 ## RG047
-- **Description** : Changing the zoom level, the scroll bar positions or the journey filter state is not a modification of the map or the project, and is not persisted between sessions.
+- **Description** : Changing the zoom level, the scroll bar positions or the state of a filter (journey or agent) is not a modification of the map or the project, and is not persisted between sessions.
 - **Classification** : 4. Visualization and interaction
 
 ## RG048
-- **Description** : The journey filter displays either all journeys or a single one, in all views; it is disabled by default when a project is opened; with the filter active, only the blocks of the journey, the transitions whose two blocks belong to it and the participations/relationships whose anchor block belongs to it remain fully visible — the other elements are dimmed (opacity level set in the configuration) and non-interactive.
+- **Description** : The journey filter displays either all journeys or a single one, in the views bearing on the narrative map ("Journeys", "Relationships" views, "Export" preview) — it does not apply to the "Agents" view (project-level agents, view decoupled from block participations); it is disabled by default when a project is opened; with the filter active, only the blocks of the journey, the transitions whose two blocks belong to it and the participations/relationships whose anchor block belongs to it remain fully visible — the other elements are dimmed (opacity level set in the configuration) and non-interactive.
 - **Classification** : 4. Visualization and interaction
 
 ## RG049
@@ -275,3 +271,23 @@
 ## RG062
 - **Description**: The author can at any time designate one of the map's journeys as the default journey; the designation replaces the current default journey and does not change the active journey. There is always only one default journey (RG039).
 - **Classification**: 3. Journey logic and membership
+
+## RG063
+- **Description** : The agent filter displays, in the views bearing on the narrative map, either all elements or only the blocks the agent participates in, the transitions whose two blocks are thus visible, and the participations/relationships whose anchor block is visible; the other elements are dimmed (same opacity level as the journey filter, set in the configuration) and non-interactive. The agent filter is disabled by default when a project is opened, is not persisted between sessions, marks neither the map nor the project as modified, and does not apply to the "Agents" view.
+- **Classification** : 4. Visualization and interaction
+
+## RG064
+- **Description** : When a journey filter and an agent filter are active at the same time, an element is fully visible only if it belongs to the filtered journey AND to the visibility induced by the agent (intersection of the two filters).
+- **Classification** : 4. Visualization and interaction
+
+## RG065
+- **Description** : In the "Agents" view, the workspace has the same dark background as the "Journeys" view but is dressed with anchor dots instead of a grid (spacing, radius and color set in the configuration); agent cards can be moved freely, but their position is always forced onto the nearest anchor dot.
+- **Classification** : 4. Visualization and interaction
+
+## RG066
+- **Description** : Each agent of the project is represented in the "Agents" view by a card larger than a block (dimensions set in the configuration), with no ports, displaying label and type; single selection; note in a tooltip on hover; context menu aligned with the application menu (edit, copy, delete, associate with a block). No participation-count badge is shown on the card: participations and relationships are handled in other views.
+- **Classification** : 4. Visualization and interaction
+
+## RG067
+- **Description** : The positions of the agent cards of the "Agents" view are stored at project level in the graphics metadata directory (project layout file, distinct from the per-map layouts, in accordance with the business data structure: agents belong to the project) and restored on reopening; they carry no business value.
+- **Classification** : 5. Technical architecture and data model

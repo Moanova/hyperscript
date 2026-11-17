@@ -297,6 +297,15 @@
     - Any designation marks the map, and therefore the project, as modified.
 
 
+## FN039: Filter the display by agent
+- **Description**: Display either all blocks and transitions of the map, or only those an agent participates in — in the views bearing on the narrative map, not in the "Agents" view.
+- **References**: SU006, SU008 ; rules RG063 (agent filter), RG064 (intersection with the journey filter).
+- **Expected behavior**:
+    - Entry point: checkable "All agents" item at the top of "Display > Agent" (checked = filter disabled, default when a project is opened); checking an agent activates the agent filter.
+    - With the agent filter active, only the blocks the agent participates in, the transitions whose two blocks are visible, and the participations/relationships whose anchor block is visible remain fully visible; other elements are dimmed (reduced opacity) and non-interactive.
+    - Agent filter and journey filter active at the same time: intersection of the two filters (RG064).
+    - The agent filter is not persisted between sessions and does not mark the map as modified.
+
 ---
 
 # Visualization
@@ -313,14 +322,14 @@
     - Zoom is to be defined during the design phase.
 
 ## FN029: Filter the display by journey
-- **Description**: Display either all blocks and transitions of the map, or only those of the active journey — in all views.
+- **Description**: Display either all blocks and transitions of the map, or only those of the active journey — in the views bearing on the narrative map ("Journeys", "Relationships" views, "Export" preview), not in the "Agents" view.
 - **References**: SU006.
 - **Expected behavior**:
     - The filter switches between "show all" and "active journey".
     - Entry point: checkable "All journeys" item at the top of "Display › Journey" (checked = filter disabled); checking a journey activates that journey and the filter.
     - **The filter is disabled by default when a project is opened** and its state is not persisted between sessions.
-    - **The filter applies to all views** ("Journeys" view, "Agents" view, "Relationships" view, "Export" preview): only the blocks of the active journey, the transitions whose two blocks belong to it, and the participations and relationships whose anchor block belongs to it remain fully visible; other elements are dimmed (reduced opacity) and non-interactive while the filter is active.
-    - Switching from one journey to another instantly updates the display of all views.
+    - **The filter applies to the views bearing on the narrative map** ("Journeys" view, "Relationships" view, "Export" preview — **not to the "Agents" view**, agents being project-level): only the blocks of the active journey, the transitions whose two blocks belong to it, and the participations and relationships whose anchor block belongs to it remain fully visible; other elements are dimmed (reduced opacity) and non-interactive while the filter is active.
+    - Switching from one journey to another instantly updates the display of the views concerned.
     - Filtering does not mark the map as modified.
 
 
@@ -329,12 +338,11 @@
 # Agents and participations
 
 ## FN030: Associate agents with a block
-- **Description**: Associate or dissociate one or more agents with a block of the narrative map, from the "Journeys" view or from the "Agents" view.
-- **References**: SU008 ; block context menu "Associate agents..." ("Journeys" view) ; agents × blocks matrix ("Agents" view).
+- **Description**: Associate or dissociate one or more agents with a block of the narrative map.
+- **References**: SU008 ; block context menu "Associate agents..." ("Journeys" view) ; menu "Project > Agents > Associate with Block...".
 - **Expected behavior**:
     - From the "Journeys" view, a block's context menu opens a dialog listing all the project's agents with their current participation status for this block (checked/unchecked). Checking associates, unchecking dissociates.
     - The dialog allows creating a new agent and associating it in a single operation (rules of FN031).
-    - From the "Agents" view, editing is done by checking/unchecking the matrix cell.
     - The application prevents a duplicate participation (agent, block).
     - The participating agents of a block are represented by badges on the block in the "Journeys" view.
     - Journey membership is derived: a participation belongs to a journey if and only if its block belongs to it.

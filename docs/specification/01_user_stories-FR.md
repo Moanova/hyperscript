@@ -112,7 +112,7 @@
 - **Description** : En tant qu'auteur, je peux visualiser et naviguer dans l'espace de travail de la carte narrative — la vue « Parcours », graphe des blocs et de leurs transitions — afin de consulter, structurer et valider mon récit.
 - **Complément** :
     - L'espace de travail est virtuellement illimité ; la navigation s'effectue au moyen de barres de défilement horizontal et vertical ; la grille d'alignement est toujours visible et active.
-    - Un filtre de parcours permet d'afficher soit tous les parcours, soit un parcours sélectionné ; la visibilité suit l'appartenance dérivée (blocs du parcours, transitions dont les deux blocs appartiennent au parcours, participations et relations dont le bloc d'ancrage appartient au parcours).
+    - Un filtre de parcours permet d'afficher soit tous les parcours, soit un parcours sélectionné ; la visibilité suit l'appartenance dérivée (blocs du parcours, transitions dont les deux blocs appartiennent au parcours, participations et relations dont le bloc d'ancrage appartient au parcours). Un filtre agent (Display › Agent, FN039) permet de n'afficher que les blocs auxquels un agent participe ; les deux filtres actifs simultanément s'appliquent par intersection (RG064). Aucun filtre ne s'applique à la vue « Agents » (agents de niveau projet).
     - La position des barres de défilement ne constitue pas une donnée métier et n'est pas conservée entre les sessions.
     - Le zoom est à définir durant la phase de conception.
 - **Critères d'acceptation** :
@@ -153,7 +153,7 @@
     - Un agent est un élément du projet, de type Personnage ou Artefact. Un bloc appartient à une carte narrative. La participation relie un agent à un bloc.
     - La participation est non orientée ; il ne peut en exister qu'une seule par couple (agent, bloc).
     - Appartenance aux parcours dérivée : une participation appartient à un parcours si et seulement si son bloc y appartient.
-    - Deux points d'entrée persistants : le menu contextuel d'un bloc dans la vue « Parcours » (« Associer des agents... ») et la matrice de la vue agents (SU009, initialisée) — cocher associe, décocher dissocie ; les deux points d'entrée modifient la même donnée et se répercutent immédiatement l'un sur l'autre.
+    - Deux points d'entrée persistants : le menu contextuel d'un bloc dans la vue « Journeys » (« Associate agents... ») et l'entrée « Project › Agents › Associate with Block... » — cocher associe, décocher dissocie ; les deux points d'entrée modifient la même donnée et se répercutent immédiatement l'un sur l'autre.
     - Les agents participants d'un bloc sont représentés par des badges affichés sur le bloc dans la vue « Parcours ».
     - La suppression d'un agent ou d'un bloc entraîne la suppression en cascade de ses participations.
 - **Critères d'acceptation** :
@@ -168,10 +168,14 @@
     - La note portée par une participation n'est pas éditable dans le MVP.
 
 
-## SU009 : Gérer la vue agents — initialisé, à finaliser après la phase de conception
-- **Description** : En tant qu'auteur, je peux visualiser et éditer les participations entre les agents du projet et les blocs de la carte narrative dans un second espace de travail, afin de gérer les agents indépendamment du graphe des blocs.
-- **Statut** : scenario initialisé — à finaliser après la phase de conception. Le périmètre MVP des vues n'est pas encore acté (au minimum : vue « Parcours » et vue « Export »).
-- **Éléments à préciser en conception** : ordre des colonnes (le bloc Début en premier), réordonnancement manuel conservé entre les sessions, navigation croisée entre les vues « Parcours » et agents.
+## SU009 : Gérer la vue « Agents » — re-conçue séance 04
+- **Description** : En tant qu'auteur, je peux visualiser les agents du projet dans un second espace de travail dédié, sous forme de cartes déplaçables librement (position forcée sur des points d'ancrage), afin de gérer les agents indépendamment du graphe des blocs.
+- **Statut** : acté séance 04 (TSK19b).
+- **Complément** :
+    - Les agents étant de niveau projet, la vue « Agents » est décorrélée des participations aux blocs ; les filtres (parcours, agent) ne s'y appliquent pas (RG048/RG063).
+    - Fond sombre identique à la vue « Journeys », mais habillé de points d'ancrage à la place d'une grille (RG065) ; chaque agent est une carte plus grande qu'un bloc, sans ports, affichant libellé et type, note en infobulle au survol (RG066) ; aucun badge de comptage sur la carte — les participations et relations sont traitées dans d'autres vues.
+    - Sélection unique ; menu contextuel aligné sur le menu applicatif (édition, copie, suppression, association à un bloc).
+    - Les positions des cartes sont persistées au niveau projet dans les métadonnées graphiques, sans valeur métier (RG067).
 
 
 ## SU010 : Visualiser l'aperçu d'export — initialisé, à finaliser après la phase de conception
