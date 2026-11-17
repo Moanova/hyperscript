@@ -182,8 +182,8 @@
 
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN030 | Associate agents with a block | partial | Associate agents... (block context menu, Journeys view) | usecases/participation_management/ (associate/dissociate); core/services/participation_service.py | — | — | tests/test_agents/test_participation_usecases.py ; UI (dialog, matrix, context menu) : TSK18/TSK19 |
-| FN031 | Manage the project's agents | partial | Project › Agents | usecases/agent_management/ (create/update/duplicate/delete) | — | — | tests/test_agents/test_agent_usecases.py ; menu wiring + dialogs : TSK18 |
+| FN030 | Associate agents with a block | partial | Associate agents... (block context menu, Journeys view); Associate with Block... (Project > Agents) | usecases/participation_management/ (associate/dissociate); core/services/participation_service.py; ui/dialogs/agent_association_dialog.py; ui/main_window.py | — | — | tests/test_agents/test_participation_usecases.py ; matrix + block context menu : TSK19 |
+| FN031 | Manage the project's agents | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Associate with Block...) | usecases/agent_management/ (create/update/duplicate/delete); ui/dialogs/agent_dialog.py, agent_selection_dialog.py; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
 | FN032 | Cross-view navigation | not-started | — | — | — | — | — |
 | FN033 | Export preview (workspace "Export") | not-started | — | — | — | — | — |
 

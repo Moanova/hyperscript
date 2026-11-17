@@ -105,7 +105,7 @@ menu:
               references: "FN031, SU008"
             - name: Associate with Block...
               references: "FN030, SU008"
-              note: "Creates/edits participations (agent present in a block); replaces the former 'Link to Block' wording"
+              note: "Creates/edits participations (agent present in a block); replaces the former 'Link to Block' wording. This menu entry keeps the label 'Associate with Block...'; the block context menu in the Journeys view carries the label 'Associate agents...' (FN030, TSK19)"
         - name: Blocks
           items:
             - name: New

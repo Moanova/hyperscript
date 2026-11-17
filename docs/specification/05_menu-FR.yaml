@@ -105,7 +105,7 @@ menu:
               references: "FN031, SU008"
             - name: Associer à un bloc...
               references: "FN030, SU008"
-              note: "Crée/modifie les participations (agent présent dans un bloc) ; remplace l'ancienne formulation « Lier à un bloc »"
+              note: "Crée/modifie les participations (agent présent dans un bloc) ; remplace l'ancienne formulation « Lier à un bloc ». Cette entrée de menu garde le libellé « Associate with Block... » ; le menu contextuel du bloc dans la vue « Journeys » porte le libellé « Associate agents... » (FN030, TSK19)"
         - name: Blocs
           items:
             - name: Nouveau

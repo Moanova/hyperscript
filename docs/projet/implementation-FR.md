@@ -182,8 +182,8 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN030 | Associer des agents à un bloc | partial | Associate agents... (menu contextuel du bloc, vue « Journeys ») | usecases/participation_management/ (associate/dissociate) ; core/services/participation_service.py | — | — | tests/test_agents/test_participation_usecases.py ; UI (dialogue, matrice, menu contextuel) : TSK18/TSK19 |
-| FN031 | Gérer les agents du projet | partial | Project › Agents | usecases/agent_management/ (create/update/duplicate/delete) | — | — | tests/test_agents/test_agent_usecases.py ; câblage menu + dialogues : TSK18 |
+| FN030 | Associer des agents à un bloc | partial | Associate agents... (menu contextuel du bloc, vue « Journeys ») ; Associate with Block... (Projet › Agents) | usecases/participation_management/ (associate/dissociate) ; core/services/participation_service.py ; ui/dialogs/agent_association_dialog.py ; ui/main_window.py | — | — | tests/test_agents/test_participation_usecases.py ; matrice + menu contextuel bloc : TSK19 |
+| FN031 | Gérer les agents du projet | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Associate with Block...) | usecases/agent_management/ (create/update/duplicate/delete) ; ui/dialogs/agent_dialog.py, agent_selection_dialog.py ; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
 | FN032 | Naviguer entre les vues (navigation croisée) | not-started | — | — | — | — | — |
 | FN033 | Aperçu d'export (espace de travail « Export ») | not-started | — | — | — | — | — |
 

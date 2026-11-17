@@ -41,8 +41,12 @@ from ui.nodes.connection import Connection
 from ui.utils import theme
 from ui.dialogs.about_dialog import AboutDialog
 from ui.dialogs.change_log_dialog import ChangeLogDialog
-from ui.dialogs import BlockDialog, TransitionDialog, JourneyDialog, JourneySelectionDialog
+from ui.dialogs import (
+    BlockDialog, TransitionDialog, JourneyDialog, JourneySelectionDialog,
+    AgentDialog, AgentSelectionDialog, AgentAssociationDialog,
+)
 from core.services.journey_service import JourneyService
+from core.services.participation_service import ParticipationService
 from core.services.project_service import ProjectService
 from core.services.about_service import AboutService
 from core.services.change_log_service import ChangeLogService
@@ -58,6 +62,12 @@ from usecases.view_management import (
 from usecases.journey_management import (
     CreateJourneyUseCase, UpdateJourneyUseCase, ActivateJourneyUseCase,
     SetDefaultJourneyUseCase, DuplicateJourneyUseCase, DeleteJourneyUseCase
+)
+from usecases.agent_management import (
+    CreateAgentUseCase, UpdateAgentUseCase, DuplicateAgentUseCase, DeleteAgentUseCase,
+)
+from usecases.participation_management import (
+    AssociateParticipationUseCase, DissociateParticipationUseCase,
 )
 from config.config_loader import get as _get_config
 from config.user_state_loader import get as _get_user_state, set as _set_user_state
@@ -105,6 +115,13 @@ class MainWindow(QMainWindow):
         self.set_default_journey_usecase = SetDefaultJourneyUseCase(self.project_service)
         self.duplicate_journey_usecase = DuplicateJourneyUseCase(self.project_service)
         self.delete_journey_usecase = DeleteJourneyUseCase(self.project_service)
+        # Agent / participation use cases (TSK17/TSK18)
+        self.create_agent_usecase = CreateAgentUseCase(self.project_service)
+        self.update_agent_usecase = UpdateAgentUseCase(self.project_service)
+        self.duplicate_agent_usecase = DuplicateAgentUseCase(self.project_service)
+        self.delete_agent_usecase = DeleteAgentUseCase(self.project_service)
+        self.associate_participation_usecase = AssociateParticipationUseCase(self.project_service)
+        self.dissociate_participation_usecase = DissociateParticipationUseCase(self.project_service)
 
         # Window dimensions (FN028: fully functional from 1280x720)
         self.setWindowTitle(_get_config("app_window_title", "Hyperscript"))
@@ -209,11 +226,11 @@ class MainWindow(QMainWindow):
         self.menu_actions['view_relationships'] = view_menu.addAction("Relationships", lambda: None)
         self.menu_actions['view_export'] = view_menu.addAction("Export", lambda: None)
         agents_menu = project_menu.addMenu("Agents")
-        self.menu_actions['agents_new'] = agents_menu.addAction("New...", lambda: None)
-        self.menu_actions['agents_edit'] = agents_menu.addAction("Edit...", lambda: None)
-        self.menu_actions['agents_copy'] = agents_menu.addAction("Copy", lambda: None)
-        self.menu_actions['agents_delete'] = agents_menu.addAction("Delete...", lambda: None)
-        self.menu_actions['agents_associate'] = agents_menu.addAction("Associate with Block...", lambda: None)
+        self.menu_actions['agents_new'] = agents_menu.addAction("New...", self._new_agent)
+        self.menu_actions['agents_edit'] = agents_menu.addAction("Edit...", self._edit_agent)
+        self.menu_actions['agents_copy'] = agents_menu.addAction("Copy", self._copy_agent)
+        self.menu_actions['agents_delete'] = agents_menu.addAction("Delete...", self._delete_agent)
+        self.menu_actions['agents_associate'] = agents_menu.addAction("Associate with Block...", self._associate_agent_with_block)
         blocks_menu = project_menu.addMenu("Blocks")
         new_block_menu = blocks_menu.addMenu("New")
         self.menu_actions['blocks_new_scene'] = new_block_menu.addAction("Scene", lambda: self._create_new_block("Scene"))
@@ -255,11 +272,16 @@ class MainWindow(QMainWindow):
     PROJECT_DEPENDENT = {
         'close', 'save', 'save_as', 'journey',
         'view_journeys', 'view_agents', 'view_relationships', 'view_export',
-        'agents_new', 'agents_edit', 'agents_copy', 'agents_delete', 'agents_associate',
+        'agents_new',
         'blocks_new', 'blocks_edit', 'blocks_copy', 'blocks_delete',
         'transitions_new', 'transitions_edit', 'transitions_delete',
         'journeys_new', 'journeys_edit', 'journeys_copy', 'journeys_set_default', 'journeys_delete',
         'relationships_new', 'relationships_edit', 'relationships_delete',
+    }
+
+    # Entries that additionally require at least one agent in the project (TSK18)
+    AGENT_DEPENDENT = {
+        'agents_edit', 'agents_copy', 'agents_delete', 'agents_associate',
     }
 
     def _update_menu_state(self):
@@ -268,6 +290,9 @@ class MainWindow(QMainWindow):
         for key, action in self.menu_actions.items():
             if key in self.MVP_GREYED:
                 action.setEnabled(False)
+            elif key in self.AGENT_DEPENDENT:
+                has_agents = has_project and bool(self.project_service.current_project.agent)
+                action.setEnabled(has_agents)
             elif key in self.PROJECT_DEPENDENT:
                 action.setEnabled(has_project)
             else:
@@ -702,6 +727,143 @@ class MainWindow(QMainWindow):
         if self.journeys_workspace is not None:
             self.journeys_workspace.set_journey_filter_active(active)
         self._rebuild_journey_menu()
+
+    # ---------------------------------------------------------------------
+    # Agents actions (FN031) + association with a block (FN030) - TSK18
+    # ---------------------------------------------------------------------
+    def _select_agent(self, title: str = "Select Agent"):
+        """Agent selection dialog (FN031); None when cancelled."""
+        project = self.project_service.current_project
+        dialog = AgentSelectionDialog(project.agent, parent=self, title=title)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return None
+        return dialog.get_selected_agent()
+
+    def _new_agent(self):
+        """FN031: create an agent (creation dialog)."""
+        project = self.project_service.current_project
+        dialog = AgentDialog(parent=self, default_label=f"Agent {project.get_next_id('agent')}")
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        values = dialog.get_values()
+        self.create_agent_usecase.execute(lb=values['lb'], typ=values['typ'],
+                                          note=values['note'], content=values['content'])
+        self.info_bar.show_message(f"Agent '{values['lb']}' created")
+        self._update_menu_state()
+
+    def _edit_agent(self):
+        """FN031: edit the selected agent (selection dialog + edition dialog)."""
+        agent = self._select_agent("Edit Agent")
+        if agent is None:
+            return
+        dialog = AgentDialog(agent, parent=self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        values = dialog.get_values()
+        self.update_agent_usecase.execute(agent, lb=values['lb'], typ=values['typ'],
+                                          note=values['note'], content=values['content'])
+        self.info_bar.show_message(f"Agent '{agent.lb}' updated")
+        self._refresh_participation_badges()  # agent labels appear in the block tooltips
+        self._update_menu_state()
+
+    def _copy_agent(self):
+        """FN031: duplicate the selected agent."""
+        agent = self._select_agent("Copy Agent")
+        if agent is None:
+            return
+        copy = self.duplicate_agent_usecase.execute(agent)
+        self.info_bar.show_message(f"Agent '{copy.lb}' created")
+        self._update_menu_state()
+
+    def _delete_agent(self):
+        """FN031/RG033: delete the selected agent, with a confirmation reporting
+        the number of cascaded elements; the cascade itself is done by the use case."""
+        agent = self._select_agent("Delete Agent")
+        if agent is None:
+            return
+        project = self.project_service.current_project
+        n_part = len(ParticipationService.get_agent_participations(project, agent.id))
+        n_rel = len(ParticipationService.get_agent_relationships(project, agent.id))
+        cascaded = n_part + n_rel
+        if cascaded:
+            message = (f"Agent '{agent.lb}' is linked to {cascaded} element(s) "
+                       f"({n_part} participation(s), {n_rel} relationship(s)). "
+                       f"Delete the agent and all of them?")
+        else:
+            message = f"Delete agent '{agent.lb}'?"
+        reply = QMessageBox.question(self, "Confirmation", message,
+                                     QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        result = self.delete_agent_usecase.execute(agent.id)
+        if result is None:
+            self.info_bar.show_message("Cannot delete agent")
+            return
+        removed = result['removed']
+        total = removed['participation'] + removed['relationship']
+        if total:
+            self.info_bar.show_message(
+                f"Agent deleted; {total} associated element(s) removed with it (cascade)")  # RG033
+        else:
+            self.info_bar.show_message("Agent deleted")
+        self._refresh_participation_badges()
+        self._update_menu_state()
+
+    def _associate_agent_with_block(self):
+        """FN030: 'Associate with Block...' - pick an agent, then the block
+        currently selected in the Journeys view, and open the association dialog."""
+        agent = self._select_agent("Associate Agent with Block")
+        if agent is None:
+            return
+        item = self._get_selected_item()
+        if not isinstance(item, BlockNode):
+            self.info_bar.show_message("Select a block in the Journeys view first")
+            return
+        self._open_association_dialog(item.entity)
+
+    def _open_association_dialog(self, block):
+        """Open the agent association dialog for a block (FN030); the dialog's
+        signals are applied through the use cases (RG058), then the block
+        badges are refreshed. Also used by the block context menu (TSK19)."""
+        project = self.project_service.current_project
+        dialog = AgentAssociationDialog(
+            project.agent, block, self._participating_agent_ids(block.id),
+            new_agent_label=f"Agent {project.get_next_id('agent')}", parent=self)
+        dialog.participation_toggled.connect(
+            lambda agent_id, checked: self._on_participation_toggled(block, agent_id, checked, dialog))
+        dialog.agent_create_requested.connect(
+            lambda values: self._on_agent_create_requested(block, values, dialog))
+        dialog.exec()
+        self._update_menu_state()
+
+    def _participating_agent_ids(self, block_id: int) -> set:
+        nm = self.project_service.current_project.narrative_maps[0]  # MVP: single map
+        return {p.agent_id for p in ParticipationService.get_block_participations(nm, block_id)}
+
+    def _on_participation_toggled(self, block, agent_id: int, checked: bool, dialog):
+        if checked:
+            self.associate_participation_usecase.execute(agent_id, block.id)
+            dialog.set_status(f"Agent associated with '{block.lb}'")
+        else:
+            self.dissociate_participation_usecase.execute(agent_id, block.id)
+            dialog.set_status(f"Agent dissociated from '{block.lb}'")
+        self._refresh_participation_badges()
+        dialog.refresh(self.project_service.current_project.agent,
+                       self._participating_agent_ids(block.id))
+
+    def _on_agent_create_requested(self, block, values: dict, dialog):
+        """FN030: create the agent and associate it with the block in one operation."""
+        agent = self.create_agent_usecase.execute(lb=values['lb'], typ=values['typ'],
+                                                  note=values['note'], content=values['content'])
+        self.associate_participation_usecase.execute(agent.id, block.id)
+        dialog.set_status(f"Agent '{agent.lb}' created and associated")
+        self._refresh_participation_badges()
+        dialog.refresh(self.project_service.current_project.agent,
+                       self._participating_agent_ids(block.id))
+
+    def _refresh_participation_badges(self):
+        if self.journeys_workspace is not None:
+            self.journeys_workspace.refresh_all_participation_badges()
 
     # ---------------------------------------------------------------------
     # Edition dialogs (FN015/FN021/FN024/FN038) - TSK12
