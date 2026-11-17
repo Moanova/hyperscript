@@ -243,7 +243,7 @@
 - **Classification** : 4. Visualization and interaction
 
 ## RG055
-- **Description** : When a context menu opens, the element under the cursor is selected first; the context menu stays aligned with the application menu according to the active view and the current selection.
+- **Description** : When a context menu opens, the element under the cursor is selected first; the context menu stays aligned with the application menu (same actions and handlers) according to the active view and the current selection. On the empty grid of the Journeys view, the creation entries carry context-menu-specific labels ("New Block", "New Transition") - adopted session 04 (TSK16).
 - **Classification** : 4. Visualization and interaction
 
 ## RG056

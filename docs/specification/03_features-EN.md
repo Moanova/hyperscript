@@ -149,7 +149,7 @@
 
 ## FN014: Create a narrative block
 - **Description**: Create a narrative block in the narrative map. The type — Start, Scene, Pivot, Condition or End — is chosen at creation and immutable afterwards.
-- **References**: SU003 ; menu "Project › Narrative Blocks › New" (type choice).
+- **References**: SU003 ; menu "Project › Blocks › New" (type choice).
 - **Expected behavior**:
     - In the MVP, creation is done exclusively from the menu (no toolbar).
     - The block is created with an identifier unique within the map, the default label of its type, and the visual rendering corresponding to its type.
@@ -162,7 +162,7 @@
 
 ## FN015: Edit a block's attributes
 - **Description**: Edit the editable attributes of a block via an edit dialog.
-- **References**: SU003 ; menu "Project › Narrative Blocks › Edit...".
+- **References**: SU003 ; menu "Project › Blocks › Edit...".
 - **Expected behavior**:
     - The edit dialog presents the editable attributes: label, note (annotation) and narrative content. The type is not editable.
     - For a Condition block, the dialog also presents the structured condition: kind (choice / artefact / skill / flag), optional reference to an Artefact agent, label.
@@ -190,7 +190,7 @@
 
 ## FN018: Delete a block
 - **Description**: Delete a block from the narrative map.
-- **References**: SU003 ; menu "Project › Narrative Blocks › Delete...".
+- **References**: SU003 ; menu "Project › Blocks › Delete...".
 - **Expected behavior**:
     - If data is associated with the block, a confirmation is requested.
     - Deletion cascades to its transitions, participations, anchored relationships and journey attachments.

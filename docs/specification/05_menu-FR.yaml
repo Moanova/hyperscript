@@ -106,7 +106,7 @@ menu:
             - name: Associer à un bloc...
               references: "FN030, SU008"
               note: "Crée/modifie les participations (agent présent dans un bloc) ; remplace l'ancienne formulation « Lier à un bloc »"
-        - name: Blocs narratifs
+        - name: Blocs
           items:
             - name: Nouveau
               items:
@@ -159,7 +159,7 @@ menu:
           references: "FN004"
 
   context_menu:
-    description: "Le menu contextuel doit rester aligné dynamiquement sur le menu applicatif, selon la vue active et les objets graphiques sélectionnés."
+    description: "Le menu contextuel doit rester aligné dynamiquement sur le menu applicatif (mêmes actions et gestionnaires), selon la vue active et les objets graphiques sélectionnés. Sur la grille vide de la vue « Parcours », les entrées de création portent des libellés propres au menu contextuel : « New Block » (sous-menu Scène / Pivot / Condition / Fin, comme Projet > Blocs > Nouveau) et « New Transition » (comme Projet > Transitions > Nouvelle) — acté séance 04 (TSK16)."
 
   legend:
     description: |

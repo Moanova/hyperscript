@@ -1,6 +1,6 @@
 # Hyperscript ::: Tableau kanban du projet
 
-- **Date de dernière modification** : 11-11-2026
+- **Date de dernière modification** : 17-11-2026
 - **Description** : Suivi de l'avancement des tâches du projet.
   - Les chantiers majeurs sont des **épics** (EPCnn) découpés en **tâches** (TSKnn).
   - Le détail de chaque tâche (analyse, décisions, journal des travaux) est consigné dans un fichier markdown dédié du sous-dossier `tasks/`, nommé d'après le code de la tâche.
@@ -33,6 +33,8 @@
 
 
 ### Review
+
+- [ ] TSK16 — Retours de tests visuels TSC (séance n°04) : palette sable/or/rouge (`config.json` + fallbacks `theme.py` : Start `#D19A66`, Scène `#E5C07B`, Pivot `#E06666` validé = Condition, Fin `#E5C07B`), position du bloc Start à la création de la carte (80, 2020 — bord gauche + 1 pas majeur, centré dans un pas majeur en vertical), tirets de sélection raccourcis (`node_selection_dash_pattern` `[4.0, 4.0]`), survol des transitions en sable fixe (`connection_hover_color` `#E5C07B`), menu `Project › Blocks` (ex-« Narrative Blocks »), menu contextuel grille « New Block » / « New Transition », ligne « Type » supprimée du dialogue d'édition — point 14 (infobulle libellé+note) ignoré (déjà implémenté, RG054) ; badges hors périmètre → #TSK10, #TSK11, #TSK12 — fiche `tasks/TSK16_visual_feedback.md` — créée 17-11-2026, Doing 17-11-2026, implémentée et passée en Review 17-11-2026 (py_compile OK, 45 tests passed ; smoke offscreen Qt à valider sur poste de dev, libGL absent dans le sandbox)
 
 - [ ] TSK14 — Ports conditionnels selon le type de bloc dans la vue « Journeys » : bloc Début sans port entrant, blocs Fin sans port sortant (ports **masqués** dans `block_node.py`, garde-fous `has_input_port()`/`has_output_port()` dans `base_node.py` et `_handle_port_selection` dans `journeys_workspace.py` ; visibilité dérivée de la matrice RG028 via `type_allows_incoming/outgoing` dans `transition_service.py` + test unitaire ; spec `04_interface` §4 actée 11-11-2026 ; aucun impact modèle, RG025/RG028 déjà en vigueur) → #TSK10, #TSK11 — fiche `tasks/TSK14_conditional_ports.md` — créée 11-11-2026, passée en Doing 11-11-2026 (TSK10/TSK11 en Review), implémentée et passée en Review 11-11-2026 (py_compile OK, 45 tests passed ; smoke offscreen TSK14 à valider sur poste de dev)
 - [ ] TSK13 — Tests offscreen de la vue « Journeys » (script jetable non commité) + matrice de traçabilité `docs/projet/implementation-FR/EN.md` → #TSK11, #TSK12 — fiche `tasks/TSK13_offscreen_tests.md` — créée 11-11-2026, passée en Doing 11-11-2026, implémentée et passée en Review 11-11-2026 (44 tests passed ; smoke offscreen rédigé, bloqué dans le sandbox : libGL absent — à valider sur poste de dev)
@@ -69,3 +71,4 @@
 - [ ] TSK13 — Tests offscreen vue « Journeys » + matrice de traçabilité → #TSK11, #TSK12 — fiche `tasks/TSK13_offscreen_tests.md`
 - [ ] TSK14 — Ports conditionnels Début/Fin dans la vue « Journeys » (masquage des ports + garde-fous de création de transition) → #TSK10, #TSK11 — fiche `tasks/TSK14_conditional_ports.md`
 - [ ] TSK15 — Correctif z-order grille (z=-2) sous les transitions (z=-1) dans `_draw_grid()` → #TSK11 — fiche `tasks/TSK15_grid_zorder_fix.md`
+- [ ] TSK16 — Retours de tests visuels TSC (séance n°04) : couleurs (config.json + theme.py), position du bloc Start à la création, tirets de sélection, survol des transitions, libellés des menus Project et contextuel, ligne « Type » du dialogue d'édition → #TSK10, #TSK11, #TSK12 — fiche `tasks/TSK16_visual_feedback.md`

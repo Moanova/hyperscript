@@ -9,6 +9,40 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 
 --
 
+## Séance n°04 (2026-11-17)
+
+### Travaux
+- Analyse des premiers retours de tests manuels TSC sur la version en cours (15 points : couleurs, position du bloc Start, tirets de sélection, libellés de menus, infobulle, dialogue d'édition) → plan d'actions acté, puis implémentation en tant que **TSK16** (fiche `docs/projet/tasks/TSK16_visual_feedback.md`, passée en Doing — TSK10/TSK11/TSK12 en Review — puis en Review après tests).
+- TSK16 implémenté :
+  - `src/config/config.json` : palette actée Start `#D19A66` (or), Scène `#E5C07B` (sable), Pivot `#E06666` (rouge), Condition `#E06666` (inchangé), Fin `#E5C07B` (sable) ; nouvelles clés `connection_hover_color` `#E5C07B` et `node_selection_dash_pattern` `[4.0, 4.0]`.
+  - `src/ui/utils/theme.py` : fallbacks des couleurs de type alignés sur config (Scène/Condition étaient incohérents) + `CONNECTION_HOVER_COLOR`.
+  - Retours « vert → sable » (lien page d'accueil `main_window.py`, survol barres de défilement et soulignement d'onglet actif via `BLOCK_SCENE_COLOR`) : automatiques via `block_scene_color` → `#E5C07B`.
+  - `base_node.py` : tirets de sélection via `SELECTION_DASH_PATTERN` (config) au lieu de `[6.0, 4.0]` en dur.
+  - `connection.py` : survol des transitions en sable fixe (`connection_hover_color`) ; `_type_tint_color()` supprimé.
+  - `journeys_workspace.py` `populate_default()` : bloc Start à la création de la carte placé à (80, 2020) — bord gauche + 1 pas majeur, centré dans un pas majeur en vertical (calcul vérifié hors-ligne : x = `grid_major_size`, y = centre scène + (majeur − hauteur)/2, snappé RG046).
+  - `main_window.py` : menu `Project › Blocks` (ex-« Narrative Blocks ») ; menu contextuel sur la grille vide : « New Block » (sous-menu des 4 types) + « New Transition » (mêmes handlers que le menu applicatif).
+  - `block_dialog.py` : ligne « Type: » supprimée (titre de la fenêtre conservé).
+  - Specs FR/EN mises à jour : `05_menu` (« Blocks »/« Blocs » + `context_menu` explicitée), `02_business_rules` RG055, `03_features` (références « Project › Blocks › … »), `04_interface` (palette §2, accents, onglet §3, position Début / tirets / survol transition / menus contextuels §4, lien accueil §9, point ouvert n°1), `docs/projet/implementation-FR/EN.md`.
+
+### Choix actés
+- Point 14 (infobulle « libellé + note avec retour à la ligne ») **ignoré** : déjà implémenté (`base_node.py` `update_entity_data`, RG054) — simple vérification visuelle à venir.
+- Pivot et Condition partagent volontairement le contour `#E06666` (validé TSC) ; le type affiché dans le nœud les distingue.
+- Badges de participation (`badge_*_color`) hors périmètre TSK16 — revus avec la logique des agents.
+- Grille de lecture des couleurs : vert `#A7C957`, sable `#E5C07B`, or `#D19A66`, rouge `#E06666`, blanc `#F0F0F0`.
+- Menu contextuel : RG055 assoupli — mêmes actions/handlers que le menu applicatif, mais libellés propres autorisés sur la grille vide (« New Block », « New Transition »).
+- Docs historiques (conception, fiches TSK01–TSK15) laissés en l'état ; seules les specs `docs/specification/` et la matrice `docs/projet/implementation-*` suivent les nouveaux noms de menu.
+
+### État en fin de séance
+- `py_compile` OK sur les 6 fichiers modifiés, `json.tool`/`yaml.safe_load` OK, **45 tests passed** (`QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q`).
+- Kanban : **TSK16 en Review** (à valider TSC) ; TSK07–TSK14 toujours en Review ; To do et Doing vides.
+- Commit + push sur `dev` effectués sur demande TSC.
+- Smoke offscreen Qt (rendu QImage des points visuels TSK16) à exécuter sur le poste de dev : libGL absent dans le sandbox, PySide6 non importable ici.
+
+### Problèmes rencontrés
+- Sandbox : `libGL.so.1` absent (pas de droits root) → PySide6 non importable : vérifications Qt offscreen non exécutées ici (comme en séance n°03) ; `pytest` réinstallé via pip (9.2.0).
+
+---
+
 ## Séance n°03 (2026-11-11)
 
 ### Travaux

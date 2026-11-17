@@ -53,6 +53,9 @@ class BaseNode(QGraphicsRectItem):
     # Corner radius of the node rectangle (charter 98: ~6px)
     CORNER_RADIUS = _get_config("node_corner_radius_px", 6.0)
 
+    # Dash pattern of the selection outline (TSK16: shorter dashes, from config.json)
+    SELECTION_DASH_PATTERN = _get_config("node_selection_dash_pattern", [4.0, 4.0])
+
     # Default colors (dark theme, charter 98, via ui.utils.theme)
     DEFAULT_BG_COLOR = theme.color("bg_surface", theme.BG_SURFACE)
     DEFAULT_BORDER_COLOR = theme.color("border_color", theme.BORDER_COLOR)
@@ -281,8 +284,9 @@ class BaseNode(QGraphicsRectItem):
         selection (dashed, type color) > hover (soft white, solid) > type.
 
         A custom dash pattern is only honored by Qt for DashLine pens:
-        Qt.DotLine renders a fixed dot pattern, so DashLine with a 6/4
-        pattern is used to match the charter's dotted selection outline.
+        Qt.DotLine renders a fixed dot pattern, so DashLine with the
+        configured pattern (node_selection_dash_pattern) is used for the
+        dotted selection outline.
 
         Args:
             selected: Explicit selection state. During
@@ -292,7 +296,7 @@ class BaseNode(QGraphicsRectItem):
         if selected if selected is not None else self.isSelected():
             pen = QPen(self._type_border_color(), 2)
             pen.setStyle(Qt.DashLine)
-            pen.setDashPattern([6.0, 4.0])
+            pen.setDashPattern(self.SELECTION_DASH_PATTERN)
             pen.setCapStyle(Qt.FlatCap)
             self.setPen(pen)
         elif self._hovered:

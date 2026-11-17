@@ -150,7 +150,7 @@
 
 ## FN014 : Créer un bloc narratif
 - **Description** : Créer un bloc narratif dans la carte narrative. Le type — Début, Scène, Pivot, Condition ou Fin — est choisi à la création et immuable ensuite.
-- **Références** : SU003 ; menu « Project › Narrative Blocks › New » (choix du type).
+- **Références** : SU003 ; menu « Project › Blocks › New » (choix du type).
 - **Comportement attendu** :
     - En MVP, la création s'effectue exclusivement depuis le menu (pas de barre d'outils).
     - Le bloc est créé avec un identifiant unique dans la carte, le libellé par défaut de son type, et le rendu visuel correspondant à son type.
@@ -163,7 +163,7 @@
 
 ## FN015 : Modifier les attributs d'un bloc
 - **Description** : Modifier les attributs éditables d'un bloc via un dialogue d'édition.
-- **Références** : SU003 ; menu « Project › Narrative Blocks › Edit... ».
+- **Références** : SU003 ; menu « Project › Blocks › Edit... ».
 - **Comportement attendu** :
     - Le dialogue d'édition présente les attributs éditables : libellé, note (annotation) et contenu narratif. Le type n'est pas modifiable.
     - Pour un bloc Condition, le dialogue présente en outre la condition structurée : nature (choix / artefact / compétence / flag), référence éventuelle vers un agent Artefact, libellé.
@@ -191,7 +191,7 @@
 
 ## FN018 : Supprimer un bloc
 - **Description** : Supprimer un bloc de la carte narrative.
-- **Références** : SU003 ; menu « Project › Narrative Blocks › Delete... ».
+- **Références** : SU003 ; menu « Project › Blocks › Delete... ».
 - **Comportement attendu** :
     - Si des données sont associées au bloc, une confirmation est demandée.
     - La suppression entraîne la suppression en cascade de ses transitions, de ses participations, de ses relations ancrées et de ses rattachements aux parcours.

@@ -51,9 +51,11 @@ class Connection(QGraphicsPathItem):
     """
     
     # Default settings (TSK12 point 05: passive = solid soft gray line;
-    # selection/creation share short dashes; hover = solid line in the
-    # type tint of the connected nodes)
+    # selection/creation share short dashes; hover = solid line in the fixed
+    # sand color connection_hover_color - TSK16: no longer the type tint of
+    # the connected nodes)
     _CONNECTION_COLOR = theme.color("connection_color", theme.CONNECTION_COLOR)
+    HOVER_COLOR = theme.color("connection_hover_color", theme.CONNECTION_HOVER_COLOR)
     DEFAULT_PEN = QPen(_CONNECTION_COLOR, 2)  # Solid gray line, 2px thick
     # Short dashes, shared by the selection and creation feedback
     DASH_PATTERN = [2.0, 3.0]
@@ -396,23 +398,12 @@ class Connection(QGraphicsPathItem):
 
 
     def _hover_pen(self) -> QPen:
-        """Solid pen in the type tint of the connected blocks.
-
-        The first endpoint's block type color drives the tint.
-        """
+        """Solid pen in the fixed sand hover color (connection_hover_color,
+        TSK16) - the hover no longer depends on the endpoint block types."""
         width = self.layout.thickness or self.DEFAULT_PEN.width()
-        hover_pen = QPen(self._type_tint_color(), width)
+        hover_pen = QPen(self.HOVER_COLOR, width)
         hover_pen.setStyle(Qt.SolidLine)
         return hover_pen
-
-    def _type_tint_color(self) -> QColor:
-        """Type tint of the connection: the type color of the first endpoint
-        block (block_*_color in config.json)."""
-        for node in (self.source_node, self.target_node):
-            if node is not None and getattr(node, 'entity', None) is not None \
-                    and hasattr(node.entity, 'typ'):
-                return QColor(theme.block_color(node.entity.typ))
-        return QColor(theme.CONNECTION_COLOR)
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
         """
@@ -582,9 +573,9 @@ class Connection(QGraphicsPathItem):
 
     def hoverEnterEvent(self, event) -> None:
         """
-        Handle hover enter events: draw a solid line in the type tint
-        of the connected nodes while not selected (TSK12 point 05) and
-        show the transition note in an immediate tooltip (FN021, RG054).
+        Handle hover enter events: draw a solid line in the fixed sand
+        hover color while not selected (TSK12 point 05, TSK16) and show the
+        transition note in an immediate tooltip (FN021, RG054).
         """
         if not self.isSelected():
             self.setPen(self._hover_pen())

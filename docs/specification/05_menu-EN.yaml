@@ -106,7 +106,7 @@ menu:
             - name: Associate with Block...
               references: "FN030, SU008"
               note: "Creates/edits participations (agent present in a block); replaces the former 'Link to Block' wording"
-        - name: Narrative Blocks
+        - name: Blocks
           items:
             - name: New
               items:
@@ -159,7 +159,7 @@ menu:
           references: "FN004"
 
   context_menu:
-    description: "The context menu must remain dynamically aligned with the application menu, according to the active view and the selected graphical objects."
+    description: "The context menu must remain dynamically aligned with the application menu (same actions and handlers), according to the active view and the selected graphical objects. On the empty grid of the Journeys view, the creation entries carry context-menu-specific labels: 'New Block' (submenu Scene / Pivot / Condition / Ending, as in Project > Blocks > New) and 'New Transition' (as in Project > Transitions > New) - adopted session 04 (TSK16)."
 
   legend:
     description: |

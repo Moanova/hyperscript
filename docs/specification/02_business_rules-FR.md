@@ -243,7 +243,7 @@
 - **Classification** : 4. Visualisation et interaction
 
 ## RG055
-- **Description** : À l'ouverture d'un menu contextuel, l'élément situé sous le curseur est d'abord sélectionné ; le menu contextuel reste aligné sur le menu applicatif selon la vue active et la sélection courante.
+- **Description** : À l'ouverture d'un menu contextuel, l'élément situé sous le curseur est d'abord sélectionné ; le menu contextuel reste aligné sur le menu applicatif (mêmes actions et gestionnaires) selon la vue active et la sélection courante. Sur la grille vide de la vue « Journeys », les entrées de création portent des libellés propres au menu contextuel (« New Block », « New Transition ») — acté séance 04 (TSK16).
 - **Classification** : 4. Visualisation et interaction
 
 ## RG056

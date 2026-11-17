@@ -214,7 +214,7 @@ class MainWindow(QMainWindow):
         self.menu_actions['agents_copy'] = agents_menu.addAction("Copy", lambda: None)
         self.menu_actions['agents_delete'] = agents_menu.addAction("Delete...", lambda: None)
         self.menu_actions['agents_associate'] = agents_menu.addAction("Associate with Block...", lambda: None)
-        blocks_menu = project_menu.addMenu("Narrative Blocks")
+        blocks_menu = project_menu.addMenu("Blocks")
         new_block_menu = blocks_menu.addMenu("New")
         self.menu_actions['blocks_new_scene'] = new_block_menu.addAction("Scene", lambda: self._create_new_block("Scene"))
         self.menu_actions['blocks_new_pivot'] = new_block_menu.addAction("Pivot", lambda: self._create_new_block("Pivot"))
@@ -782,10 +782,14 @@ class MainWindow(QMainWindow):
             for key in ('transitions_edit', 'transitions_delete'):
                 menu.addAction(self.menu_actions[key])
         else:
-            new_menu = menu.addMenu("New")  # aligned with Project > Narrative Blocks > New
+            # TSK16: on the empty grid the creation entries carry context-menu
+            # labels ("New Block" / "New Transition"); the same handlers as
+            # the application menu (Project > Blocks > New, Project >
+            # Transitions > New) are triggered
+            new_block_menu = menu.addMenu("New Block")
             for key in ('blocks_new_scene', 'blocks_new_pivot', 'blocks_new_condition', 'blocks_new_ending'):
-                new_menu.addAction(self.menu_actions[key])
-            menu.addAction(self.menu_actions['transitions_new'])
+                new_block_menu.addAction(self.menu_actions[key])
+            menu.addAction("New Transition", self._start_transition_creation)
         menu.exec(global_pos)
 
     # ---------------------------------------------------------------------

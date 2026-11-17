@@ -145,11 +145,11 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN014 | Créer un bloc narratif | implemented | Project › Narrative Blocks › New | usecases/view_management/create_block_usecase.py; ui/main_window.py (_create_new_block) | — | — | tests/test_blocks/test_block_usecases.py |
-| FN015 | Modifier les attributs d'un bloc | implemented | Project › Narrative Blocks › Edit... | usecases/view_management/update_block_usecase.py; ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
+| FN014 | Créer un bloc narratif | implemented | Project › Blocks › New | usecases/view_management/create_block_usecase.py; ui/main_window.py (_create_new_block) | — | — | tests/test_blocks/test_block_usecases.py |
+| FN015 | Modifier les attributs d'un bloc | implemented | Project › Blocks › Edit... | usecases/view_management/update_block_usecase.py; ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
 | FN016 | Dupliquer un bloc | implemented | — | usecases/view_management/duplicate_block_usecase.py; ui/main_window.py | — | — | tests/test_blocks/test_block_usecases.py |
 | FN017 | Déplacer un bloc | partial | — | ui/nodes/base_node.py (itemChange, snap RG046); ui/main_window.py (_on_workspace_modified) | — | — | test offscreen à valider |
-| FN018 | Supprimer un bloc | implemented | Project › Narrative Blocks › Delete... | usecases/view_management/delete_block_usecase.py; ui/main_window.py | — | — | tests/test_blocks/test_block_usecases.py |
+| FN018 | Supprimer un bloc | implemented | Project › Blocks › Delete... | usecases/view_management/delete_block_usecase.py; ui/main_window.py | — | — | tests/test_blocks/test_block_usecases.py |
 | FN019 | Gérer le rattachement d'un bloc aux parcours | implemented | — | usecases/view_management/update_block_usecase.py (journey_ids); ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
 
 ### Transitions
@@ -254,15 +254,15 @@
 | Projet › Agents › Copier | Copier |  | stub | menu_actions['agents_copy'] |
 | Projet › Agents › Supprimer... | Supprimer... |  | stub | menu_actions['agents_delete'] |
 | Projet › Agents › Associer à un bloc... | Associer à un bloc... |  | stub | menu_actions['agents_associate'] |
-| Projet › Blocs narratifs | Blocs narratifs |  | implemented | menu_actions['blocks_*'] |
-| Projet › Blocs narratifs › Nouveau | Nouveau |  | implemented | menu_actions['blocks_new'] |
-| Projet › Blocs narratifs › Nouveau › Scène | Scène |  | implemented | menu_actions['blocks_new_scene'] |
-| Projet › Blocs narratifs › Nouveau › Pivot | Pivot |  | implemented | menu_actions['blocks_new_pivot'] |
-| Projet › Blocs narratifs › Nouveau › Condition | Condition |  | implemented | menu_actions['blocks_new_condition'] |
-| Projet › Blocs narratifs › Nouveau › Fin | Fin |  | implemented | menu_actions['blocks_new_ending'] |
-| Projet › Blocs narratifs › Éditer... | Éditer... |  | implemented | menu_actions['blocks_edit'] (BlockDialog, FN015) |
-| Projet › Blocs narratifs › Copier | Copier |  | implemented | menu_actions['blocks_copy'] (FN016) |
-| Projet › Blocs narratifs › Supprimer... | Supprimer... |  | implemented | menu_actions['blocks_delete'] (FN018) |
+| Projet › Blocs | Blocs |  | implemented | menu_actions['blocks_*'] |
+| Projet › Blocs › Nouveau | Nouveau |  | implemented | menu_actions['blocks_new'] |
+| Projet › Blocs › Nouveau › Scène | Scène |  | implemented | menu_actions['blocks_new_scene'] |
+| Projet › Blocs › Nouveau › Pivot | Pivot |  | implemented | menu_actions['blocks_new_pivot'] |
+| Projet › Blocs › Nouveau › Condition | Condition |  | implemented | menu_actions['blocks_new_condition'] |
+| Projet › Blocs › Nouveau › Fin | Fin |  | implemented | menu_actions['blocks_new_ending'] |
+| Projet › Blocs › Éditer... | Éditer... |  | implemented | menu_actions['blocks_edit'] (BlockDialog, FN015) |
+| Projet › Blocs › Copier | Copier |  | implemented | menu_actions['blocks_copy'] (FN016) |
+| Projet › Blocs › Supprimer... | Supprimer... |  | implemented | menu_actions['blocks_delete'] (FN018) |
 | Projet › Transitions | Transitions |  | implemented | menu_actions['transitions_*'] |
 | Projet › Transitions › Nouvelle | Nouvelle |  | implemented | menu_actions['transitions_new'] (FN020, tracé) |
 | Projet › Transitions › Éditer... | Éditer... |  | implemented | menu_actions['transitions_edit'] (TransitionDialog, FN021) |

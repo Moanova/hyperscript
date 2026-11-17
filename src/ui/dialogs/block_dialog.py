@@ -10,8 +10,9 @@
 
 Edits a narrative block (fusion of planoscript's ComponentDialog and
 RelationDialog, adapted to the single typed Block):
-- "Label", "Note", "Content" (FN015); the type is displayed read-only
-  (RG029: chosen at creation, immutable);
+- "Label", "Note", "Content" (FN015); the type is immutable (RG029: chosen
+  at creation) and is not a row of the dialog (TSK16), only the window title
+  recalls it;
 - "Journeys": multiple-choice list of the map's journeys (RG042: the list
   cannot be emptied - a block cannot be detached from its last journey;
   disabled when the map has a single journey);
@@ -78,10 +79,6 @@ class BlockDialog(QDialog):
         self.lb_edit = QLineEdit()
         self.lb_edit.setText(getattr(self.block, 'lb', '') or '')
         self.form.addRow("Label:", self.lb_edit)
-
-        # Type, read-only (RG029: chosen at creation, immutable)
-        type_label = QLabel(self.block.typ)
-        self.form.addRow("Type:", type_label)
 
         # Note field (compact area, summary notes)
         self.note_edit = QTextEdit()

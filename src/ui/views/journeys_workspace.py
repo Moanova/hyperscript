@@ -644,14 +644,26 @@ class JourneysWorkspace(QGraphicsView, QObject):
 
     def populate_default(self, narrative_map) -> int:
         """Create the visual items with default positions (no saved layout):
-        blocks in a column around the center of the scene."""
+        the Start block at the left edge plus one major grid step, centered
+        vertically within a major grid step (TSK16); the other blocks in a
+        column around the center of the scene."""
         node_count = 0
         start_x = 1800.0
         start_y = 1800.0
         step_y = 120.0
+        node_height = _get_config("node_default_height", 40.0)
+        scene_center_y = self.sceneRect().center().y()
         for i, block in enumerate(narrative_map.block):
+            if block.typ == "Start":
+                # TSK16: left edge + one major step; vertical middle with an
+                # offset so the block is centered within a major grid step
+                x = LayoutService.snap_to_grid(float(_GRID_MAJOR_SIZE))
+                y = LayoutService.snap_to_grid(
+                    scene_center_y + (_GRID_MAJOR_SIZE - node_height) / 2)
+            else:
+                x, y = start_x, start_y + i * step_y
             layout = LayoutService.create_node_layout(
-                node_id=block.id, node_type=block.typ, x=start_x, y=start_y + i * step_y
+                node_id=block.id, node_type=block.typ, x=x, y=y
             )
             self.create_block_node(block, layout, select=False, skip_overlap_check=True)
             node_count += 1

@@ -23,11 +23,12 @@
 - Palette (config.json defaults):
   - backgrounds: `bg_primary` `#1E1E1E`, `bg_surface` `#2D2D2D`; borders `border_color` `#383838`;
   - texts: `text_primary` `#FFFFFF`, `text_secondary` `#CCCCCC`; menu hover `menu_hover_bg` `#383838`;
-  - connections: `connection_color` `#CCCCCC`; badges: `badge_bg_color` `#E5C07B`, `badge_border_color` `#F0F0F0`, `badge_text_color` `#1E1E1E`; error `error_color` `#D19A66`.
+  - connections: `connection_color` `#CCCCCC`, hover `connection_hover_color` `#E5C07B` (fixed sand); badges: `badge_bg_color` `#E5C07B`, `badge_border_color` `#F0F0F0`, `badge_text_color` `#1E1E1E`; error `error_color` `#D19A66`.
+  - accents (welcome-page link, scroll bar hover, active tab underline): `block_scene_color` `#E5C07B` (sand);
 - Font: Segoe UI; sizes in config (`menu_font_size_px` 12, `node_font_size_px` 13, `node_label_font_size_px` 9, `node_title_font_size_px` 14).
 - Node (block): 80×40 px (`node_default_width`/`node_default_height`), corner radius 6 px.
 - Grid: minor 20 px / major 80 px (`grid_minor_size`/`grid_major_size`), colors `#333333`/`#4A4A4A`, always visible, redrawn on the visible area only.
-- **Colors per narrative block type** (node border color): Start `#E5C07B` (gold), Scene `#A7C957` (olive green), Pivot `#D19A66` (copper), Condition `#E06666` (red), End `#F0F0F0` (off-white) — adopted session 03; values to be confirmed after the first visual tests, within the same hues (dark grey, off-white, gold, sand…).
+- **Colors per narrative block type** (node border color): Start `#D19A66` (gold), Scene `#E5C07B` (sand), Pivot `#E06666` (red), Condition `#E06666` (red), End `#E5C07B` (sand) — adopted session 04 from the TSC visual test feedback (TSK16); Pivot and Condition deliberately share the same red, the type displayed inside the node tells them apart.
 
 
 ---
@@ -51,17 +52,18 @@
   - **Export** — in-app reading preview (see section 7).
 - The bar is visible only when a project is open. Views are activated via the tab bar; the "Project › View" menu entries are stubs.
 - **MVP scope**: at minimum the "Journeys" and "Export" tabs; "Agents" and "Relationships" according to the view scope to be decided. *To be validated.*
-- Tab style: dark theme hover, selected tab bold with visible bottom border.
+- Tab style: dark theme hover, selected tab bold with a visible 2 px bottom border in `block_scene_color` (sand `#E5C07B`).
 
 ### 4. Workspace — "Journeys" view
 - **Type**: QGraphicsView. Graph of narrative blocks and their transitions.
 - **Grid**: always visible (20/80 px); blocks snap to the grid at creation and when moved.
-- **Scrolling**: horizontal and vertical scroll bars always visible; auto-scroll when the mouse is within 50 px of an edge; initial scene 4000×4000 px, dynamically extended when blocks exceed it.
-- **Selection and editing**: single selection (no multi-selection); blocks moved by drag-and-drop; graphical elements hit-tested through an enlarged area (`shape()`); immediate tooltips on hover (block and transition notes).
+- **Default position at map creation**: the Start block is placed at the left edge of the scene plus one major grid step (80 px), centered vertically within a major grid step (adopted session 04, TSK16); without a saved layout, the other blocks are placed in a column at the center of the scene.
+- **Scrolling**: horizontal and vertical scroll bars always visible; handle hover/active in `block_scene_color` (sand); auto-scroll when the mouse is within 50 px of an edge; initial scene 4000×4000 px, dynamically extended when blocks exceed it.
+- **Selection and editing**: single selection (no multi-selection); selection outline as dashes in the block's type color (`node_selection_dash_pattern`, e.g. `[4.0, 4.0]` — shorter dashes, adopted session 04, TSK16); blocks moved by drag-and-drop; graphical elements hit-tested through an enlarged area (`shape()`); immediate tooltips on hover (block label + note, transition note).
 - **Narrative block**: 80×40 px rectangle; border colored by type (color code above); active incoming (left) and outgoing (right) ports (8 px), **except the Start block (no incoming port) and End blocks (no outgoing port), whose port is hidden** (adopted 2026-11-11, TSK14; the business constraint is already covered by RG025/RG028); **type displayed** in the node, **label and note in a tooltip on hover**; badge with the participation count (agents present in the block): bottom-right corner of the node (2/3 of the badge inside the outline, 1/3 outside), 16 px diameter (`journeys_view_badge_diameter_px`), fixed `badge_bg_color` fill, `badge_border_color` outline, `badge_text_color` text; hidden at 0 participation, "9+" beyond 9; "Agents: …" line added to the tooltip.
-- **Transition**: directed arrow, 2 px (`connection_color`), follows the connected blocks, not movable as such; note shown in a tooltip on hover; created with a temporary trace from the source block's outgoing port to the target block's incoming port; creation must start on the source's outgoing port and end on the target's incoming port (a click near the edge of a block lacking the required port counts as off-port, TSK14).
+- **Transition**: directed arrow, 2 px (`connection_color`), follows the connected blocks, not movable as such; hover as a solid line in `connection_hover_color` (fixed sand, adopted session 04, TSK16); note shown in a tooltip on hover; created with a temporary trace from the source block's outgoing port to the target block's incoming port; creation must start on the source's outgoing port and end on the target's incoming port (a click near the edge of a block lacking the required port counts as off-port, TSK14).
 - **Journey filter**: applies to **all views**; disabled by default when a project is opened; not persisted between sessions. With the filter active, only the blocks of the active journey, the transitions whose two blocks belong to it, and the participations/relationships whose anchor block belongs to it remain at full opacity; other elements are dimmed (opacity 0.25) and non-interactive.
-- **Context menus**: **dynamically aligned** with the application menu according to the active view and the selected graphical objects; right-click selects the item under the cursor before opening the menu, so actions apply to the clicked item.
+- **Context menus**: **dynamically aligned** with the application menu (same actions and handlers) according to the active view and the selected graphical objects; right-click selects the item under the cursor before opening the menu, so actions apply to the clicked item; on the empty grid, the creation entries carry the labels "New Block" (type submenu) and "New Transition" (adopted session 04, TSK16).
 
 ### 5. "Agents" view
 - *Specification left empty for now — re-design work to come* (SU009 initialized, to be finalized after the design phase).
@@ -83,7 +85,7 @@
 
 ### 9. Welcome message
 - Displayed in the center as long as no project is open (the tab bar is hidden).
-- Centered text, 40 px padding, dark theme: title + paragraph with a "create a new project" link triggering project creation.
+- Centered text, 40 px padding, dark theme: title + paragraph with a "create a new project" link in `block_scene_color` (sand) triggering project creation.
 
 
 ---
@@ -95,7 +97,7 @@
 ---
 
 ## Open points to be validated during the design phase
-1. Visual style of the 5 narrative block types (shapes/icons) and of transitions — color code adopted session 03 (see "Theme and style"); color values to be confirmed after the first visual tests (same hues).
+1. Shapes/icons of the 5 narrative block types and of transitions — color code adopted session 04 from the visual test feedback (TSK16, see "Theme and style").
 2. Badges: participation count in the "Journeys" view — adopted session 03 (see section 4); incoming/outgoing transition counts in the "Agents" view (to be re-designed).
 3. Mockup of the "Relationships" view.
 4. Content of the "Agents" view (re-design).

@@ -30,6 +30,7 @@ TEXT_SECONDARY = _get_config("text_secondary", "#CCCCCC")
 ANCHOR_COLOR = _get_config("anchor_color", "#F0F0F0")
 HOVER_COLOR = _get_config("hover_color", "#F0F0F0")
 CONNECTION_COLOR = _get_config("connection_color", "#CCCCCC")
+CONNECTION_HOVER_COLOR = _get_config("connection_hover_color", "#E5C07B")
 BADGE_BG_COLOR = _get_config("badge_bg_color", "#E5C07B")
 BADGE_BORDER_COLOR = _get_config("badge_border_color", "#F0F0F0")
 BADGE_TEXT_COLOR = _get_config("badge_text_color", "#1E1E1E")
@@ -37,15 +38,15 @@ MENU_HOVER_BG = _get_config("menu_hover_bg", "#383838")
 ERROR_COLOR = _get_config("error_color", "#D19A66")
 FOCUS_COLOR = _get_config("focus_color", "#383838")
 
-# Narrative block type colors (adopted session 03: warm palette - gold, olive,
-# copper, red, off-white). Definitive values to be confirmed after the first
-# visual tests; stay within the same hues (dark grey, off-white, gold, sand...).
-# planoscript reference: state #E5C07B / event #D19A66
-BLOCK_START_COLOR = _get_config("block_start_color", "#E5C07B")
+# Narrative block type colors (acted session 04 / TSK16 from TSC visual
+# feedback: sand #E5C07B, gold #D19A66, red #E06666; Pivot and Condition
+# deliberately share the red - the type label inside the node tells them
+# apart). planoscript reference: state #E5C07B / event #D19A66
+BLOCK_START_COLOR = _get_config("block_start_color", "#D19A66")
 BLOCK_SCENE_COLOR = _get_config("block_scene_color", "#E5C07B")
-BLOCK_PIVOT_COLOR = _get_config("block_pivot_color", "#D19A66")
-BLOCK_CONDITION_COLOR = _get_config("block_condition_color", "#D19A66")
-BLOCK_ENDING_COLOR = _get_config("block_ending_color", "#F0F0F0")
+BLOCK_PIVOT_COLOR = _get_config("block_pivot_color", "#E06666")
+BLOCK_CONDITION_COLOR = _get_config("block_condition_color", "#E06666")
+BLOCK_ENDING_COLOR = _get_config("block_ending_color", "#E5C07B")
 
 BLOCK_TYPE_COLORS = {
     "Start": BLOCK_START_COLOR,
