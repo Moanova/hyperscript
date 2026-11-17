@@ -83,7 +83,7 @@
 | RG045 | La position (x, y) de chaque bloc est conservée dans les métadonnées graphiques… | not-started | — | — | — |
 | RG046 | Les blocs s'alignent automatiquement sur la grille lors de leur création et de… | partial | core/services/layout_service.py (snap_to_grid); ui/nodes/base_node.py (itemChange) | — | test offscreen à valider sur poste de dev (libGL absent dans le sandbox) |
 | RG047 | La modification du niveau de zoom, de la position des barres de défilement ou… | not-started | — | — | — |
-| RG048 | Le filtre de parcours affiche soit tous les parcours, soit un seul, dans toutes… | partial | core/services/journey_filter_service.py; ui/views/journeys_workspace.py; ui/main_window.py | tests/test_journeys/test_journey_filter_service.py | service testé (opacité config journey_filter_opacity) ; rendu visuel (opacité 0.25 + désactivation) à valider offscreen |
+| RG048 | Le filtre de parcours affiche soit tous les parcours, soit un seul, dans les vues de la carte narrative (pas la vue « Agents »)… | partial | core/services/journey_filter_service.py; ui/views/journeys_workspace.py; ui/main_window.py | tests/test_journeys/test_journey_filter_service.py | service testé (opacité config journey_filter_opacity) ; rendu visuel (opacité 0.25 + désactivation) à valider offscreen |
 | RG049 | Dans un espace de travail, un seul élément est sélectionné à la fois ; la… | partial | ui/views/journeys_workspace.py (_select_item_only, _clear_all_selections) | — | test offscreen à valider |
 | RG050 | Un bloc ne peut pas être créé à des coordonnées chevauchant celles d'un bloc… | partial | core/services/layout_service.py (find_non_overlapping_position); ui/views/journeys_workspace.py (next_free_position) | — | test offscreen à valider |
 | RG051 | Lorsqu'un bloc déplacé dépasse la partie visible de l'espace de travail, le… | not-started | — | — | — |
@@ -103,8 +103,8 @@
 | RG060 | Les métadonnées de représentation graphique (positions des blocs, ordre des… | partial | core/services/layout_service.py; ui/main_window.py (_do_save / _init_workspace) | — | persistance câblée au save/load ; roundtrip layout à valider |
 | RG061 | Le projet est enregistré dans un fichier unique structuré (JSON) contenant les… | implemented | project_service.py · save_project/load_project (JSON unique) | tests/test_project/test_project_service.py | fichier layouts séparé géré par LayoutService (RG060) |
 | RG062 | L'auteur peut à tout moment désigner l'un des parcours de la carte comme… | implemented | usecases/journey_management/set_default_journey_usecase.py; ui/dialogs/journey_selection_dialog.py | tests/test_journeys/test_journey_usecases.py | désignation remplace le défaut, actif inchangé |
-| RG063 | Filtre agent dans les vues de la carte ; non appliqué à la vue « Agents » ; désactivé par défaut, non persisté,… | not-started | — | — | — |
-| RG064 | Filtre de parcours + filtre agent actifs ensemble : intersection des deux filtres | not-started | — | — | — |
+| RG063 | Filtre agent dans les vues de la carte ; non appliqué à la vue « Agents » ; désactivé par défaut, non persisté,… | implemented | core/services/agent_filter_service.py; ui/views/journeys_workspace.py (_item_in_filter, apply_filters, set_agent_filter); ui/main_window.py (Display › Agent, _rebuild_agent_menu, _set_agent_filter) | tests/test_agents/test_agent_filter_service.py | rendu visuel (opacité + désactivation) à valider offscreen |
+| RG064 | Filtre de parcours + filtre agent actifs ensemble : intersection des deux filtres | implemented | ui/views/journeys_workspace.py (_item_in_filter : ET des deux filtres) | tests/test_agents/test_agent_filter_service.py (intersection RG064) | — |
 | RG065 | Vue « Agents » : même fond sombre que « Journeys », points d'ancrage à la place de la grille ; cartes déplaçables, position forcée sur le point le plus proche | not-started | — | — | — |
 | RG066 | Carte agent dans la vue « Agents » : plus grande qu'un bloc, sans ports, libellé + type, sélection unique, note en infobulle ; pas de badge de comptage | not-started | — | — | — |
 | RG067 | Positions des cartes agent persistées au niveau projet dans les métadonnées graphiques (fichier layout projet), restaurées à la réouverture ; sans valeur métier | not-started | — | — | — |
@@ -174,7 +174,7 @@
 | FN026 | Activer un parcours | implemented | — | usecases/journey_management/activate_journey_usecase.py; ui/main_window.py (_activate_journey, Display > Journey) | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN027 | Supprimer un parcours | implemented | — | usecases/journey_management/delete_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN038 | Définir le parcours par défaut | not-started | Project › Journeys › Set as Default... | — | — | — | — |
-| FN039 | Filtrer l'affichage par agent | not-started | Affichage › Agent | — | — | — | — |
+| FN039 | Filtrer l'affichage par agent | implemented | Affichage › Agent | core/services/agent_filter_service.py; ui/views/journeys_workspace.py (set_agent_filter, apply_filters); ui/main_window.py (_rebuild_agent_menu, _set_agent_filter) | — | — | tests/test_agents/test_agent_filter_service.py ; rendu visuel offscreen à valider |
 
 ### Visualisation
 
@@ -243,7 +243,7 @@
 | Édition › Coller | Coller | Ctrl+V | greyed-MVP | — |
 | Affichage | Affichage |  | partial | — |
 | Affichage › Parcours | Parcours |  | implemented | main_window._rebuild_journey_menu (dynamique, cochable, FN026/FN029) |
-| Affichage › Agent | Agent |  | not-started | — |
+| Affichage › Agent | Agent |  | implemented | main_window._rebuild_agent_menu (dynamique, cochable, « Tous les agents » + un par agent, FN039/RG063) |
 | Affichage › Zoom | Zoom |  | not-started | — |
 | Affichage › Zoom › Avant | Avant | Ctrl+= | greyed-MVP | — |
 | Affichage › Zoom › Arrière | Arrière | Ctrl+- | greyed-MVP | — |

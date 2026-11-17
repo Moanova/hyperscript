@@ -10,7 +10,8 @@
 Journey filter visibility (RG041/RG048, TSK08).
 
 RG048/FN029: the journey filter shows either all journeys or a single one,
-in all views. With the filter active, only the blocks of the active journey,
+in the narrative-map views only (not in the Agents view). With the filter
+active, only the blocks of the active journey,
 the transitions whose two blocks belong to it, and the participations /
 relationships whose anchor block belongs to it stay fully visible; the other
 elements are dimmed (opacity from config.json) and non-interactive.

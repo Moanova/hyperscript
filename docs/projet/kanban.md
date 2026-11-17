@@ -33,9 +33,9 @@
 
 ### Doing
 
-- [ ] TSK19a — Filtre agent dans la vue « Journeys » (FN039, RG063/RG064) : service Qt-free (visibilité dérivée des participations) + tests unitaires ; workspace Journeys généralisé (filtre de parcours × filtre agent = intersection, RG064) ; menu dynamique `Display › Agent` (liste cochable, « All agents », non persisté RG047) ; les filtres ne s'appliquent pas à la vue « Agents » (RG048) → #TSK11, #TSK17 — fiche `tasks/TSK19a_agent_filter.md` — passée en Doing 17-11-2026 (TSK11 Done, TSK17 en Review)
-
 ### Review
+
+- [ ] TSK19a — Filtre agent dans la vue « Journeys » (FN039, RG063/RG064) : service Qt-free `agent_filter_service.py` + tests unitaires ; workspace Journeys généralisé (`apply_filters()`, filtre de parcours × filtre agent = intersection RG064) ; menu dynamique `Display › Agent` (liste cochable, « All agents » `agent_list_all_label`, non persisté RG047) → #TSK11, #TSK17 — fiche `tasks/TSK19a_agent_filter.md` — passée en Doing 17-11-2026 — implémentée et passée en Review 17-11-2026 (py_compile OK, 64 tests passed ; rendu visuel offscreen à valider sur poste de dev)
 
 - [ ] TSK18 — Dialogues agents (création/édition `agent_dialog.py`, « Associate agents... » `agent_association_dialog.py`, sélection `agent_selection_dialog.py` — reprise planoscript adaptée) + câblage du menu `Project › Agents` (New.../Edit.../Copy/Delete.../Associate with Block...) → #TSK17 — fiche `tasks/TSK18_agent_dialogs_menus.md` — passée en Doing 17-11-2026 (TSK17 en Review) — plan d'implémentation dans la fiche — implémentée et passée en Review 17-11-2026 (py_compile OK, 59 tests passed ; smoke offscreen à valider sur poste de dev)
 

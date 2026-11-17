@@ -83,7 +83,7 @@
 | RG045 | Each block's position (x, y) is kept in the graphical metadata associated with… | not-started | — | — | — |
 | RG046 | Blocks automatically snap to the grid at creation and when moved. | partial | core/services/layout_service.py (snap_to_grid); ui/nodes/base_node.py (itemChange) | — | offscreen test to validate on dev machine (no libGL in sandbox) |
 | RG047 | Changing the zoom level, the scroll bar positions or the journey filter state… | not-started | — | — | — |
-| RG048 | The journey filter displays either all journeys or a single one, in all views;… | partial | core/services/journey_filter_service.py; ui/views/journeys_workspace.py; ui/main_window.py | tests/test_journeys/test_journey_filter_service.py | service tested (opacity from config journey_filter_opacity); visual rendering (0.25 opacity + disabled) to validate offscreen |
+| RG048 | The journey filter displays either all journeys or a single one, in the narrative-map views only (not the "Agents" view);… | partial | core/services/journey_filter_service.py; ui/views/journeys_workspace.py; ui/main_window.py | tests/test_journeys/test_journey_filter_service.py | service tested (opacity from config journey_filter_opacity); visual rendering (0.25 opacity + disabled) to validate offscreen |
 | RG049 | In a workspace, only one element is selected at a time; creating or clicking an… | partial | ui/views/journeys_workspace.py (_select_item_only, _clear_all_selections) | — | offscreen test to validate |
 | RG050 | A block cannot be created at coordinates overlapping an existing block; its… | partial | core/services/layout_service.py (find_non_overlapping_position); ui/views/journeys_workspace.py (next_free_position) | — | offscreen test to validate |
 | RG051 | When a moved block goes beyond the visible part of the workspace, scrolling… | not-started | — | — | — |
@@ -103,8 +103,8 @@
 | RG060 | Graphical representation metadata (block positions, column order) are stored in… | partial | core/services/layout_service.py; ui/main_window.py (_do_save / _init_workspace) | — | persistence wired at save/load; layout roundtrip to validate |
 | RG061 | The project is saved in a single structured file (JSON) containing metadata and… | implemented | project_service.py · save_project/load_project (JSON unique) | tests/test_project/test_project_service.py | fichier layouts séparé géré par LayoutService (RG060) |
 | RG062 | The author can at any time designate one of the map's journeys as the default… | implemented | usecases/journey_management/set_default_journey_usecase.py; ui/dialogs/journey_selection_dialog.py | tests/test_journeys/test_journey_usecases.py | designation replaces the default, active unchanged |
-| RG063 | Agent filter in the map views; not applied to the Agents view; off by default, not persisted,… | not-started | — | — | — |
-| RG064 | Journey filter + agent filter active at once: intersection of the two filters | not-started | — | — | — |
+| RG063 | Agent filter in the map views; not applied to the Agents view; off by default, not persisted,… | implemented | core/services/agent_filter_service.py; ui/views/journeys_workspace.py (_item_in_filter, apply_filters, set_agent_filter); ui/main_window.py (Display > Agent, _rebuild_agent_menu, _set_agent_filter) | tests/test_agents/test_agent_filter_service.py | visual rendering (opacity + disabled) to validate offscreen |
+| RG064 | Journey filter + agent filter active at once: intersection of the two filters | implemented | ui/views/journeys_workspace.py (_item_in_filter: AND of both filters) | tests/test_agents/test_agent_filter_service.py (RG064 intersection) | — |
 | RG065 | "Agents" view: same dark background as "Journeys", anchor dots instead of a grid; cards freely movable, position forced onto the nearest dot | not-started | — | — | — |
 | RG066 | Agent card in the "Agents" view: larger than a block, no ports, label + type, single selection, note tooltip; no participation-count badge | not-started | — | — | — |
 | RG067 | Agent card positions persisted at project level in the graphics metadata (project layout file), restored on reopening; no business value | not-started | — | — | — |
@@ -174,7 +174,7 @@
 | FN026 | Activate a journey | implemented | — | usecases/journey_management/activate_journey_usecase.py; ui/main_window.py (_activate_journey, Display > Journey) | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN027 | Delete a journey | implemented | — | usecases/journey_management/delete_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN038 | Set the default journey | not-started | Project › Journeys › Set as Default... | — | — | — | — |
-| FN039 | Filter the display by agent | not-started | Display › Agent | — | — | — | — |
+| FN039 | Filter the display by agent | implemented | Display › Agent | core/services/agent_filter_service.py; ui/views/journeys_workspace.py (set_agent_filter, apply_filters); ui/main_window.py (_rebuild_agent_menu, _set_agent_filter) | — | — | tests/test_agents/test_agent_filter_service.py ; visual rendering offscreen to validate |
 
 ### Visualization
 
@@ -243,7 +243,7 @@
 | Edit › Paste | Paste | Ctrl+V | greyed-MVP | — |
 | Display | Display |  | partial | — |
 | Display › Journey | Journey |  | implemented | main_window._rebuild_journey_menu (dynamic, checkable, FN026/FN029) |
-| Display › Agent | Agent |  | not-started | — |
+| Display › Agent | Agent |  | implemented | main_window._rebuild_agent_menu (dynamic, checkable, "All agents" + one per agent, FN039/RG063) |
 | Display › Zoom | Zoom |  | not-started | — |
 | Display › Zoom › In | In | Ctrl+= | greyed-MVP | — |
 | Display › Zoom › Out | Out | Ctrl+- | greyed-MVP | — |

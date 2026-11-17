@@ -173,6 +173,7 @@ class MainWindow(QMainWindow):
         # Workspace state (created when a project is opened)
         self.journeys_workspace = None
         self.journey_filter_active = False  # RG047/RG048: off by default, not persisted
+        self.agent_filter_agent_id = None  # RG047/RG063: agent filter off by default, not persisted
 
         self._show_welcome_message()
         self._update_menu_state()
@@ -213,6 +214,8 @@ class MainWindow(QMainWindow):
         display_menu = self.menu_bar.addMenu("Display")
         self.journey_menu = display_menu.addMenu("Journey")  # dynamic checkable list, built with the journeys (FN026/FN029)
         self.menu_actions['journey'] = self.journey_menu
+        self.agent_menu = display_menu.addMenu("Agent")  # dynamic checkable list, built with the agents (FN039/RG063)
+        self.menu_actions['agent_filter'] = self.agent_menu
         zoom_menu = display_menu.addMenu("Zoom")
         self.menu_actions['zoom_in'] = zoom_menu.addAction("In", lambda: None, "Ctrl+=")
         self.menu_actions['zoom_out'] = zoom_menu.addAction("Out", lambda: None, "Ctrl+-")
@@ -270,7 +273,7 @@ class MainWindow(QMainWindow):
 
     # Entries enabled only when a project is open (RG007/RG008)
     PROJECT_DEPENDENT = {
-        'close', 'save', 'save_as', 'journey',
+        'close', 'save', 'save_as', 'journey', 'agent_filter',
         'view_journeys', 'view_agents', 'view_relationships', 'view_export',
         'agents_new',
         'blocks_new', 'blocks_edit', 'blocks_copy', 'blocks_delete',
@@ -546,10 +549,13 @@ class MainWindow(QMainWindow):
         else:
             workspace.populate_default(nm)
 
-        # RG047/RG048: the journey filter is disabled by default, not persisted
+        # RG047/RG048/RG063: the filters are disabled by default, not persisted
         self.journey_filter_active = False
         workspace.set_journey_filter_active(False)
+        self.agent_filter_agent_id = None
+        workspace.set_agent_filter(None)
         self._rebuild_journey_menu()
+        self._rebuild_agent_menu()
         self.tab_bar.show()
         self.tab_bar.forceCurrentTab("Journeys")
 
@@ -559,6 +565,7 @@ class MainWindow(QMainWindow):
             self.journeys_workspace.deleteLater()
             self.journeys_workspace = None
         self.journey_filter_active = False
+        self.agent_filter_agent_id = None
         self.tab_bar.hide()
 
     def _on_tab_changed(self, tab_name: str):
@@ -692,7 +699,7 @@ class MainWindow(QMainWindow):
             return
         self._rebuild_journey_menu()
         if self.journeys_workspace is not None:
-            self.journeys_workspace.apply_journey_filter()
+            self.journeys_workspace.apply_filters()
         self._update_menu_state()
 
     def _rebuild_journey_menu(self):
@@ -721,12 +728,40 @@ class MainWindow(QMainWindow):
         self._update_menu_state()
 
     def _set_journey_filter_active(self, active: bool):
-        """FN029/RG048: toggle the journey filter on all views (visual only,
+        """FN029/RG048: toggle the journey filter on the map views (visual only,
         RG047: does not mark the project as modified)."""
         self.journey_filter_active = active
         if self.journeys_workspace is not None:
             self.journeys_workspace.set_journey_filter_active(active)
         self._rebuild_journey_menu()
+
+    def _rebuild_agent_menu(self):
+        """Rebuild the Display > Agent menu dynamically (FN039/RG063):
+        checkable 'All agents' on top (checked = filter disabled), then one
+        checkable entry per project agent."""
+        self.agent_menu.clear()
+        all_action = self.agent_menu.addAction(_get_config("agent_list_all_label", "All agents"))
+        all_action.setCheckable(True)
+        all_action.setChecked(self.agent_filter_agent_id is None)
+        all_action.triggered.connect(lambda: self._set_agent_filter(None))
+        self.agent_menu.addSeparator()
+        project = self.project_service.current_project
+        if project is not None:
+            for agent in project.agent:
+                action = self.agent_menu.addAction(agent.lb)
+                action.setCheckable(True)
+                action.setChecked(self.agent_filter_agent_id == agent.id)
+                action.triggered.connect(lambda _checked=False, a=agent: self._set_agent_filter(a.id))
+
+    def _set_agent_filter(self, agent_id):
+        """FN039/RG063: set the agent filter on the map views (agent id, or
+        None = 'All agents'); with the journey filter also active, the
+        intersection applies (RG064). Visual only, not persisted (RG047)."""
+        self.agent_filter_agent_id = agent_id
+        if self.journeys_workspace is not None:
+            self.journeys_workspace.set_agent_filter(agent_id)
+        self._rebuild_journey_menu()
+        self._rebuild_agent_menu()
 
     # ---------------------------------------------------------------------
     # Agents actions (FN031) + association with a block (FN030) - TSK18
@@ -749,6 +784,7 @@ class MainWindow(QMainWindow):
         self.create_agent_usecase.execute(lb=values['lb'], typ=values['typ'],
                                           note=values['note'], content=values['content'])
         self.info_bar.show_message(f"Agent '{values['lb']}' created")
+        self._rebuild_agent_menu()
         self._update_menu_state()
 
     def _edit_agent(self):
@@ -764,6 +800,7 @@ class MainWindow(QMainWindow):
                                           note=values['note'], content=values['content'])
         self.info_bar.show_message(f"Agent '{agent.lb}' updated")
         self._refresh_participation_badges()  # agent labels appear in the block tooltips
+        self._rebuild_agent_menu()
         self._update_menu_state()
 
     def _copy_agent(self):
@@ -773,6 +810,7 @@ class MainWindow(QMainWindow):
             return
         copy = self.duplicate_agent_usecase.execute(agent)
         self.info_bar.show_message(f"Agent '{copy.lb}' created")
+        self._rebuild_agent_menu()
         self._update_menu_state()
 
     def _delete_agent(self):
@@ -807,6 +845,7 @@ class MainWindow(QMainWindow):
         else:
             self.info_bar.show_message("Agent deleted")
         self._refresh_participation_badges()
+        self._rebuild_agent_menu()
         self._update_menu_state()
 
     def _associate_agent_with_block(self):
@@ -885,7 +924,7 @@ class MainWindow(QMainWindow):
             item.entity, lb=values['lb'], note=values['note'], content=values['content'],
             condition=values['condition'], journey_ids=values['journey_ids'])
         item.update_entity_data()  # type label + tooltip refresh
-        self.journeys_workspace.apply_journey_filter()
+        self.journeys_workspace.apply_filters()
         self._update_menu_state()
 
     def _edit_selected_transition(self):

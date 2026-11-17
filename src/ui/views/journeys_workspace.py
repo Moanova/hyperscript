@@ -35,6 +35,7 @@ from core.models.view_model import ConnectionLayout, WorkspaceLayout
 from core.models.data_model import Block, Transition
 from core.services.layout_service import LayoutService
 from core.services.journey_filter_service import JourneyFilterService
+from core.services.agent_filter_service import AgentFilterService
 from ui.nodes.block_node import BlockNode
 from ui.nodes.connection import Connection
 from ui.utils import theme
@@ -122,9 +123,11 @@ class JourneysWorkspace(QGraphicsView, QObject):
         self.waiting_for_source = False
         self.waiting_for_target = False
 
-        # Journey filter (FN029/RG048): purely visual state, disabled by
-        # default on project opening, not persisted (RG047)
+        # Filters (FN029/FN039, RG048/RG063): purely visual state, disabled by
+        # default on project opening, not persisted (RG047). agent_filter_agent_id
+        # None = "All agents" (filter off); RG064: both filters active = intersection.
         self.journey_filter_active = False
+        self.agent_filter_agent_id = None
 
         self.setRenderHint(QPainter.Antialiasing)
 
@@ -284,29 +287,44 @@ class JourneysWorkspace(QGraphicsView, QObject):
                     self._select_item_only(item)
 
     # ------------------------------------------------------------------
-    # Journey filter (FN029/RG048)
+    # Filters (FN029/FN039, RG048/RG063/RG064) - map views only, never the
+    # "Agents" view (project-level agents)
     # ------------------------------------------------------------------
 
     def _item_in_filter(self, item) -> bool:
-        """True when the item belongs to the active journey under the current
-        filter. Always True when the filter is disabled ("All journeys")."""
-        if not self.narrative_map or not self.journey_filter_active:
+        """True when the item passes the active filters. With both the journey
+        and the agent filter active, the intersection applies (RG064).
+        Always True when no filter is active."""
+        if not self.narrative_map:
             return True
-        active = self.narrative_map.get_active_journey()
-        journey_id = active.id if active else None
-        if isinstance(item, Connection):
-            return item.get_relation_id() in JourneyFilterService.visible_transition_ids(
-                self.narrative_map, journey_id)
-        if isinstance(item, BlockNode):
-            return item.entity.id in JourneyFilterService.visible_block_ids(
-                self.narrative_map, journey_id)
+        if self.journey_filter_active:  # FN029/RG048
+            active = self.narrative_map.get_active_journey()
+            journey_id = active.id if active else None
+            if isinstance(item, Connection):
+                if item.get_relation_id() not in JourneyFilterService.visible_transition_ids(
+                        self.narrative_map, journey_id):
+                    return False
+            elif isinstance(item, BlockNode):
+                if item.entity.id not in JourneyFilterService.visible_block_ids(
+                        self.narrative_map, journey_id):
+                    return False
+        if self.agent_filter_agent_id is not None:  # FN039/RG063 (+ RG064 intersection)
+            agent_id = self.agent_filter_agent_id
+            if isinstance(item, Connection):
+                if item.get_relation_id() not in AgentFilterService.visible_transition_ids(
+                        self.narrative_map, agent_id):
+                    return False
+            elif isinstance(item, BlockNode):
+                if item.entity.id not in AgentFilterService.visible_block_ids(
+                        self.narrative_map, agent_id):
+                    return False
         return True
 
-    def apply_journey_filter(self) -> None:
-        """Recompute enabled state and opacity of every item (FN029/RG048).
+    def apply_filters(self) -> None:
+        """Recompute enabled state and opacity of every item (FN029/FN039).
 
-        Items outside the filter are dimmed (opacity from config.json) and
-        disabled (not clickable); purely visual: no model data, no layout
+        Items outside the active filter(s) are dimmed (opacity from config.json)
+        and disabled (not clickable); purely visual: no model data, no layout
         change, does not mark the project as modified (RG047).
         """
         for item in self.scene.items():
@@ -320,13 +338,20 @@ class JourneysWorkspace(QGraphicsView, QObject):
         opacities down the parent chain, so children keep 1.0 and inherit)."""
         if item.parentItem() is not None:
             return
-        dimmed = self.journey_filter_active and not self._item_in_filter(item)
+        any_filter = self.journey_filter_active or self.agent_filter_agent_id is not None
+        dimmed = any_filter and not self._item_in_filter(item)
         item.setOpacity(JourneyFilterService.filter_opacity() if dimmed else 1.0)
 
     def set_journey_filter_active(self, active: bool) -> None:
         """Enable/disable the journey filter and refresh the view (FN029)."""
         self.journey_filter_active = active
-        self.apply_journey_filter()
+        self.apply_filters()
+
+    def set_agent_filter(self, agent_id) -> None:
+        """FN039/RG063: set the agent filter (agent id, or None = "All agents"
+        = filter off) and refresh the view. RG047: not persisted."""
+        self.agent_filter_agent_id = agent_id
+        self.apply_filters()
 
     # ------------------------------------------------------------------
     # Transition creation (FN020): traced from the source's outgoing port
@@ -468,7 +493,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
             self._select_item_only(node)
 
         self.refresh_participation_badge(node)
-        self.apply_journey_filter()
+        self.apply_filters()
         return node
 
     def refresh_participation_badge(self, block_node: BlockNode) -> None:
@@ -498,7 +523,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
         connection.update_path()
         if select:
             self._select_item_only(connection)
-        self.apply_journey_filter()
+        self.apply_filters()
         return connection
 
     def find_block_node(self, block_id: int):
@@ -594,7 +619,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
         if connection is None:
             return False
         self.scene.removeItem(connection)
-        self.apply_journey_filter()
+        self.apply_filters()
         return True
 
     def remove_node(self, node: BlockNode) -> bool:
@@ -609,7 +634,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
         for connection in connections_to_remove:
             self.scene.removeItem(connection)
         self.scene.removeItem(node)
-        self.apply_journey_filter()
+        self.apply_filters()
         return True
 
     # ------------------------------------------------------------------
@@ -659,7 +684,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
 
         self.refresh_all_participation_badges()
         self._clear_all_selections()
-        self.apply_journey_filter()
+        self.apply_filters()
         return node_count
 
     def populate_default(self, narrative_map) -> int:
@@ -697,7 +722,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
 
         self.refresh_all_participation_badges()
         self._clear_all_selections()
-        self.apply_journey_filter()
+        self.apply_filters()
         return node_count
 
     # ------------------------------------------------------------------
