@@ -23,6 +23,7 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
   - `main_window.py` : menu `Project › Blocks` (ex-« Narrative Blocks ») ; menu contextuel sur la grille vide : « New Block » (sous-menu des 4 types) + « New Transition » (mêmes handlers que le menu applicatif).
   - `block_dialog.py` : ligne « Type: » supprimée (titre de la fenêtre conservé).
   - Specs FR/EN mises à jour : `05_menu` (« Blocks »/« Blocs » + `context_menu` explicitée), `02_business_rules` RG055, `03_features` (références « Project › Blocks › … »), `04_interface` (palette §2, accents, onglet §3, position Début / tirets / survol transition / menus contextuels §4, lien accueil §9, point ouvert n°1), `docs/projet/implementation-FR/EN.md`.
+- Kanban : TSK07–TSK14 et TSK16 **validées TSC et passées en Done 17-11-2026** (To do / Doing / Review vides).
 - **Correctif TSK16 (option B validée)** sur retour TSC : effet de bord du placement du Start au bord gauche — les blocs créés par l'utilisateur partaient au centre de la scène (2000, 2000), loin du Start, et sans zoom il fallait aller le chercher. Deux options étudiées (retour arrière du placement Start vs alignement de la création sur le Start) ; **option B retenue** : `journeys_workspace.py` nouveau `next_free_creation_position()` (ancre = position courante du bloc Start + largeur de nœud + un pas majeur → premier emplacement libre à droite, ≈ (240, 2020), repli centre de scène si pas de Start) utilisé par `main_window._create_new_block()` ; `populate_default()` : colonne des autres blocs sous le Start (80, 2020 + k·120) ; specs `04_interface` §4 et FN014 (`03_features` FR/EN) mises à jour. Aucun impact modèle (position visuelle, RG060) ni règle (RG046/RG050 inchangés).
 
 ### Choix actés
@@ -35,9 +36,10 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 - Docs historiques (conception, fiches TSK01–TSK15) laissés en l'état ; seules les specs `docs/specification/` et la matrice `docs/projet/implementation-*` suivent les nouveaux noms de menu.
 
 ### État en fin de séance
-- `py_compile` OK sur les 6 fichiers modifiés, `json.tool`/`yaml.safe_load` OK, **45 tests passed** (`QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q`).
-- Kanban : **TSK16 en Review** (à valider TSC, correctif option B inclus) ; TSK07–TSK14 toujours en Review ; To do et Doing vides.
-- Commits + push sur `dev` effectués sur demande TSC (2 commits : TSK16 initial `eeb3e42`, correctif option B).
+- `py_compile` OK sur les fichiers modifiés, `json.tool`/`yaml.safe_load` OK, **45 tests passed** (`QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q`).
+- Kanban : sur demande TSC (17-11-2026), **toutes les tâches en Review (TSK07–TSK14, TSK16) validées et passées en Done** ; To do, Doing et Review vides.
+- Commits + push sur `dev` effectués sur demande TSC (3 commits : TSK16 initial `eeb3e42`, correctif option B `621bc03`, passage des tâches Review en Done).
+- Prochaine séance : analyse de la reprise du code planoscript (figé `faa8fdd`) pour la **gestion des agents** (vue « Agents », CRUD agents, participations/badges, relations agent-agent) — première piste tracée ci-dessous.
 - Smoke offscreen Qt (rendu QImage des points visuels TSK16) à exécuter sur le poste de dev : libGL absent dans le sandbox, PySide6 non importable ici.
 
 ### Problèmes rencontrés
