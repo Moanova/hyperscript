@@ -545,11 +545,12 @@ class MainWindow(QMainWindow):
     # Blocks and transitions actions (FN014/FN016/FN018/FN020/FN022)
     # ---------------------------------------------------------------------
     def _create_new_block(self, typ: str):
-        """FN014: create a block of the given type at the first free grid position."""
+        """FN014: create a block of the given type at the first free grid position
+        anchored on the Start block (TSK16, option B), not at the scene center."""
         if self.journeys_workspace is None:
             return
         block = self.create_block_usecase.execute(typ, filter_active=self.journey_filter_active)  # RG040
-        x, y = self.journeys_workspace.next_free_position()
+        x, y = self.journeys_workspace.next_free_creation_position()
         layout = LayoutService.create_node_layout(block.id, block.typ, x, y)  # RG046: snapped
         self.journeys_workspace.create_block_node(block, layout, select=True)
         self._update_menu_state()

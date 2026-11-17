@@ -47,14 +47,18 @@ Prendre en compte les premiers retours de tests manuels TSC sur la version en co
 7. `src/ui/dialogs/block_dialog.py` : ligne « Type: » supprimée (RG029 ; le titre « Edit Block ({typ}) » conserve le rappel) + docstring.
 8. Spécifications FR/EN mises à jour : `05_menu-EN/FR.yaml` (« Blocks »/« Blocs », section `context_menu` explicitée avec « New Block » / « New Transition »), `02_business_rules` RG055 (libellés propres autorisés sur la grille vide), `03_features` (références « Project › Blocks › … »), `04_interface` §2 (palette actée + ligne accents), §3 (soulignement d'onglet), §4 (position par défaut du Début, tirets de sélection, survol des transitions, menus contextuels), §9 (lien d'accueil), point ouvert n°1 ; `docs/projet/implementation-FR/EN.md` (lignes FN014/FN015/FN018 + table des menus).
 9. Point 14 (infobulle libellé + note) : **ignoré** selon décision TSC — déjà implémenté (`base_node.py` `update_entity_data`, RG054).
+10. **Correctif séance 04 (option B validée par TSC)** — effet de bord du point 3 : les blocs créés par l'utilisateur partaient au centre de la scène (2000, 2000), loin du bloc Start placé au bord gauche, et sans zoom il fallait aller le chercher. Correction : la création est désormais **ancrée sur le bloc Start** :
+    - `journeys_workspace.py` : nouveau helper `next_free_creation_position()` = `next_free_position(start.x + node_default_width + grid_major_size, start.y)` → premier emplacement libre à droite du Start (≈ (240, 2020) pour un Start en (80, 2020)), repli sur le centre de la scène si aucun Start (défensif ; RG025 en garantit un) ; `populate_default()` : les blocs autres que Start passent en colonne **sous** le Start (x = 80, y = 2020 + k·120) au lieu de la colonne centrale (1800, 1800).
+    - `main_window.py` `_create_new_block()` : utilise `next_free_creation_position()` au lieu de `next_free_position()`.
+    - Specs : `04_interface` FR/EN §4 (bullets position par défaut + création utilisateur), `03_features` FR/EN FN014 (positionnement automatique à droite du bloc Début).
 
 ## Vérifications
 
 - `python -m py_compile` sur les 6 fichiers Python modifiés : OK ; `json.tool` sur `config.json` : OK ; `yaml.safe_load` sur `05_menu-EN/FR.yaml` : OK.
 - `QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q` : **45 passed**.
-- Vérification hors-ligne (config + `LayoutService`, Qt-free) : palette = `#D19A66/#E5C07B/#E06666/#E06666/#E5C07B`, `connection_hover_color` `#E5C07B`, `node_selection_dash_pattern` `[4.0, 4.0]` ; position Start calculée = (80, 2020).
+- Vérification hors-ligne (config + `LayoutService`, Qt-free) : palette = `#D19A66/#E5C07B/#E06666/#E06666/#E5C07B`, `connection_hover_color` `#E5C07B`, `node_selection_dash_pattern` `[4.0, 4.0]` ; position Start calculée = (80, 2020) ; ancre de création calculée = (240, 2020) avec le rectangle du Start présent (RG050) ; colonne `populate_default` = (80, 2140), (80, 2260)…
 - Smoke offscreen Qt (rendu QImage : bloc sélectionné, survol de transition, page d'accueil, onglet actif, menu contextuel, dialogue sans ligne Type, position du Start) : **à exécuter sur le poste de dev** (libGL absent dans le sandbox, PySide6 non importable ici).
 
 ## Journal
 
-- 2026-11-17 : fiche créée au passage en Doing ; plan établi d'après l'analyse des retours TSC (séance n°04). Implémentation réalisée dans la foulée (points 1-13 hors point 14 ignoré), tests 45 passed, tâche passée en Review.
+- 2026-11-17 : fiche créée au passage en Doing ; plan établi d'après l'analyse des retours TSC (séance n°04). Implémentation réalisée dans la foulée (points 1-13, point 14 ignoré), tests 45 passed, tâche passée en Review. Correctif option B (ancrage de la création utilisateur sur le bloc Start) étudié puis implémenté dans la même séance après retour TSC sur l'effet de bord du point 3 ; tests 45 passed ; tâche maintenue en Review.

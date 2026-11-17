@@ -153,7 +153,7 @@
 - **Expected behavior**:
     - In the MVP, creation is done exclusively from the menu (no toolbar).
     - The block is created with an identifier unique within the map, the default label of its type, and the visual rendering corresponding to its type.
-    - It is positioned at the location designated by the user, snapped to the alignment grid (always visible and active).
+    - In the MVP (creation from the menu), it is positioned automatically at the first free spot to the right of the Start block (anchored on its current position), snapped to the alignment grid (always visible and active) - adopted session 04 (TSK16, option B).
     - It has two active attachment ports: incoming (left) and outgoing (right).
     - It is not resizable.
     - No orphan block: the newly created block is attached to the active journey if the journey filter is enabled, to the default journey otherwise.

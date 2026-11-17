@@ -154,7 +154,7 @@
 - **Comportement attendu** :
     - En MVP, la création s'effectue exclusivement depuis le menu (pas de barre d'outils).
     - Le bloc est créé avec un identifiant unique dans la carte, le libellé par défaut de son type, et le rendu visuel correspondant à son type.
-    - Il est positionné à l'emplacement désigné par l'utilisateur, aligné sur la grille d'alignement (toujours visible et active).
+    - En MVP (création depuis le menu), il est positionné automatiquement au premier emplacement libre à droite du bloc Début (ancré sur sa position courante), aligné sur la grille d'alignement (toujours visible et active) — acté séance 04 (TSK16, option B).
     - Il présente deux ports d'attachement actifs : entrant (gauche) et sortant (droite).
     - Il n'est pas redimensionnable.
     - Aucun bloc orphelin : le bloc nouvellement créé est rattaché au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon.

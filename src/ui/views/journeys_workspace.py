@@ -536,6 +536,26 @@ class JourneysWorkspace(QGraphicsView, QObject):
         x, y = LayoutService.find_non_overlapping_position(x, y, w, h, existing_rects)
         return LayoutService.snap_to_grid(x), LayoutService.snap_to_grid(y)
 
+    def next_free_creation_position(self):
+        """First free position for a user-created block (TSK16, option B):
+        anchored on the Start block - one node width plus one major grid step
+        to its right, on the same row - so new blocks appear next to the
+        Start instead of at the scene center. Falls back to the scene center
+        when no Start block exists (defensive; RG025 guarantees exactly one
+        Start block per map)."""
+        start_node = next(
+            (item for item in self.scene.items()
+             if isinstance(item, BlockNode) and item.entity.typ == "Start"),
+            None,
+        )
+        if start_node is None:
+            return self.next_free_position()
+        node_width = _get_config("node_default_width", 80.0)
+        return self.next_free_position(
+            start_node.pos().x() + node_width + _GRID_MAJOR_SIZE,
+            start_node.pos().y(),
+        )
+
     def _on_node_moved(self, moved_node):
         """Re-route the transitions not endpoint of the moved block (RG052)
         and notify the MainWindow (FN017: a move marks the project modified)."""
@@ -645,23 +665,24 @@ class JourneysWorkspace(QGraphicsView, QObject):
     def populate_default(self, narrative_map) -> int:
         """Create the visual items with default positions (no saved layout):
         the Start block at the left edge plus one major grid step, centered
-        vertically within a major grid step (TSK16); the other blocks in a
-        column around the center of the scene."""
+        vertically within a major grid step; the other blocks in a column
+        below the Start block (TSK16)."""
         node_count = 0
-        start_x = 1800.0
-        start_y = 1800.0
         step_y = 120.0
         node_height = _get_config("node_default_height", 40.0)
         scene_center_y = self.sceneRect().center().y()
-        for i, block in enumerate(narrative_map.block):
+        # TSK16: left edge + one major step; vertical middle with an offset
+        # so the block is centered within a major grid step
+        anchor_x = LayoutService.snap_to_grid(float(_GRID_MAJOR_SIZE))
+        anchor_y = LayoutService.snap_to_grid(
+            scene_center_y + (_GRID_MAJOR_SIZE - node_height) / 2)
+        column_index = 0
+        for block in narrative_map.block:
             if block.typ == "Start":
-                # TSK16: left edge + one major step; vertical middle with an
-                # offset so the block is centered within a major grid step
-                x = LayoutService.snap_to_grid(float(_GRID_MAJOR_SIZE))
-                y = LayoutService.snap_to_grid(
-                    scene_center_y + (_GRID_MAJOR_SIZE - node_height) / 2)
+                x, y = anchor_x, anchor_y
             else:
-                x, y = start_x, start_y + i * step_y
+                column_index += 1
+                x, y = anchor_x, anchor_y + column_index * step_y
             layout = LayoutService.create_node_layout(
                 node_id=block.id, node_type=block.typ, x=x, y=y
             )
