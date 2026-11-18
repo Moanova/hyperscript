@@ -50,6 +50,8 @@
   "agents_view_dot_color": "#4A4A4A",
   "agents_view_card_width": 160,
   "agents_view_card_height": 100,
+  "agents_view_cell_width": 200,
+  "agents_view_cell_height": 140,
   "agent_list_all_label": "All agents",
   "journeys_view_port_size_px": 8,
   "journeys_view_port_margin_px": 4,

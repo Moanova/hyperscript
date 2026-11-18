@@ -271,8 +271,8 @@ class AgentCardLayout:
 
     Attributes:
         agent_id: The ID of the business entity (Agent.id)
-        x: X position in pixels (workspace coordinates, snapped to an anchor dot)
-        y: Y position in pixels (workspace coordinates, snapped to an anchor dot)
+        x: X position in pixels (workspace coordinates, origin of an invisible cell)
+        y: Y position in pixels (workspace coordinates, origin of an invisible cell)
         width: Width of the card in pixels (agents_view_card_width)
         height: Height of the card in pixels (agents_view_card_height)
         selected: Whether the card is currently selected

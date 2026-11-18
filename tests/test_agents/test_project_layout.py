@@ -8,8 +8,9 @@
 # ---------------------------------------------------------------------
 """Unit tests for the project-level layout (TSK19b, RG067): AgentCardLayout /
 ProjectLayout serialization and LayoutService.save_project_layout /
-load_project_layout (layouts/project.json), plus the dot-grid snap (RG065)
-and the exclusion of project.json from the per-map layout listings."""
+load_project_layout (layouts/project.json), plus the cell-grid snap and
+nearest-free-cell search (RG065, TSK21) and the exclusion of project.json
+from the per-map layout listings."""
 
 import json
 
@@ -88,10 +89,28 @@ def test_project_layout_file_excluded_from_map_layouts(tmp_path):
     assert (layout_dir / "project.json").exists()
 
 
-def test_snap_to_dot_grid():
-    """RG065: the card position is forced onto the nearest anchor dot
-    (agents_view_dot_spacing_px as grid step)."""
-    spacing = float(_get_config("agents_view_dot_spacing_px", 20))
-    assert LayoutService.snap_to_grid(23.0, grid_size=spacing) == 20.0
-    assert LayoutService.snap_to_grid(31.0, grid_size=spacing) == 40.0
-    assert LayoutService.snap_to_grid(80.0, grid_size=spacing) == 80.0
+def test_snap_to_cell_grid():
+    """RG065 (TSK21): on release the card position snaps to the nearest cell
+    of the invisible grid (agents_view_cell_width/height as grid steps)."""
+    cell_w = float(_get_config("agents_view_cell_width", 200))
+    cell_h = float(_get_config("agents_view_cell_height", 140))
+    assert LayoutService.snap_to_grid(150.0, grid_size=cell_w) == 200.0
+    assert LayoutService.snap_to_grid(90.0, grid_size=cell_h) == 140.0
+    assert LayoutService.snap_to_grid(200.0, grid_size=cell_w) == 200.0
+
+
+def test_find_nearest_free_position_keeps_target_cell_when_free():
+    rects = [(0.0, 140.0, 160.0, 100.0)]
+    assert LayoutService.find_nearest_free_position(
+        200.0, 140.0, 160.0, 100.0, rects, 200.0, 140.0) == (200.0, 140.0)
+
+
+def test_find_nearest_free_position_pushes_to_nearest_free_cell():
+    """Occupied target cell -> nearest free cell (ring scan); scene bounds
+    are respected (no negative coordinates)."""
+    rects = [(0.0, 140.0, 160.0, 100.0), (0.0, 0.0, 160.0, 100.0)]
+    x, y = LayoutService.find_nearest_free_position(
+        0.0, 140.0, 160.0, 100.0, rects, 200.0, 140.0,
+        bounds=(0.0, 0.0, 4000.0, 4000.0))
+    assert (x, y) == (0.0, 280.0)
+    assert x % 200.0 == 0 and y % 140.0 == 0

@@ -9,6 +9,22 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 
 --
 
+## Séance n°05 (2026-11-18)
+
+### Travaux
+- **Analyse puis implémentation TSK21 — snap des cartes agent sur cellule invisible à la libération (évolution RG065)**, sur retour TSC après test manuel du déplacement des cartes dans la vue « Agents » (TSK19b, couloirs séance 04).
+- Demande initiale : contraindre le positionnement pour qu'après un déplacement utilisateur, la carte ne puisse reposer qu'à l'intérieur d'une cellule d'une grille non matérialisée. Options étudiées en séance : géométrie de la cellule (carte + gouttière 200×140 ancrée sur l'origine scène, multiple de l'espacement des points 20 px vs cellule fixe) ; moment du snap (libération uniquement vs magnétisé en continu vs hybride) ; interaction avec le couloir (conservé vs supprimé) ; cellule occupée (rejet vs cellule libre la plus proche) ; persistance.
+- **Décisions actées (feu vert TSC)** : couloir **supprimé** (drag 2D libre, diagonales possibles — TSC a explicitement préféré la suppression malgré une reformulation ambiguë, levée par question) ; **snap à la libération uniquement** sur cellule 200×140 (`agents_view_cell_width/height`, ancrée sur l'origine de la scène) ; cellule occupée → **cellule libre la plus proche** ; snap aussi à la création et au chargement (invariant « toute position de carte = origine de cellule », donc persistance RG067 toujours sur cellule) ; `setPos` programmatique hors drag reste libre.
+- Implémentation : `config.json` (nouvelles clés `agents_view_cell_width` 200 / `agents_view_cell_height` 140) ; `core/services/layout_service.py` nouveau `find_nearest_free_position` (scan en anneaux de la grille de cellules, distance de Chebyshev, bornes scène optionnelles) ; `ui/nodes/agent_card.py` v2 (couloir supprimé : `_drag_start`/`_lock_axis`/`AXIS_LOCK_THRESHOLD_PX` retirés ; `itemChange` = limites scène + accumulation `_free_pos`, aucun snap en drag ; `mouseReleaseEvent` → `_cell_snap_target` + `setPos` + `update_layout` + notification observateurs) ; `ui/views/agents_workspace.py` v2 (`next_free_card_position`/`create_agent_card` : snap cellule via `snap_to_grid` + `find_nearest_free_position`, y compris au chargement) ; `view_model.py` docstring `AgentCardLayout`.
+- Tests : `tests/test_agents/test_agents_workspace_offscreen.py` v2 réécrit (8 tests : scène 4000×4000, placement initial sur cellules sans chevauchement, setPos programmatique exact, drag diagonal 2D puis snap à la libération (150,90)→(200,140), cellule occupée → cellule libre la plus proche, z-order, layout persisté sur cellule) ; `tests/test_agents/test_project_layout.py` (+3 tests Qt-free : snap_to_grid cellule, find_nearest_free_position cible libre / cellule occupée avec bornes). **py_compile OK, 73 tests passed + 1 skipped** (module offscreen Qt auto-skippé dans le sandbox — libGL absent, à valider sur poste de dev, conforme à la pratique du projet).
+- Spec FR/EN mises à jour : RG065 (`02_business_rules`), `04_interface` §2 (clés config) et §5 (comportement), SU009 (`01_user_stories`), matrices `implementation-FR/EN.md` (ligne RG065). Kanban : **TSK21** créée → Doing → Review, fiche `docs/projet/tasks/TSK21_agent_card_cell_snap.md` ; référence croisée ajoutée dans la fiche TSK19b.
+- Aucun commit effectué (pas d'instruction explicite de pousser sur dev).
+
+### Problèmes rencontrés / choix actés
+- Sandbox sans libGL/libglib : impossible d'exécuter les tests offscreen Qt ici (tentatives d'installation sans root vaines) — les tests offscreen restent à valider sur le poste de dev, comme pour les séances précédentes. La logique Qt-free (snap cellule, cellule libre la plus proche) est couverte par des tests unitaires passants.
+
+--
+
 ## Séance n°04 (2026-11-17)
 
 ### Travaux

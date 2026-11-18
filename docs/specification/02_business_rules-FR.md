@@ -281,7 +281,7 @@
 - **Classification** : 4. Visualisation et interaction
 
 ## RG065
-- **Description** : Dans la vue « Agents », l'espace de travail a le même fond sombre que la vue « Journeys » mais est habillé de points à la place d'une grille (espacement, rayon et couleur définis en configuration ; purement décoratifs, **aucun snap magnétique** — retour TSC séance 04 : le snap sur les points puis sur une grille majeure rendait les déplacements étranges) ; les cartes agent sont déplaçables librement, position libre dans les limites de la scène ; pendant un déplacement, la carte ne coulisse que dans un **couloir horizontal ou vertical** : l'axe dominant est verrouillé au début du drag et l'autre coordonnée reste à sa valeur de départ du drag.
+- **Description** : Dans la vue « Agents », l'espace de travail a le même fond sombre que la vue « Journeys » mais est habillé de points à la place d'une grille (espacement, rayon et couleur définis en configuration ; purement décoratifs) ; les cartes agent sont déplaçables librement en 2D pendant le déplacement, dans les limites de la scène (aucun verrouillage d'axe, aucun snap en cours de drag — retour TSC séance 04 : le snap continu rendait les déplacements étranges) ; **à la libération du déplacement**, la carte se positionne sur la cellule la plus proche d'une **grille de cellules invisible** (taille des cellules en configuration `agents_view_cell_width`/`agents_view_cell_height`, ancrée sur l'origine de la scène) ; si cette cellule est occupée par une autre carte, la carte est placée sur la cellule libre la plus proche ; la position est également ancrée sur une cellule à la création et au chargement (évolution TSC séance 05, TSK21).
 - **Classification** : 4. Visualisation et interaction
 
 ## RG066

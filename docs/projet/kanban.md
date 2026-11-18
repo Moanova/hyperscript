@@ -1,6 +1,6 @@
 # Hyperscript ::: Tableau kanban du projet
 
-- **Date de dernière modification** : 17-11-2026
+- **Date de dernière modification** : 18-11-2026
 - **Description** : Suivi de l'avancement des tâches du projet.
   - Les chantiers majeurs sont des **épics** (EPCnn) découpés en **tâches** (TSKnn).
   - Le détail de chaque tâche (analyse, décisions, journal des travaux) est consigné dans un fichier markdown dédié du sous-dossier `tasks/`, nommé d'après le code de la tâche.
@@ -33,6 +33,8 @@
 ### Doing
 
 ### Review
+
+- [ ] TSK21 — Snap des cartes agent sur cellule invisible à la libération (évolution RG065, retour TSC séance 05) : suppression du couloir (drag 2D libre, diagonales possibles, aucun snap en cours de drag) ; à la libération, la carte se positionne sur la cellule la plus proche d'une grille invisible `agents_view_cell_width`×`agents_view_cell_height` (200×140, ancrée sur l'origine de la scène, multiple de l'espacement des points) ; si la cellule est occupée, cellule libre la plus proche (`LayoutService.find_nearest_free_position`) ; snap également à la création et au chargement des positions → #TSK19b — fiche `tasks/TSK21_agent_card_cell_snap.md` — passée en Doing 18-11-2026 (TSK19b en Review) — implémentée et passée en Review 18-11-2026 (py_compile OK, 73 tests passed + 1 skipped sans Qt ; tests offscreen Qt à valider sur poste de dev, libGL absent dans le sandbox)
 
 - [ ] TSK19b — Vue « Agents » re-conçue (RG065/RG066/RG067) : `AgentsWorkspace` fond `bg_primary`, points d'ancrage `agents_view_dot_*` dessinés dans `drawBackground` (zone visible) ; cartes `AgentCardItem` (`agents_view_card_width/height`, sans ports ni badge, déplacement en couloirs horizontal/vertical à axe verrouillé, sans snap magnétique) ; menu contextuel carte (Edit.../Copy/Delete.../Associate with Block... sur l'agent de la carte) ; entrée « Associate agents... » au menu contextuel de bloc (FN030) ; positions persistées au niveau projet `layouts/project.json` (RG067, `ProjectLayout` + `save/load_project_layout`) ; filtres non appliqués à cette vue (RG048) → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19b_agents_view.md` — passée en Doing 17-11-2026 (TSK19a en Review) — implémentée et passée en Review 17-11-2026 (py_compile OK, 71 tests passed ; smoke offscreen à valider sur poste de dev)
 
@@ -88,3 +90,4 @@
 - [ ] TSK19a — Filtre agent dans la vue « Journeys » (FN039, RG063/RG064) + menu Display › Agent → #TSK11, #TSK17 — fiche `tasks/TSK19a_agent_filter.md`
 - [ ] TSK19b — Vue « Agents » re-conçue : points d'ancrage + cartes agent + persistance niveau projet + menu contextuel bloc « Associate agents... » (RG065–RG067, FN030) → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19b_agents_view.md`
 - [ ] TSK20 — Relations agent-agent (FN034/RG035) : use cases + dialogue + menu `Project › Relationships` → #TSK17 — fiche `tasks/TSK20_relationships.md`
+- [ ] TSK21 — Snap des cartes agent sur cellule invisible à la libération (évolution RG065) → #TSK19b — fiche `tasks/TSK21_agent_card_cell_snap.md`

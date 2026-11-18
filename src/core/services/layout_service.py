@@ -657,6 +657,62 @@ class LayoutService:
         return current_x, current_y
 
     @classmethod
+    def find_nearest_free_position(
+        cls,
+        x: float,
+        y: float,
+        width: float,
+        height: float,
+        existing_rects: list,
+        step_x: float,
+        step_y: float,
+        bounds: tuple = None,
+        max_radius: int = 50
+    ) -> tuple:
+        """
+        Find the nearest grid-aligned free position (RG050, RG065 cells).
+
+        Scans the cells of a grid (steps step_x x step_y, anchored on (x, y))
+        ring by ring, in order of increasing Chebyshev distance from (x, y),
+        and returns the first cell whose rectangle fits within bounds and
+        does not overlap any existing rectangle.
+
+        Args:
+            x: Initial x position (already snapped to the cell grid)
+            y: Initial y position (already snapped to the cell grid)
+            width: Width of the item to place
+            height: Height of the item to place
+            existing_rects: List of tuples (x, y, width, height) for existing items
+            step_x: Horizontal cell size
+            step_y: Vertical cell size
+            bounds: Optional (left, top, right, bottom) the item rect must fit in
+            max_radius: Safety limit on the ring scan
+
+        Returns:
+            Tuple (adjusted_x, adjusted_y) on a free cell
+        """
+        if not existing_rects:
+            return x, y
+
+        for radius in range(max_radius + 1):
+            for dx in range(-radius, radius + 1):
+                for dy in range(-radius, radius + 1):
+                    if max(abs(dx), abs(dy)) != radius:
+                        continue
+                    cx = x + dx * step_x
+                    cy = y + dy * step_y
+                    if bounds is not None:
+                        left, top, right, bottom = bounds
+                        if cx < left or cy < top or cx + width > right or cy + height > bottom:
+                            continue
+                    if not any(cls._rects_overlap(cx, cy, width, height,
+                                                  ex, ey, ew, eh)
+                               for ex, ey, ew, eh in existing_rects):
+                        return cx, cy
+
+        return x, y
+
+    @classmethod
     def create_node_layout(
         cls,
         node_id: int,

@@ -168,7 +168,7 @@
 
 
 ## SU009: Manage the agents view — re-designed session 04
-- **Description**: As an author, I can visualize the project's agents in a second dedicated workspace, as freely movable cards (position forced onto anchor dots), in order to manage the agents independently from the block graph.
+- **Description**: As an author, I can visualize the project's agents in a second dedicated workspace, as freely movable cards (position forced onto a cell of an invisible grid on drag release), in order to manage the agents independently from the block graph.
 - **Status**: adopted session 04 (TSK19b).
 - **Details**:
     - Agents being project-level, the "Agents" view is decoupled from block participations; the filters (journey, agent) do not apply to it (RG048/RG063).

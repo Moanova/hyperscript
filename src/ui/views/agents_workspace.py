@@ -1,8 +1,8 @@
 # ---------------------------------------------------------------------
 # Application  : Hyperscript
 # Script       : agents_workspace.py
-# Version      : 1
-# Date         : 2026-11-17
+# Version      : 2
+# Date         : 2026-11-18
 # Design       : TSC
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
@@ -16,9 +16,11 @@ anchor dots instead of a grid (spacing/radius/color from config.json),
 drawn in drawBackground over the visible area only (no scene items, so no
 z-order trap). Each project agent is shown as an AgentCardItem (larger
 than a block, no ports, no participation badge); cards are freely movable
-WITHOUT magnetic snapping — during a drag they slide in a horizontal or
-vertical corridor (axis locked at drag start, see AgentCardItem, RG065);
-the visible dots stay purely decorative.
+in 2D during a drag (no axis lock, no live snap — RG065); on RELEASE the
+card snaps to the nearest cell of an invisible cell grid
+(agents_view_cell_width x agents_view_cell_height, anchored on the scene
+origin), or to the nearest free cell when the target cell is occupied
+(see AgentCardItem); the visible dots stay purely decorative.
 Card positions are persisted at project level (layouts/project.json,
 RG067).
 
@@ -49,6 +51,8 @@ _DOT_RADIUS = _get_config("agents_view_dot_radius_px", 1.5)
 _DOT_COLOR = _get_config("agents_view_dot_color", "#4A4A4A")
 _CARD_WIDTH = _get_config("agents_view_card_width", 160.0)
 _CARD_HEIGHT = _get_config("agents_view_card_height", 100.0)
+_CELL_WIDTH = _get_config("agents_view_cell_width", 200.0)
+_CELL_HEIGHT = _get_config("agents_view_cell_height", 140.0)
 
 logger = logging.getLogger(__name__)
 
@@ -250,15 +254,21 @@ class AgentsWorkspace(QGraphicsView, QObject):
         return None
 
     def next_free_card_position(self, x: float = 80.0, y: float = 80.0):
-        """First free (no snap — RG065 corridors, no magnetic grid),
-        non-overlapping position near (x, y) for a new card (RG050)."""
+        """First free cell of the invisible grid (RG065: cell size
+        agents_view_cell_*, anchored on the scene origin) near (x, y) for a
+        new card (RG050 non-overlapping)."""
         existing_rects = []
         for item in self.scene.items():
             if isinstance(item, AgentCardItem):
                 r = item.rect()
                 pos = item.pos()
                 existing_rects.append((pos.x(), pos.y(), r.width(), r.height()))
-        return LayoutService.find_non_overlapping_position(x, y, _CARD_WIDTH, _CARD_HEIGHT, existing_rects)
+        x = LayoutService.snap_to_grid(x, _CELL_WIDTH)
+        y = LayoutService.snap_to_grid(y, _CELL_HEIGHT)
+        scene_rect = self.scene.sceneRect()
+        return LayoutService.find_nearest_free_position(
+            x, y, _CARD_WIDTH, _CARD_HEIGHT, existing_rects, _CELL_WIDTH, _CELL_HEIGHT,
+            bounds=(scene_rect.left(), scene_rect.top(), scene_rect.right(), scene_rect.bottom()))
 
     def create_agent_card(self, agent, layout: AgentCardLayout = None, select: bool = True,
                           skip_overlap_check: bool = False):
@@ -272,6 +282,11 @@ class AgentsWorkspace(QGraphicsView, QObject):
             layout = AgentCardLayout(agent_id=agent.id, x=x, y=y,
                                      width=_CARD_WIDTH, height=_CARD_HEIGHT)
 
+        # RG065: every card position is an origin of the invisible cell grid
+        # (also on load, so legacy free positions snap to the nearest cell)
+        layout.x = LayoutService.snap_to_grid(layout.x, _CELL_WIDTH)
+        layout.y = LayoutService.snap_to_grid(layout.y, _CELL_HEIGHT)
+
         if not skip_overlap_check:
             existing_rects = []
             for item in self.scene.items():
@@ -279,8 +294,11 @@ class AgentsWorkspace(QGraphicsView, QObject):
                     r = item.rect()
                     pos = item.pos()
                     existing_rects.append((pos.x(), pos.y(), r.width(), r.height()))
-            layout.x, layout.y = LayoutService.find_non_overlapping_position(
-                layout.x, layout.y, layout.width, layout.height, existing_rects
+            scene_rect = self.scene.sceneRect()
+            layout.x, layout.y = LayoutService.find_nearest_free_position(
+                layout.x, layout.y, layout.width, layout.height, existing_rects,
+                _CELL_WIDTH, _CELL_HEIGHT,
+                bounds=(scene_rect.left(), scene_rect.top(), scene_rect.right(), scene_rect.bottom())
             )
 
         card = AgentCardItem(agent, layout)
@@ -340,8 +358,8 @@ class AgentsWorkspace(QGraphicsView, QObject):
 
     def populate_agents(self, project, project_layout: ProjectLayout = None) -> int:
         """Create one card per project agent; positions are taken from the
-        saved project layout when available, otherwise a free anchor-dot
-        position is found (RG050/RG065)."""
+        saved project layout when available, otherwise a free cell of the
+        invisible grid is found (RG050/RG065)."""
         card_count = 0
         for agent in project.agent:
             saved = project_layout.get_agent_card_layout(agent.id) if project_layout else None

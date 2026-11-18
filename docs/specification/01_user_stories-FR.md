@@ -169,7 +169,7 @@
 
 
 ## SU009 : Gérer la vue « Agents » — re-conçue séance 04
-- **Description** : En tant qu'auteur, je peux visualiser les agents du projet dans un second espace de travail dédié, sous forme de cartes déplaçables librement (position forcée sur des points d'ancrage), afin de gérer les agents indépendamment du graphe des blocs.
+- **Description** : En tant qu'auteur, je peux visualiser les agents du projet dans un second espace de travail dédié, sous forme de cartes déplaçables librement (position forcée sur une cellule d'une grille invisible à la libération du déplacement), afin de gérer les agents indépendamment du graphe des blocs.
 - **Statut** : acté séance 04 (TSK19b).
 - **Complément** :
     - Les agents étant de niveau projet, la vue « Agents » est décorrélée des participations aux blocs ; les filtres (parcours, agent) ne s'y appliquent pas (RG048/RG063).
