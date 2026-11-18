@@ -48,7 +48,7 @@
     - Le bloc narratif est l'unité de récit de la carte narrative. Son type — Début, Scène, Pivot, Condition ou Fin — est choisi à la création et immuable ensuite ; chaque type a un rendu visuel spécifique.
     - Chaque bloc possède un identifiant unique au sein de la carte, un libellé (non soumis à unicité), une note et un contenu narratif.
     - Chaque bloc dispose de deux ports, entrant et sortant, destinés à la création des transitions.
-    - Chaque bloc est déplaçable dans l'espace de travail mais non redimensionnable ; il s'aligne automatiquement sur la grille à la création et lors des déplacements ; sa position est conservée entre les sessions.
+    - Chaque bloc est déplaçable dans l'espace de travail mais non redimensionnable ; il s'aligne automatiquement sur la grille à la création et à la libération des déplacements ; sa position est conservée entre les sessions.
     - À la création d'une carte narrative, un bloc Début unique est créé automatiquement.
     - Un bloc Fin ne peut pas recevoir de transition sortante.
     - Un bloc Pivot ne reçoit de transitions entrantes que de blocs Début ou Scène et n'en émet que vers des blocs Condition ; plusieurs blocs Condition issus d'un même Pivot équivalent à un OU.
@@ -60,7 +60,7 @@
     - L'utilisateur peut dupliquer un bloc (copie avec nom distinctif et nouvel identifiant, rattachée au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon).
     - L'utilisateur peut modifier les attributs éditables d'un bloc via un dialogue d'édition.
     - L'utilisateur peut supprimer un bloc avec confirmation ; la suppression s'effectue en cascade selon le complément.
-    - L'utilisateur peut déplacer un bloc par glisser-déposer (souris, stylet ou tactile) avec alignement automatique sur la grille.
+    - L'utilisateur peut déplacer un bloc par glisser-déposer (souris, stylet ou tactile) avec alignement sur la grille à la libération du déplacement.
     - Toute création, duplication, modification, déplacement ou suppression de bloc marque la carte, donc le projet, comme modifiés.
 - **Périmètre MVP** :
     - Pas de barre d'outils : les actions ne sont gérées que par menu.

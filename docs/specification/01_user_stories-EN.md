@@ -47,7 +47,7 @@
     - The narrative block is the story unit of the narrative map. Its type — Start, Scene, Pivot, Condition or End — is chosen at creation and immutable afterwards; each type has a specific visual rendering.
     - Each block has an identifier unique within the map, a label (not subject to uniqueness), a note and a narrative content.
     - Each block has two ports, incoming and outgoing, intended for creating transitions.
-    - Each block can be moved in the workspace but not resized; it automatically snaps to the grid at creation and when moved; its position is kept between sessions.
+    - Each block can be moved in the workspace but not resized; it automatically snaps to the grid at creation and on release of a move; its position is kept between sessions.
     - When a narrative map is created, a single Start block is created automatically.
     - An End block cannot have an outgoing transition.
     - A Pivot block can only receive incoming transitions from Start or Scene blocks and only emit outgoing transitions to Condition blocks; several Condition blocks from the same Pivot equal an OR.
@@ -59,7 +59,7 @@
     - The user can duplicate a block (copy with a distinct name and a new identifier, attached to the active journey if the journey filter is enabled, to the default journey otherwise).
     - The user can edit the editable attributes of a block via an edit dialog.
     - The user can delete a block with confirmation; the deletion cascades as described above.
-    - The user can move a block by drag-and-drop (mouse, stylus or touch) with automatic grid snapping.
+    - The user can move a block by drag-and-drop (mouse, stylus or touch) with grid snapping on release of the move.
     - Any creation, duplication, modification, move or deletion of a block marks the map, and therefore the project, as modified.
 - **MVP scope**:
     - No toolbar: actions are handled through menus only.

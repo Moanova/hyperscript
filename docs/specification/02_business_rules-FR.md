@@ -203,7 +203,7 @@
 - **Classification** : 4. Visualisation et interaction
 
 ## RG046
-- **Description** : Les blocs s'alignent automatiquement sur la grille lors de leur création et de leurs déplacements.
+- **Description** : Les blocs s'alignent automatiquement sur la grille lors de leur création et **à la libération** de leurs déplacements (pendant le déplacement, la position est libre — évolution TSC séance 05, TSK24 : le snap en continu causait des saccades).
 - **Classification** : 4. Visualisation et interaction
 
 ## RG047

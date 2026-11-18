@@ -1,8 +1,8 @@
 # ---------------------------------------------------------------------
 # Application  : Hyperscript
 # Script       : base_node.py
-# Version      : 1
-# Date         : 2026-11-11
+# Version      : 2
+# Date         : 2026-11-18
 # Design       : TSC
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
@@ -91,9 +91,9 @@ class BaseNode(QGraphicsRectItem):
         self.layout = layout
 
         # Drag bookkeeping: Qt recomputes each ItemPositionChange proposal
-        # from the last RETURNED (snapped) position, so the unsnapped
-        # position is accumulated here; snapping the proposal directly
-        # would swallow small deltas and the node would not move
+        # from the last RETURNED position, so the free position is
+        # accumulated here; snapping the proposal directly would swallow
+        # small deltas and the node would not move
         self._free_pos = QPointF(layout.x, layout.y)
 
         # Set initial position from layout
@@ -361,7 +361,21 @@ class BaseNode(QGraphicsRectItem):
     def mouseReleaseEvent(self, event) -> None:
         """Handle mouse release events."""
         super().mouseReleaseEvent(event)
-        
+
+        # RG046 (TSK24): snap to the grid on RELEASE only — during the drag
+        # the node follows the mouse freely (no live snap, no saccades)
+        scene = self.scene()
+        if scene is not None:
+            scene_rect = scene.sceneRect()
+            x = LayoutService.snap_to_grid(self.pos().x())
+            y = LayoutService.snap_to_grid(self.pos().y())
+            x = max(scene_rect.left(), min(x, scene_rect.right() - self.rect().width()))
+            y = max(scene_rect.top(), min(y, scene_rect.bottom() - self.rect().height()))
+            target = QPointF(x, y)
+            if target != self.pos():
+                # itemChange updates the layout and notifies the observers
+                self.setPos(target)
+
         # Update layout after movement
         if self.isSelected():
             self.update_layout()
@@ -414,11 +428,12 @@ class BaseNode(QGraphicsRectItem):
             self.layout.selected = bool(value)
         elif change == QGraphicsItem.ItemPositionChange:
             # Constrains the movement to the limits of the scene (absolute
-            # limit), then RG046: snap to grid. The unsnapped position is
-            # accumulated from the delta against the last applied (snapped)
-            # position, because Qt bases each new proposal on that returned
-            # value — snapping the proposal directly would swallow small
-            # deltas and the node would not move.
+            # limit) only — RG046 (TSK24): NO live snap during the drag, the
+            # node follows the mouse freely and snaps to the grid on release
+            # (mouseReleaseEvent). The free position is accumulated from the
+            # delta against the last applied position, because Qt bases each
+            # new proposal on that returned value — snapping the proposal
+            # directly would swallow small deltas and the node would not move.
             new_pos = value
             scene = self.scene()
             if scene:
@@ -435,15 +450,11 @@ class BaseNode(QGraphicsRectItem):
                 free_y = max(scene_rect.top(), min(self._free_pos.y(), scene_rect.bottom() - node_height))
                 self._free_pos = QPointF(free_x, free_y)
 
-                # RG046: snap to grid after scene constraints
-                constrained_x = LayoutService.snap_to_grid(free_x)
-                constrained_y = LayoutService.snap_to_grid(free_y)
+                # Update the layout with the free (scene-clamped) position.
+                self.layout.x = free_x
+                self.layout.y = free_y
 
-                # Update the layout with the constrained position.
-                self.layout.x = constrained_x
-                self.layout.y = constrained_y
-
-                result = QPointF(constrained_x, constrained_y)
+                result = QPointF(free_x, free_y)
                 self._notify_position_observers()
                 return result
 

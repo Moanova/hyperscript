@@ -57,7 +57,7 @@
 
 ### 4. Espace de travail — vue « Journeys »
 - **Type** : QGraphicsView. Graphe des blocs narratifs et de leurs transitions.
-- **Grille** : toujours visible (20/80 px) ; les blocs s'aimantent sur la grille à la création et lors des déplacements.
+- **Grille** : toujours visible (20/80 px) ; les blocs s'alignent sur la grille à la création et à la libération des déplacements (position libre pendant le déplacement, TSK24).
 - **Position par défaut à la création de la carte** : le bloc Début est placé au bord gauche de la scène plus un pas majeur de grille (80 px), centré verticalement dans un pas majeur de grille (acté séance 04, TSK16) ; sans layout sauvegardé, les autres blocs sont placés en colonne sous le bloc Début. **Création d'un bloc par l'utilisateur** (menu ou menu contextuel) : au premier emplacement libre à droite du bloc Début (une largeur de nœud + un pas majeur, puis balayage latéral RG050), ancré sur la position courante du bloc Début et aligné sur la grille (RG046) — acté séance 04 (TSK16, option B).
 - **Défilement** : barres horizontale et verticale toujours visibles ; survol/actif du curseur en `block_scene_color` (sable) ; défilement automatique lorsque la souris est à moins de 50 px d'un bord ; scène initiale 4000×4000 px, étendue dynamiquement lorsque les blocs la dépassent.
 - **Sélection et édition** : sélection unique (pas de sélection multiple) ; contour de sélection en tirets dans la couleur du type du bloc (`node_selection_dash_pattern`, ex. `[4.0, 4.0]` — tirets raccourcis, acté séance 04, TSK16) ; déplacement des blocs par glisser-déposer ; hit-testing des éléments graphiques par zone élargie (`shape()`) ; infobulles immédiates au survol (libellé + note des blocs, note des transitions).

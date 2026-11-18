@@ -184,7 +184,7 @@
 - **Références** : SU003, SU006.
 - **Comportement attendu** :
     - Le déplacement s'effectue par glisser-déposer à la souris (PC), au stylet ou en mode tactile (tablette).
-    - Lors du déplacement, le bloc s'aligne automatiquement sur la grille.
+    - Pendant le déplacement, la position du bloc est libre ; à la libération, il s'aligne sur la grille (RG046).
     - La position (x, y) est conservée entre les sessions via le fichier de métadonnées graphiques associé au projet.
     - Le bloc n'est pas redimensionnable.
     - Tout déplacement marque la carte, et donc le projet, comme modifié.

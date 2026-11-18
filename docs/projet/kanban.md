@@ -34,6 +34,8 @@
 
 ### Review
 
+- [ ] TSK24 — Snap des blocs sur la grille à la libération uniquement (évolution RG046, retour TSC séance 05) : pendant le drag, position libre (plus de saccades du snap magnétique) ; à la libération, snap sur la grille 20 px (clamp scène) ; création toujours snappée ; AUCUNE contrainte de position des blocs (pas d'anneau de boîte englobante comme la vue Agents, confirmé TSC) → #TSK11 — fiche `tasks/TSK24_block_snap_on_release.md` — passée en Doing 18-11-2026 (TSK11 Done) — implémentée et passée en Review 18-11-2026 (py_compile OK, 73 tests passed + 2 skipped sans Qt ; tests offscreen Qt à valider sur poste de dev)
+
 - [ ] TSK23 — Contrainte de dépôt à l'anneau de la boîte englobante (évolution RG065, retour TSC séance 05) : à la libération d'un drag, la cellule doit se trouver dans la boîte englobante des AUTRES cartes élargie d'une cellule (la boîte ne grandit que d'une cellule par déplacement) ; sinon la carte est ramenée sur la cellule libre la plus proche dans cette zone ; carte unique = placement libre → #TSK22 — fiche `tasks/TSK23_agent_card_release_ring.md` — passée en Doing 18-11-2026 (TSK22 en Review) — implémentée et passée en Review 18-11-2026 (py_compile OK, 73 tests passed + 1 skipped sans Qt ; tests offscreen Qt à valider sur poste de dev)
 
 - [ ] TSK22 — Placement d'une nouvelle carte agent à côté du groupe existant (évolution RG065/RG050, retour TSC séance 05) : `next_free_card_position` ancré sur la cellule juste à droite de la boîte englobante des cartes existantes (même ligne haute), puis première cellule libre (scan en anneaux `find_nearest_free_position`) ; repli sur la cellule par défaut (0, 140) si aucune carte → #TSK21 — fiche `tasks/TSK22_agent_card_placement.md` — passée en Doing 18-11-2026 (TSK21 en Review) — implémentée et passée en Review 18-11-2026 (py_compile OK, 73 tests passed + 1 skipped sans Qt ; tests offscreen Qt à valider sur poste de dev)
@@ -97,3 +99,4 @@
 - [ ] TSK21 — Snap des cartes agent sur cellule invisible à la libération (évolution RG065) → #TSK19b — fiche `tasks/TSK21_agent_card_cell_snap.md`
 - [ ] TSK22 — Placement d'une nouvelle carte agent sur la première cellule libre à droite de la boîte englobante des cartes existantes → #TSK21 — fiche `tasks/TSK22_agent_card_placement.md`
 - [ ] TSK23 — Dépôt d'une carte contraint à l'anneau (1 cellule) de la boîte englobante des autres cartes → #TSK22 — fiche `tasks/TSK23_agent_card_release_ring.md`
+- [ ] TSK24 — Snap des blocs sur la grille à la libération uniquement (position libre pendant le drag) → #TSK11 — fiche `tasks/TSK24_block_snap_on_release.md`

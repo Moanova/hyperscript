@@ -203,7 +203,7 @@
 - **Classification** : 4. Visualization and interaction
 
 ## RG046
-- **Description** : Blocks automatically snap to the grid at creation and when moved.
+- **Description** : Blocks automatically snap to the grid at creation and **on release** of a move (free position while dragging — TSC evolution session 05, TSK24: live snapping caused saccades).
 - **Classification** : 4. Visualization and interaction
 
 ## RG047

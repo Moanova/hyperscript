@@ -57,7 +57,7 @@
 
 ### 4. Workspace — "Journeys" view
 - **Type**: QGraphicsView. Graph of narrative blocks and their transitions.
-- **Grid**: always visible (20/80 px); blocks snap to the grid at creation and when moved.
+- **Grid**: always visible (20/80 px); blocks snap to the grid at creation and on release of a move (free position while dragging, TSK24).
 - **Default position at map creation**: the Start block is placed at the left edge of the scene plus one major grid step (80 px), centered vertically within a major grid step (adopted session 04, TSK16); without a saved layout, the other blocks are placed in a column below the Start block. **User-created block** (menu or context menu): at the first free spot to the right of the Start block (one node width + one major step, then lateral scan RG050), anchored on the Start block's current position and snapped to the grid (RG046) - adopted session 04 (TSK16, option B).
 - **Scrolling**: horizontal and vertical scroll bars always visible; handle hover/active in `block_scene_color` (sand); auto-scroll when the mouse is within 50 px of an edge; initial scene 4000×4000 px, dynamically extended when blocks exceed it.
 - **Selection and editing**: single selection (no multi-selection); selection outline as dashes in the block's type color (`node_selection_dash_pattern`, e.g. `[4.0, 4.0]` — shorter dashes, adopted session 04, TSK16); blocks moved by drag-and-drop; graphical elements hit-tested through an enlarged area (`shape()`); immediate tooltips on hover (block label + note, transition note).

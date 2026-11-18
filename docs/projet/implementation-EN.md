@@ -81,7 +81,7 @@
 | RG | Summary | Status | Code (file · symbol) | Unit test | Notes |
 | --- | --- | --- | --- | --- | --- |
 | RG045 | Each block's position (x, y) is kept in the graphical metadata associated with… | not-started | — | — | — |
-| RG046 | Blocks automatically snap to the grid at creation and when moved. | partial | core/services/layout_service.py (snap_to_grid); ui/nodes/base_node.py (itemChange) | — | offscreen test to validate on dev machine (no libGL in sandbox) |
+| RG046 | Blocks snap to the grid at creation and on release of a move (free position while dragging — TSK24) | implemented | core/services/layout_service.py (snap_to_grid); ui/nodes/base_node.py (itemChange: free position + scene limits, no snap while dragging ; mouseReleaseEvent: grid snap + clamp → setPos) | tests/test_journeys/test_block_drag_offscreen.py | offscreen test to validate on dev machine (no libGL in sandbox) |
 | RG047 | Changing the zoom level, the scroll bar positions or the journey filter state… | not-started | — | — | — |
 | RG048 | The journey filter displays either all journeys or a single one, in the narrative-map views only (not the "Agents" view);… | partial | core/services/journey_filter_service.py; ui/views/journeys_workspace.py; ui/main_window.py | tests/test_journeys/test_journey_filter_service.py | service tested (opacity from config journey_filter_opacity); visual rendering (0.25 opacity + disabled) to validate offscreen |
 | RG049 | In a workspace, only one element is selected at a time; creating or clicking an… | partial | ui/views/journeys_workspace.py (_select_item_only, _clear_all_selections) | — | offscreen test to validate |
@@ -152,7 +152,7 @@
 | FN014 | Create a narrative block | implemented | Project › Blocks › New | usecases/view_management/create_block_usecase.py; ui/main_window.py (_create_new_block) | — | — | tests/test_blocks/test_block_usecases.py |
 | FN015 | Edit a block's attributes | implemented | Project › Blocks › Edit... | usecases/view_management/update_block_usecase.py; ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
 | FN016 | Duplicate a block | implemented | — | usecases/view_management/duplicate_block_usecase.py; ui/main_window.py | — | — | tests/test_blocks/test_block_usecases.py |
-| FN017 | Move a block | partial | — | ui/nodes/base_node.py (itemChange, snap RG046); ui/main_window.py (_on_workspace_modified) | — | — | offscreen test to validate |
+| FN017 | Move a block | partial | — | ui/nodes/base_node.py (mouseReleaseEvent: snap on release RG046 ; itemChange: free position); ui/main_window.py (_on_workspace_modified) | — | — | offscreen test to validate |
 | FN018 | Delete a block | implemented | Project › Blocks › Delete... | usecases/view_management/delete_block_usecase.py; ui/main_window.py | — | — | tests/test_blocks/test_block_usecases.py |
 | FN019 | Manage a block's journey attachments | implemented | — | usecases/view_management/update_block_usecase.py (journey_ids); ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
 

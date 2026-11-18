@@ -183,7 +183,7 @@
 - **References**: SU003, SU006.
 - **Expected behavior**:
     - Moving is done by drag-and-drop with the mouse (PC), stylus or touch mode (tablet).
-    - While moving, the block automatically snaps to the grid.
+    - While moving, the block position is free; on release it snaps to the grid (RG046).
     - The position (x, y) is kept between sessions via the graphical metadata file associated with the project.
     - The block is not resizable.
     - Any move marks the map, and therefore the project, as modified.

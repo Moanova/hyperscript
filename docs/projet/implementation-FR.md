@@ -81,7 +81,7 @@
 | RG | Résumé | Statut | Code (fichier · symbole) | Test unitaire | Notes |
 | --- | --- | --- | --- | --- | --- |
 | RG045 | La position (x, y) de chaque bloc est conservée dans les métadonnées graphiques… | not-started | — | — | — |
-| RG046 | Les blocs s'alignent automatiquement sur la grille lors de leur création et de… | partial | core/services/layout_service.py (snap_to_grid); ui/nodes/base_node.py (itemChange) | — | test offscreen à valider sur poste de dev (libGL absent dans le sandbox) |
+| RG046 | Les blocs s'alignent sur la grille à la création et à la libération des déplacements (position libre pendant le drag — TSK24) | implemented | core/services/layout_service.py (snap_to_grid); ui/nodes/base_node.py (itemChange : position libre + limites scène, aucun snap en drag ; mouseReleaseEvent : snap grille + clamp → setPos) | tests/test_journeys/test_block_drag_offscreen.py | test offscreen à valider sur poste de dev (libGL absent dans le sandbox) |
 | RG047 | La modification du niveau de zoom, de la position des barres de défilement ou… | not-started | — | — | — |
 | RG048 | Le filtre de parcours affiche soit tous les parcours, soit un seul, dans les vues de la carte narrative (pas la vue « Agents »)… | partial | core/services/journey_filter_service.py; ui/views/journeys_workspace.py; ui/main_window.py | tests/test_journeys/test_journey_filter_service.py | service testé (opacité config journey_filter_opacity) ; rendu visuel (opacité 0.25 + désactivation) à valider offscreen |
 | RG049 | Dans un espace de travail, un seul élément est sélectionné à la fois ; la… | partial | ui/views/journeys_workspace.py (_select_item_only, _clear_all_selections) | — | test offscreen à valider |
@@ -152,7 +152,7 @@
 | FN014 | Créer un bloc narratif | implemented | Project › Blocks › New | usecases/view_management/create_block_usecase.py; ui/main_window.py (_create_new_block) | — | — | tests/test_blocks/test_block_usecases.py |
 | FN015 | Modifier les attributs d'un bloc | implemented | Project › Blocks › Edit... | usecases/view_management/update_block_usecase.py; ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
 | FN016 | Dupliquer un bloc | implemented | — | usecases/view_management/duplicate_block_usecase.py; ui/main_window.py | — | — | tests/test_blocks/test_block_usecases.py |
-| FN017 | Déplacer un bloc | partial | — | ui/nodes/base_node.py (itemChange, snap RG046); ui/main_window.py (_on_workspace_modified) | — | — | test offscreen à valider |
+| FN017 | Déplacer un bloc | partial | — | ui/nodes/base_node.py (mouseReleaseEvent : snap à la libération RG046 ; itemChange : position libre); ui/main_window.py (_on_workspace_modified) | — | — | test offscreen à valider |
 | FN018 | Supprimer un bloc | implemented | Project › Blocks › Delete... | usecases/view_management/delete_block_usecase.py; ui/main_window.py | — | — | tests/test_blocks/test_block_usecases.py |
 | FN019 | Gérer le rattachement d'un bloc aux parcours | implemented | — | usecases/view_management/update_block_usecase.py (journey_ids); ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
 
