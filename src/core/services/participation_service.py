@@ -65,7 +65,7 @@ class ParticipationService:
         result = []
         for narrative_map in project.narrative_maps:
             result.extend(r for r in narrative_map.relationship
-                          if r.agent_a_id == agent_id or r.agent_b_id == agent_id)
+                          if r.agent_1_id == agent_id or r.agent_2_id == agent_id)
         return result
 
     @staticmethod
@@ -84,7 +84,7 @@ class ParticipationService:
             narrative_map.participation[:] = kept_p
             kept_r = []
             for r in narrative_map.relationship:
-                if r.agent_a_id == agent_id or r.agent_b_id == agent_id:
+                if r.agent_1_id == agent_id or r.agent_2_id == agent_id:
                     counts['relationship'] += 1
                 else:
                     kept_r.append(r)

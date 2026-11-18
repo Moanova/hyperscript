@@ -188,8 +188,8 @@
 - **Description** : En tant qu'auteur, je peux créer, annoter, modifier ou supprimer une relation typée entre deux agents, ancrée à un bloc, afin de suivre l'évolution des relations entre personnages ou artefacts au fil de mon récit.
 - **Complément** :
     - Une relation est binaire : elle relie exactement deux agents. Une évolution vers des relations à plus de deux agents est hors MVP.
-    - Elle est dirigée et typée ; le type est lu dans une liste de valeurs définie dans un fichier de configuration (l'enrichissement de cette liste par l'auteur est hors MVP).
-    - Elle est ancrée à un bloc : « à ce moment du récit, la relation A —type→ B est vraie ».
+    - Elle est non dirigée (paire d'agents non ordonnée) et typée ; le type est lu dans une liste de valeurs définie dans un fichier de configuration (l'enrichissement de cette liste par l'auteur est hors MVP).
+    - Elle est ancrée à un bloc : « à ce moment du récit, une relation de ce type entre A et B est vraie ».
     - Il ne peut exister qu'une seule relation par couple (bloc, paire d'agents, type).
     - L'historique d'une paire d'agents est l'ensemble de ses relations ancrées, ordonnées selon la position de leur bloc dans le parcours ; l'état courant de la paire à un bloc est la dernière relation ancrée à un bloc situé avant ou au même rang dans ce parcours (donnée dérivée, jamais stockée).
     - Appartenance aux parcours dérivée : une relation appartient à un parcours si et seulement si son bloc d'ancrage y appartient.

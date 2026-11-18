@@ -159,7 +159,7 @@
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG035
-- **Description** : Une relation est binaire (exactement deux agents), dirigée et typée, et ancrée à exactement un bloc ; son type est lu dans la liste de valeurs du fichier de configuration ; il ne peut exister qu'une seule relation par couple (bloc, paire d'agents, type).
+- **Description** : Une relation est binaire (exactement deux agents — paire non ordonnée, TSK25), non dirigée et typée, et ancrée à exactement un bloc ; son type est lu dans la liste de valeurs du fichier de configuration ; il ne peut exister qu'une seule relation par couple (bloc, paire d'agents, type).
 - **Classification** : 2. Structure de la carte narrative
 
 ## 3. Logique des parcours et appartenance

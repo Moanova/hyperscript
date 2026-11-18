@@ -187,8 +187,8 @@
 - **Description**: As an author, I can create, annotate, edit or delete a typed relationship between two agents, anchored to a block, in order to follow the evolution of the relationships between characters or artefacts along my story.
 - **Details**:
     - A relationship is binary: it links exactly two agents. An evolution towards relationships involving more than two agents is post-MVP.
-    - It is directed and typed; the type is read from a value list defined in a configuration file (enriching this list by the author is post-MVP).
-    - It is anchored to a block: "at this point of the story, the relationship A —type→ B holds".
+    - It is non-directed (unordered agent pair) and typed; the type is read from a value list defined in a configuration file (enriching this list by the author is post-MVP).
+    - It is anchored to a block: "at this point of the story, a relationship of that type between A and B holds".
     - There can be only one relationship per (block, agent pair, type).
     - The history of an agent pair is the set of its anchored relationships, ordered by the position of their block in the journey; the current state of the pair at a block is the last relationship anchored to a block located before or at the same rank in that journey (derived data, never stored).
     - Derived journey membership: a relationship belongs to a journey if and only if its anchor block belongs to it.

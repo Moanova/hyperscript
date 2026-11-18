@@ -71,3 +71,4 @@ les clés JSON peuvent être renommées librement.
   (§3, §4, §8).
 
 - 2026-11-09 : `docs/specification/07_data_model-FR.json` et `07_data_model-EN.json` générés (structure plano reprise et modifiée selon les décisions actées — voir liste ci-dessus). Validation : json.load OK sur les deux fichiers ; structures FR/EN identiques hors descriptions. Tâche passée en Review (kanban v2) — en attente de validation TSC.
+- 2026-11-18 : **révision TSK25** — la relation agent-agent devient **non dirigée** (paire non ordonnée, stockée triée `agent_1_id` < `agent_2_id`) ; décision TSC séance 05 (aucune justification de la directivité, liste de types MVP symétrique, unicité déjà sur paire non ordonnée) — voir fiche `TSK25_relationship_non_directed.md`.

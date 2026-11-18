@@ -159,7 +159,7 @@
 - **Classification** : 2. Narrative map structure
 
 ## RG035
-- **Description** : A relationship is binary (exactly two agents), directed and typed, and anchored to exactly one block; its type is read from the configuration file value list; there can be only one relationship per (block, agent pair, type).
+- **Description** : A relationship is binary (exactly two agents — unordered pair, TSK25), non-directed and typed, and anchored to exactly one block; its type is read from the configuration file value list; there can be only one relationship per (block, agent pair, type).
 - **Classification** : 2. Narrative map structure
 
 ## 3. Journey logic and membership

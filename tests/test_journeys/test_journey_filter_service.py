@@ -57,7 +57,7 @@ def test_rg041_derived_membership():
     nm.participation.append(Participation(id=nm.get_next_id('participation'), block_id=s1.id, agent_id=1))
     nm.participation.append(Participation(id=nm.get_next_id('participation'), block_id=s2.id, agent_id=1))
     nm.relationship.append(Relationship(id=nm.get_next_id('relationship'), block_id=s2.id,
-                                        agent_a_id=1, agent_b_id=2, typ="friend"))
+                                        agent_1_id=1, agent_2_id=2, typ="friend"))
 
     # journey 1: Start + S1 visible; transition Start->S1 visible (both endpoints in j1)
     assert JourneyFilterService.visible_block_ids(nm, j1.id) == {start.id, s1.id}

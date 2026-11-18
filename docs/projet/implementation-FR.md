@@ -61,7 +61,7 @@
 | RG032 | Il ne peut exister qu'une seule participation par couple (bloc, agent). | implemented | core/services/participation_service.py (find_participation) ; usecases/participation_management/associate_participation_usecase.py | tests/test_agents/test_participation_usecases.py | association idempotente |
 | RG033 | La suppression d'un agent entraîne la suppression en cascade de toutes ses… | implemented | core/services/participation_service.py (cascade_delete_agent) ; usecases/agent_management/delete_agent_usecase.py | tests/test_agents/test_agent_usecases.py | comptages retournés pour le message d'information UI |
 | RG034 | La suppression d'un parcours réaffecte au parcours par défaut les rattachements… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | réaffectation au parcours par défaut (aucun bloc orphelin) |
-| RG035 | Une relation est binaire (exactement deux agents), dirigée et typée, et ancrée… | not-started | — | — | — |
+| RG035 | Une relation est binaire (exactement deux agents — paire non ordonnée), non dirigée et typée (TSK25), et ancrée… | not-started | — | — | — |
 
 ### 3. Logique des parcours et appartenance
 

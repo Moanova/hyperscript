@@ -114,7 +114,7 @@ def test_rg033_delete_agent_cascades_participations_and_relationships():
     AssociateParticipationUseCase(service).execute(agent.id, block.id)
     nm.relationship.append(Relationship(
         id=nm.get_next_id('relationship'), block_id=block.id,
-        agent_a_id=agent.id, agent_b_id=other.id, typ="friend"))
+        agent_1_id=agent.id, agent_2_id=other.id, typ="friend"))
 
     result = DeleteAgentUseCase(service).execute(agent.id)
     assert result is not None

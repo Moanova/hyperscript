@@ -390,8 +390,8 @@
 - **Références** : SU011 ; menu « Project › Relationships ».
 - **Comportement attendu** :
     - La relation est binaire : elle relie exactement deux agents (une évolution à plus de deux agents est hors MVP).
-    - Elle est dirigée et typée ; le type est choisi dans la liste de valeurs du fichier de configuration (FN037).
-    - Elle est ancrée à un bloc : « à ce moment du récit, la relation A —type→ B est vraie ».
+    - Elle est non dirigée (paire d'agents non ordonnée) et typée ; le type est choisi dans la liste de valeurs du fichier de configuration (FN037).
+    - Elle est ancrée à un bloc : « à ce moment du récit, une relation de ce type entre A et B est vraie ».
     - Il ne peut exister qu'une seule relation par couple (bloc, paire d'agents, type).
     - L'historique d'une paire d'agents est l'ensemble de ses relations ancrées, ordonnées selon la position de leur bloc dans le parcours ; l'état courant de la paire à un bloc est dérivé (jamais stocké).
     - L'appartenance aux parcours est dérivée du bloc d'ancrage.

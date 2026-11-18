@@ -136,7 +136,7 @@ def test_rg023_delete_block_cascade():
     agent_id = 1
     nm.participation.append(Participation(id=nm.get_next_id('participation'), block_id=s.id, agent_id=agent_id))
     nm.relationship.append(Relationship(id=nm.get_next_id('relationship'), block_id=s.id,
-                                        agent_a_id=agent_id, agent_b_id=2, typ="friend"))
+                                        agent_1_id=agent_id, agent_2_id=2, typ="friend"))
     removed = TransitionService.delete_block_cascade(nm, s.id)  # RG023
     assert removed is not None
     assert removed['block'][0].id == s.id

@@ -325,7 +325,7 @@
       "Relationship": {
          "type": "object",
          "category": "relationship",
-         "description": "Relation agent-agent, dirigée et typée, ancrée à un bloc ; binaire (agent_a_id, agent_b_id) jusqu'à éventuelle évolution hors MVP",
+         "description": "Relation agent-agent, non dirigée et typée, ancrée à un bloc ; binaire (agent_1_id, agent_2_id — paire non ordonnée, stockée triée) jusqu'à éventuelle évolution hors MVP",
          "properties": {
             "id": {
                "type": "integer",
@@ -333,15 +333,15 @@
             },
             "block_id": {
                "type": "integer",
-               "description": "Identifiant du bloc d'ancrage (référence à Block.id) - « à ce moment du récit, la relation A —typ→ B est vraie » ; pas de clock_id, le rang est celui du bloc dans le parcours"
+               "description": "Identifiant du bloc d'ancrage (référence à Block.id) - « à ce moment du récit, une relation de ce type entre A et B est vraie » ; pas de clock_id, le rang est celui du bloc dans le parcours"
             },
-            "agent_a_id": {
+            "agent_1_id": {
                "type": "integer",
-               "description": "Identifiant du premier agent (référence à Agent.id)"
+               "description": "Identifiant d'un agent de la paire (référence à Agent.id) — paire non ordonnée, stockée triée (agent_1_id < agent_2_id)"
             },
-            "agent_b_id": {
+            "agent_2_id": {
                "type": "integer",
-               "description": "Identifiant du second agent (référence à Agent.id)"
+               "description": "Identifiant de l'autre agent de la paire (référence à Agent.id)"
             },
             "typ": {
                "type": "string",
@@ -369,8 +369,8 @@
          "required": [
             "id",
             "block_id",
-            "agent_a_id",
-            "agent_b_id",
+            "agent_1_id",
+            "agent_2_id",
             "typ",
             "creation_date_time"
          ]

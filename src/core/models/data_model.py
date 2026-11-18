@@ -163,12 +163,16 @@ class Participation:
 
 @dataclass
 class Relationship:
-    """Directed, typed, binary agent-agent relationship, anchored to a block (RG035)."""
+    """Non-directed, typed, binary agent-agent relationship, anchored to a block (RG035).
+
+    The agent pair is unordered (TSK25): the two ids are stored canonically
+    sorted, so (A, B) and (B, A) denote the same pair.
+    """
 
     id: int
     block_id: int  # Anchor block (Reference to Block.id)
-    agent_a_id: int  # Reference to Agent.id
-    agent_b_id: int  # Reference to Agent.id
+    agent_1_id: int  # Reference to Agent.id (canonical: the smaller id)
+    agent_2_id: int  # Reference to Agent.id (canonical: the larger id)
     typ: str  # Relationship type, read from the configuration list (FN037)
     note: Optional[str] = None
     content: Optional[str] = None
@@ -176,7 +180,10 @@ class Relationship:
     modification_date_time: Optional[datetime] = None
 
     def __post_init__(self):
-        _check_int_id(self, ["id", "block_id", "agent_a_id", "agent_b_id"])
+        _check_int_id(self, ["id", "block_id", "agent_1_id", "agent_2_id"])
+        # RG035 (TSK25): unordered pair — canonical sorted storage
+        if self.agent_2_id < self.agent_1_id:
+            self.agent_1_id, self.agent_2_id = self.agent_2_id, self.agent_1_id
 
     def to_dict(self) -> Dict[str, Any]:
         return _entity_to_dict(self)

@@ -61,7 +61,7 @@
 | RG032 | There can be only one participation per (block, agent) pair. | implemented | core/services/participation_service.py (find_participation); usecases/participation_management/associate_participation_usecase.py | tests/test_agents/test_participation_usecases.py | idempotent association |
 | RG033 | Deleting an agent cascades to all its participations and all its relationships,… | implemented | core/services/participation_service.py (cascade_delete_agent); usecases/agent_management/delete_agent_usecase.py | tests/test_agents/test_agent_usecases.py | counts returned for the UI information message |
 | RG034 | Deleting a journey reassigns to the default journey the attachments of the… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | reassignment to the default journey (no orphan block) |
-| RG035 | A relationship is binary (exactly two agents), directed and typed, and anchored… | not-started | — | — | — |
+| RG035 | A relationship is binary (exactly two agents — unordered pair), non-directed and typed (TSK25), and anchored… | not-started | — | — | — |
 
 ### 3. Journey logic and membership
 

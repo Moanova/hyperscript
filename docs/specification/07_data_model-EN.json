@@ -325,7 +325,7 @@
       "Relationship": {
          "type": "object",
          "category": "relationship",
-         "description": "Agent-agent relationship, directed and typed, anchored to a block; binary (agent_a_id, agent_b_id) until possible post-MVP evolution",
+         "description": "Agent-agent relationship, non-directed and typed, anchored to a block; binary (agent_1_id, agent_2_id — unordered pair, stored sorted) until possible post-MVP evolution",
          "properties": {
             "id": {
                "type": "integer",
@@ -333,15 +333,15 @@
             },
             "block_id": {
                "type": "integer",
-               "description": "Anchor block identifier (reference to Block.id) - \"at this point of the story, relationship A —typ→ B holds\"; no clock_id, the rank is the block's rank in the journey"
+               "description": "Anchor block identifier (reference to Block.id) - \"at this point of the story, a relationship of that type between A and B holds\"; no clock_id, the rank is the block's rank in the journey"
             },
-            "agent_a_id": {
+            "agent_1_id": {
                "type": "integer",
-               "description": "First agent identifier (reference to Agent.id)"
+               "description": "Identifier of one agent of the pair (reference to Agent.id) — unordered pair, stored sorted (agent_1_id < agent_2_id)"
             },
-            "agent_b_id": {
+            "agent_2_id": {
                "type": "integer",
-               "description": "Second agent identifier (reference to Agent.id)"
+               "description": "Identifier of the other agent of the pair (reference to Agent.id)"
             },
             "typ": {
                "type": "string",
@@ -369,8 +369,8 @@
          "required": [
             "id",
             "block_id",
-            "agent_a_id",
-            "agent_b_id",
+            "agent_1_id",
+            "agent_2_id",
             "typ",
             "creation_date_time"
          ]
