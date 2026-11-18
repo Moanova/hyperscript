@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------
 # Application  : Hyperscript
 # Script       : test_agents_workspace_offscreen.py
-# Version      : 3
+# Version      : 4
 # Date         : 2026-11-18
 # Design       : TSC
 # Build        : Mistral Vibe
@@ -24,6 +24,10 @@ session 05):
 - TSK22: a NEW card is placed on the first free cell right of the bounding
   box of the existing cards (default cell when the workspace is empty), so
   it never lands far from the group;
+- TSK23 (RG065): the RELEASE cell must lie within the bounding box of the
+  OTHER cards expanded by one cell (the group grows by at most one cell per
+  move); outside that ring or on an occupied cell, the card is pulled back
+  to the nearest free allowed cell — a single card stays free anywhere;
 - programmatic setPos outside a mouse drag stays exact (no snap);
 - the selected card is raised above the others (never hidden behind a
   neighbour).
@@ -134,9 +138,9 @@ def test_new_card_in_empty_workspace_uses_default_cell():
 
 
 def test_new_card_is_placed_next_to_the_existing_group():
-    """TSK22: cards moved far away — a newly created card must land on the
-    first free cell right of the bounding box of the existing cards, not on
-    the default cell near the scene origin."""
+    """TSK22: a newly created card lands on the first free cell right of the
+    bounding box of the existing cards, not on the default cell near the
+    scene origin."""
     service = ProjectService()
     CreateProjectUseCase(service).execute()
     project = service.current_project
@@ -147,18 +151,39 @@ def test_new_card_is_placed_next_to_the_existing_group():
     ws.populate_agents(project, None)
     _app.processEvents()
     cards = cards_of(ws)  # A0 (0, 140), A1 (200, 140)
-    drag(ws, cards[0], 1000, 840)  # free (1000, 980) -> cell (1000, 980)
-    drag(ws, cards[1], 1000, 980)  # free (1200, 1120) -> cell (1200, 1120)
-    assert cards[0].pos() == QPointF(1000.0, 980.0)
-    assert cards[1].pos() == QPointF(1200.0, 1120.0)
+    drag(ws, cards[0], 400, 0)  # free (400, 140) -> cell (400, 140), allowed ring
+    assert cards[0].pos() == QPointF(400.0, 140.0)
     CreateAgentUseCase(service).execute(lb="A2")
     agent = next(a for a in project.agent if a.lb == "A2")
     new_card = ws.add_agent_card(agent)
     _app.processEvents()
-    # anchor = right of the bounding box (max_x=1200, min_y=980) -> cell (1400, 980)
-    assert new_card.pos() == QPointF(1400.0, 980.0)
+    # anchor = right of the new bounding box (max_x=400, min_y=140) -> cell (600, 140)
+    assert new_card.pos() == QPointF(600.0, 140.0)
     assert_on_cell(new_card)
     assert_no_overlap(cards_of(ws))
+
+
+def test_release_outside_the_group_ring_is_pulled_back():
+    """TSK23/RG065: the release cell must lie within the bounding box of the
+    other cards expanded by one cell; a far drag is pulled back to the
+    nearest free allowed cell."""
+    ws = make_workspace(2)  # A0 (0, 140), A1 (200, 140)
+    a0, a1 = cards_of(ws)
+    drag(ws, a1, 3000, 3000)  # far away
+    # others = [A0 (0,140,160,100)] -> allowed x in [0, 360-160], y in [0, 380-100]
+    # snapped (3200, 3080) is clamped to (200, 280), which is free
+    assert a1.pos() == QPointF(200.0, 280.0)
+    assert_on_cell(a1)
+    assert_no_overlap(cards_of(ws))
+
+
+def test_single_card_can_be_moved_anywhere():
+    """TSK23 edge case: with a single card there is no bounding box of other
+    cards, so the release stays free anywhere in the scene."""
+    ws = make_workspace(1)
+    card = cards_of(ws)[0]  # (0, 140)
+    drag(ws, card, 1000, 840)  # free (1000, 980) -> cell (1000, 980), allowed
+    assert card.pos() == QPointF(1000.0, 980.0)
 
 
 def test_programmatic_setpos_stays_free_no_snap():

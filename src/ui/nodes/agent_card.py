@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------
 # Application  : Hyperscript
 # Script       : agent_card.py
-# Version      : 2
+# Version      : 3
 # Date         : 2026-11-18
 # Design       : TSC
 # Build        : Mistral Vibe
@@ -20,8 +20,10 @@ The card is freely movable in 2D during a drag — no axis lock, no live
 snap (RG065, TSC sessions 04/05: continuous snapping made the moves
 awkward). On RELEASE, the card snaps to the nearest cell of an invisible
 cell grid (CELL_WIDTH x CELL_HEIGHT from config, anchored on the scene
-origin); if that cell is occupied by another card, the card is placed on
-the nearest free cell. The position is also cell-snapped at creation and
+origin); the release cell must lie within the bounding box of the OTHER
+cards expanded by one cell (TSK23 — a lone card stays free), and if the
+cell is outside that ring or occupied, the card is placed on the nearest
+free allowed cell. The position is also cell-snapped at creation and
 load (AgentsWorkspace). The visible dots stay purely decorative. Single
 selection (RG049), dashed selection outline in the card color (charter 98:
 selection > hover > type), hit-testing via shape() (RG053).
@@ -233,9 +235,13 @@ class AgentCardItem(QGraphicsRectItem):
         self._notify_position_observers()
 
     def _cell_snap_target(self, pos: QPointF) -> QPointF:
-        """Target position on release (RG065): nearest cell of the invisible
-        grid (CELL_WIDTH x CELL_HEIGHT, anchored on the scene origin), clamped
-        to the scene; if occupied by another card, the nearest free cell."""
+        """Target position on release (RG065/TSK23): nearest cell of the
+        invisible grid (CELL_WIDTH x CELL_HEIGHT, anchored on the scene
+        origin), clamped to the allowed region; if that cell is occupied by
+        another card, the nearest free cell. The allowed region is the scene
+        intersected with the bounding box of the OTHER cards expanded by one
+        cell on each side (TSK23: the group can only grow by one cell per
+        move); with a single card (no others) the whole scene stays allowed."""
         x = LayoutService.snap_to_grid(pos.x(), self.CELL_WIDTH)
         y = LayoutService.snap_to_grid(pos.y(), self.CELL_HEIGHT)
         width = self.rect().width()
@@ -244,15 +250,21 @@ class AgentCardItem(QGraphicsRectItem):
         if scene is None:
             return QPointF(x, y)
         scene_rect = scene.sceneRect()
-        x = max(scene_rect.left(), min(x, scene_rect.right() - width))
-        y = max(scene_rect.top(), min(y, scene_rect.bottom() - height))
         others = [(it.pos().x(), it.pos().y(), it.rect().width(), it.rect().height())
                   for it in scene.items()
                   if isinstance(it, AgentCardItem) and it is not self]
+        left, top = scene_rect.left(), scene_rect.top()
+        right, bottom = scene_rect.right(), scene_rect.bottom()
+        if others:
+            left = max(left, min(o[0] for o in others) - self.CELL_WIDTH)
+            top = max(top, min(o[1] for o in others) - self.CELL_HEIGHT)
+            right = min(right, max(o[0] + o[2] for o in others) + self.CELL_WIDTH)
+            bottom = min(bottom, max(o[1] + o[3] for o in others) + self.CELL_HEIGHT)
+        x = max(left, min(x, right - width))
+        y = max(top, min(y, bottom - height))
         free_x, free_y = LayoutService.find_nearest_free_position(
             x, y, width, height, others, self.CELL_WIDTH, self.CELL_HEIGHT,
-            bounds=(scene_rect.left(), scene_rect.top(),
-                    scene_rect.right(), scene_rect.bottom()))
+            bounds=(left, top, right, bottom))
         return QPointF(free_x, free_y)
 
     def mouseMoveEvent(self, event) -> None:
