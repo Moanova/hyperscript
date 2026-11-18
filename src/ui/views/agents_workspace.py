@@ -1,7 +1,7 @@
 # ---------------------------------------------------------------------
 # Application  : Hyperscript
 # Script       : agents_workspace.py
-# Version      : 2
+# Version      : 3
 # Date         : 2026-11-18
 # Design       : TSC
 # Build        : Mistral Vibe
@@ -254,15 +254,21 @@ class AgentsWorkspace(QGraphicsView, QObject):
         return None
 
     def next_free_card_position(self, x: float = 80.0, y: float = 80.0):
-        """First free cell of the invisible grid (RG065: cell size
-        agents_view_cell_*, anchored on the scene origin) near (x, y) for a
-        new card (RG050 non-overlapping)."""
+        """First free cell of the invisible grid for a new card (RG050
+        non-overlapping, RG065 cells). TSK22: when cards already exist, the
+        search is anchored on the cell just right of their bounding box
+        (same top row), so the new card appears next to the existing group
+        (pattern of the Journeys view: first free spot right of the anchor,
+        TSK16); otherwise the default anchor (x, y) is used."""
         existing_rects = []
         for item in self.scene.items():
             if isinstance(item, AgentCardItem):
                 r = item.rect()
                 pos = item.pos()
                 existing_rects.append((pos.x(), pos.y(), r.width(), r.height()))
+        if existing_rects:
+            x = max(r[0] for r in existing_rects) + _CELL_WIDTH
+            y = min(r[1] for r in existing_rects)
         x = LayoutService.snap_to_grid(x, _CELL_WIDTH)
         y = LayoutService.snap_to_grid(y, _CELL_HEIGHT)
         scene_rect = self.scene.sceneRect()
