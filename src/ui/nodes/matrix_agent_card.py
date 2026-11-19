@@ -18,9 +18,9 @@ matrix is handled by the workspace view, constrained to the card's axis
 (node_selection_dash_pattern), via itemChange like BaseNode.
 """
 
-from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QStyleOptionGraphicsItem, QWidget
+from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsItem, QStyleOptionGraphicsItem, QWidget, QToolTip
 from PySide6.QtCore import Qt, QRectF
-from PySide6.QtGui import QPainterPathStroker, QPen, QBrush, QColor, QFont, QPainter, QToolTip
+from PySide6.QtGui import QPainterPathStroker, QPen, QBrush, QColor, QFont, QPainter
 
 from core.models.data_model import Agent
 from config.config_loader import get as _get_config
