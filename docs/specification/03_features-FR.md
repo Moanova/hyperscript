@@ -393,7 +393,9 @@
     - La relation est binaire : elle relie exactement deux agents (une évolution à plus de deux agents est hors MVP).
     - Elle est non dirigée (paire d'agents non ordonnée) et typée ; le type est choisi dans la liste de valeurs du fichier de configuration (FN037).
     - Elle est ancrée à un bloc : « à ce moment du récit, une relation de ce type entre A et B est vraie ».
+    - Les deux agents sont distincts (aucune relation d'un agent à lui-même, RG035).
     - Il ne peut exister qu'une seule relation par couple (bloc, paire d'agents) (RG035).
+    - Dans le dialogue de création/édition, la liste des blocs d'ancrage est ordonnée par rang minimal sur tous les parcours (ex æquo par identifiant) — même règle que la liste du panneau de la vue « Relationships » (RG069) ; la paire d'agents n'est pas modifiable à l'édition (type, bloc d'ancrage, note, contenu le sont).
     - L'historique d'une paire d'agents est l'ensemble de ses relations ancrées, ordonnées selon la position de leur bloc dans le parcours ; l'état courant de la paire à un bloc est dérivé (jamais stocké).
     - L'appartenance aux parcours est dérivée du bloc d'ancrage.
     - La note est affichée en infobulle au survol.

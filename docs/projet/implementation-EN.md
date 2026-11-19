@@ -61,7 +61,7 @@
 | RG032 | There can be only one participation per (block, agent) pair. | implemented | core/services/participation_service.py (find_participation); usecases/participation_management/associate_participation_usecase.py | tests/test_agents/test_participation_usecases.py | idempotent association |
 | RG033 | Deleting an agent cascades to all its participations and all its relationships,… | implemented | core/services/participation_service.py (cascade_delete_agent); usecases/agent_management/delete_agent_usecase.py | tests/test_agents/test_agent_usecases.py | counts returned for the UI information message |
 | RG034 | Deleting a journey reassigns to the default journey the attachments of the… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | reassignment to the default journey (no orphan block) |
-| RG035 | A relationship is binary (exactly two agents — unordered pair), non-directed and typed (TSK25), and anchored… | not-started | — | — | RG035 hardened session 06: uniqueness (block, pair), unique block–relationship link for the MVP (TSK20); Block/Relationship entities kept distinct for post-MVP |
+| RG035 | A relationship is binary (exactly two distinct agents — unordered pair), non-directed and typed (TSK25), and anchored… | implemented | core/services/relationship_service.py (find_relationship, check_pair, validate_type) ; usecases/relationship_management/ (create/update/delete) ; ui/dialogs/relationship_dialog.py | tests/test_relations/ | RG035 hardened session 06: uniqueness (block, pair) + two distinct agents (no self-relationship) — TSK20 (Review 19-11-2026); Block/Relationship entities kept distinct for post-MVP |
 
 ### 3. Journey logic and membership
 
@@ -198,7 +198,7 @@
 
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN034 | Manage a relationship between agents | not-started | Project › Relationships | — | — | — | — |
+| FN034 | Manage a relationship between agents | implemented | Project › Relationships (New.../Edit.../Delete... wired, TSK20) | usecases/relationship_management/ ; ui/dialogs/relationship_dialog.py + relationship_selection_dialog.py | core/models/data_model.py (Relationship, canonical pair TSK25) | tests/test_relations/test_relationship_usecases.py | uniqueness (block, pair) RG035 ; dialog anchor list ordered by minimum rank across journeys (RG069) |
 
 ### Conditions
 
@@ -216,7 +216,7 @@
 
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN037 | Relationship type list | not-started | — | — | — | — | — |
+| FN037 | Relationship type list | implemented | — | core/services/relationship_service.py (relationship_types, validate_type) | config.json `relationship_types` | tests/test_relations/test_relationship_service.py (test_fn037_*) | author enrichment post-MVP |
 
 ### Out of MVP scope / to be defined during the design phase
 
@@ -281,10 +281,10 @@
 | Project › Journeys › Copy | Copy |  | implemented | menu_actions['journeys_copy'] (FN025) |
 | Project › Journeys › Set as Default... | Set as Default... |  | implemented | menu_actions['journeys_set_default'] (FN038) |
 | Project › Journeys › Delete... | Delete... |  | implemented | menu_actions['journeys_delete'] (FN027) |
-| Project › Relationships | Relationships |  | stub | menu_actions['relationships_*'] (stubs — Relationships view out of MVP) |
-| Project › Relationships › New... | New... |  | stub | menu_actions['relationships_new'] |
-| Project › Relationships › Edit... | Edit... |  | stub | menu_actions['relationships_edit'] |
-| Project › Relationships › Delete... | Delete... |  | stub | menu_actions['relationships_delete'] |
+| Project › Relationships | Relationships |  | implemented | menu_actions['relationships_*'] (TSK20 ; the "Relationships" view remains TSK27) |
+| Project › Relationships › New... | New... |  | implemented | menu_actions['relationships_new'] (FN034, ≥ 2 agents) |
+| Project › Relationships › Edit... | Edit... |  | implemented | menu_actions['relationships_edit'] (FN034, ≥ 1 relationship) |
+| Project › Relationships › Delete... | Delete... |  | implemented | menu_actions['relationships_delete'] (FN034, confirmation) |
 | About | About |  | not-started | — |
 | About › Change Log | Change Log |  | partial | menu_actions['change_log'] |
 | About › About Hyperscript | About Hyperscript |  | partial | menu_actions['about'] |
@@ -303,5 +303,5 @@
 | SU008 | Manage agent-block Participations | FN030, FN031 | implemented |
 | SU009 | Manage the agents view — re-designed session 04 (anchor dots + agent cards, TSK19b) | FN031, FN032 | implemented |
 | SU010 | Preview the export — initialized, to be finalized after the design phase | FN033 | not-started |
-| SU011 | Manage a Relationship Between Agents | FN034, FN037 | not-started |
+| SU011 | Manage a Relationship Between Agents | FN034, FN037 | implemented |
 | SU012 | Manage the "Relationships" view — mockup adopted session 06 (matrix + side panel, `04_interface` §6) | FN032, FN036 | not-started |

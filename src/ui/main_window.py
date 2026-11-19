@@ -46,6 +46,7 @@ from ui.dialogs.change_log_dialog import ChangeLogDialog
 from ui.dialogs import (
     BlockDialog, TransitionDialog, JourneyDialog, JourneySelectionDialog,
     AgentDialog, AgentSelectionDialog, AgentAssociationDialog,
+    RelationshipDialog, RelationshipSelectionDialog,
 )
 from core.services.journey_service import JourneyService
 from core.services.participation_service import ParticipationService
@@ -70,6 +71,9 @@ from usecases.agent_management import (
 )
 from usecases.participation_management import (
     AssociateParticipationUseCase, DissociateParticipationUseCase,
+)
+from usecases.relationship_management import (
+    CreateRelationshipUseCase, UpdateRelationshipUseCase, DeleteRelationshipUseCase,
 )
 from config.config_loader import get as _get_config
 from config.user_state_loader import get as _get_user_state, set as _set_user_state
@@ -124,6 +128,10 @@ class MainWindow(QMainWindow):
         self.delete_agent_usecase = DeleteAgentUseCase(self.project_service)
         self.associate_participation_usecase = AssociateParticipationUseCase(self.project_service)
         self.dissociate_participation_usecase = DissociateParticipationUseCase(self.project_service)
+        # Relationship use cases (TSK20)
+        self.create_relationship_usecase = CreateRelationshipUseCase(self.project_service)
+        self.update_relationship_usecase = UpdateRelationshipUseCase(self.project_service)
+        self.delete_relationship_usecase = DeleteRelationshipUseCase(self.project_service)
 
         # Window dimensions (FN028: fully functional from 1280x720)
         self.setWindowTitle(_get_config("app_window_title", "Hyperscript"))
@@ -263,9 +271,9 @@ class MainWindow(QMainWindow):
         self.menu_actions['journeys_set_default'] = journeys_menu.addAction("Set as Default...", self._set_default_journey)
         self.menu_actions['journeys_delete'] = journeys_menu.addAction("Delete...", self._delete_journey)
         relationships_menu = project_menu.addMenu("Relationships")
-        self.menu_actions['relationships_new'] = relationships_menu.addAction("New...", lambda: None)
-        self.menu_actions['relationships_edit'] = relationships_menu.addAction("Edit...", lambda: None)
-        self.menu_actions['relationships_delete'] = relationships_menu.addAction("Delete...", lambda: None)
+        self.menu_actions['relationships_new'] = relationships_menu.addAction("New...", lambda: self._new_relationship())
+        self.menu_actions['relationships_edit'] = relationships_menu.addAction("Edit...", lambda: self._edit_relationship())
+        self.menu_actions['relationships_delete'] = relationships_menu.addAction("Delete...", lambda: self._delete_relationship())
 
         # About (always enabled)
         about_menu = self.menu_bar.addMenu("About")
@@ -295,6 +303,16 @@ class MainWindow(QMainWindow):
         'agents_edit', 'agents_copy', 'agents_delete', 'agents_associate',
     }
 
+    # Entries that additionally require at least two agents (a pair) - TSK20
+    TWO_AGENTS_DEPENDENT = {
+        'relationships_new',
+    }
+
+    # Entries that additionally require at least one relationship - TSK20
+    RELATIONSHIP_DEPENDENT = {
+        'relationships_edit', 'relationships_delete',
+    }
+
     def _update_menu_state(self):
         """Enable or disable menu entries based on the project state (RG006/RG007/RG008)."""
         has_project = self.project_opened
@@ -304,6 +322,12 @@ class MainWindow(QMainWindow):
             elif key in self.AGENT_DEPENDENT:
                 has_agents = has_project and bool(self.project_service.current_project.agent)
                 action.setEnabled(has_agents)
+            elif key in self.TWO_AGENTS_DEPENDENT:
+                has_pair = has_project and len(self.project_service.current_project.agent) >= 2
+                action.setEnabled(has_pair)
+            elif key in self.RELATIONSHIP_DEPENDENT:
+                nm = self._current_narrative_map() if has_project else None
+                action.setEnabled(has_project and nm is not None and bool(nm.relationship))
             elif key in self.PROJECT_DEPENDENT:
                 action.setEnabled(has_project)
             else:
@@ -953,6 +977,74 @@ class MainWindow(QMainWindow):
     def _refresh_participation_badges(self):
         if self.journeys_workspace is not None:
             self.journeys_workspace.refresh_all_participation_badges()
+
+    # ---------------------------------------------------------------------
+    # Relationships actions (FN034, SU011) - TSK20
+    # ---------------------------------------------------------------------
+    def _select_relationship(self, title: str = "Select Relationship"):
+        """Relationship selection dialog (FN034); None when cancelled or no relationship."""
+        project = self.project_service.current_project
+        nm = self._current_narrative_map()
+        if project is None or nm is None or not nm.relationship:
+            return None
+        dialog = RelationshipSelectionDialog(nm.relationship, project, nm, parent=self, title=title)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return None
+        return dialog.get_selected_relationship()
+
+    def _new_relationship(self):
+        """FN034: create a relationship (creation dialog)."""
+        project = self.project_service.current_project
+        nm = self._current_narrative_map()
+        dialog = RelationshipDialog(project.agent, nm, parent=self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        values = dialog.get_values()
+        rel = self.create_relationship_usecase.execute(
+            values['agent_1_id'], values['agent_2_id'], values['typ'], values['block_id'],
+            note=values['note'], content=values['content'])
+        if rel is None:
+            self.info_bar.show_message(
+                "Relationship refused: a relationship already exists for this (block, agent pair) (RG035)")
+            return
+        self.info_bar.show_message(f"Relationship '{rel.typ}' created")
+        self._update_menu_state()
+
+    def _edit_relationship(self):
+        """FN034: edit a relationship (selection dialog + edition dialog)."""
+        rel = self._select_relationship("Edit Relationship")
+        if rel is None:
+            return
+        project = self.project_service.current_project
+        nm = self._current_narrative_map()
+        dialog = RelationshipDialog(project.agent, nm, entity=rel, parent=self)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        values = dialog.get_values()
+        result = self.update_relationship_usecase.execute(
+            rel, typ=values['typ'], block_id=values['block_id'],
+            note=values['note'], content=values['content'])
+        if result is None:
+            self.info_bar.show_message(
+                "Relationship refused: the new anchor block already holds a relationship for this pair (RG035)")
+            return
+        self.info_bar.show_message("Relationship updated")
+        self._update_menu_state()
+
+    def _delete_relationship(self):
+        """FN034/SU011: delete a relationship, with prior confirmation."""
+        rel = self._select_relationship("Delete Relationship")
+        if rel is None:
+            return
+        reply = QMessageBox.question(
+            self, "Confirmation",
+            f"Delete the relationship '{rel.typ}' (anchor block #{rel.block_id})?",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        if self.delete_relationship_usecase.execute(rel.id):
+            self.info_bar.show_message("Relationship deleted")
+        self._update_menu_state()
 
     # ---------------------------------------------------------------------
     # Edition dialogs (FN015/FN021/FN024/FN038) - TSK12

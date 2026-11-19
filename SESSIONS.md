@@ -9,6 +9,29 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 
 --
 
+## Séance n°08 (2026-11-19)
+
+### Travaux
+- **TSK20 implémentée (relations agent-agent : use cases CRUD + dialogue + menu `Project › Relationships`)** : nouveau service Qt-free `core/services/relationship_service.py` (types depuis config FN037, paire canonique TSK25, `check_pair` deux agents distincts, `find_relationship` unicité **(bloc, paire)** RG035 durcie, `ordered_anchor_block_ids` = rang minimal multi-parcours ex æquo id — règle RG069 partagée avec la vue) ; use cases `usecases/relationship_management/` (create — None si doublon (bloc, paire), ValueError si entrée invalide ; update — type/bloc d'ancrage/note/contenu, re-vérifie l'unicité si l'ancrage change ; delete) ; dialogues `relationship_dialog.py` (combos agents désactivés à l'édition, combo type config, combo bloc d'ancrage ordonné RG069, note/contenu) et `relationship_selection_dialog.py` (liste « A <-> B @ bloc (type) ») ; câblage `main_window.py` (entrées câblées, `TWO_AGENTS_DEPENDENT` = New... ≥ 2 agents, `RELATIONSHIP_DEPENDENT` = Edit.../Delete... ≥ 1 relation, confirmation + info bar). 12 tests dans `tests/test_relations/` (service + use cases). py_compile OK, **88 tests passed + 2 skipped** (offscreen Qt sans libGL — à valider sur poste de dev).
+- **RG035 complétée séance 08** : deux agents **distincts** (pas d'auto-relation) — doc FR/EN (RG035, SU011, FN034) + garde `check_pair` + test. FN034 complété : liste d'ancrage du dialogue ordonnée par rang minimal (RG069).
+- Hors périmètre acté : la vue « Relationships » et son menu contextuel restent **TSK27**.
+- Cascades RG023 (bloc) / RG033 (agent) déjà en place — vérifiées, aucun changement.
+- Suivi : fiche `tasks/TSK20_relationships.md` créée ; kanban TSK20 passée en Doing → **Review** (TSK26 également replacée en Review — déplacement de la séance 07 non appliqué au commit précédent, corrigé) ; matrices `implementation-FR/EN.md` : RG035/FN034/FN037/SU011 → implemented, entrées menu `relationships_*` → implemented.
+
+### Choix actés
+- Pas d'auto-relation (agent_1 ≠ agent_2), doc + code.
+- Ordre de la liste des blocs d'ancrage du dialogue = rang minimal multi-parcours (RG069), identique à la vue.
+- Menu contextuel « Relationships » uniquement en TSK27.
+
+### Problèmes rencontrés
+- Sandbox sans libGL : tests offscreen Qt non exécutés (2 skipped), comme précédemment.
+- Anomalie corrigée : le déplacement kanban TSK26 (To do → Review) de la séance 07 n'avait pas été appliqué dans le commit `3a8c1d2` (bloc non appliqué silencieusement) — corrigé séance 08.
+
+### État en fin de séance
+- Commit + push sur `dev` (feu vert TSC explicite, sans PR). Prochaine tâche : TSK27 (vue « Relationships »).
+
+---
+
 ## Séance n°07 (2026-11-19)
 
 ### Travaux

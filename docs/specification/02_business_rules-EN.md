@@ -159,7 +159,7 @@
 - **Classification** : 2. Narrative map structure
 
 ## RG035
-- **Description** : A relationship is binary (exactly two agents — unordered pair, TSK25), non-directed and typed, and anchored to exactly one block; its type is read from the configuration file value list; there can be only one relationship per (block, agent pair): the link between a block and a relationship is unique (TSC decision, session 06, for the MVP); the Block and Relationship entities remain distinct in the data model, so that a post-MVP evolution can allow several relationships — hence several types — per pair and per block.
+- **Description** : A relationship is binary (exactly two **distinct** agents — no self-relationship — unordered pair, TSK25), non-directed and typed, and anchored to exactly one block; its type is read from the configuration file value list; there can be only one relationship per (block, agent pair): the link between a block and a relationship is unique (TSC decision, session 06, for the MVP); the Block and Relationship entities remain distinct in the data model, so that a post-MVP evolution can allow several relationships — hence several types — per pair and per block.
 - **Classification** : 2. Narrative map structure
 
 ## 3. Journey logic and membership

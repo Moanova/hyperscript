@@ -7,6 +7,8 @@ from ui.dialogs.journey_selection_dialog import JourneySelectionDialog
 from ui.dialogs.agent_dialog import AgentDialog
 from ui.dialogs.agent_selection_dialog import AgentSelectionDialog
 from ui.dialogs.agent_association_dialog import AgentAssociationDialog
+from ui.dialogs.relationship_dialog import RelationshipDialog
+from ui.dialogs.relationship_selection_dialog import RelationshipSelectionDialog
 
 __all__ = [
     "AboutDialog",
@@ -18,4 +20,6 @@ __all__ = [
     "AgentDialog",
     "AgentSelectionDialog",
     "AgentAssociationDialog",
+    "RelationshipDialog",
+    "RelationshipSelectionDialog",
 ]

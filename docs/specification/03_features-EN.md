@@ -392,7 +392,9 @@
     - The relationship is binary: it links exactly two agents (an evolution to more than two agents is post-MVP).
     - It is non-directed (unordered agent pair) and typed; the type is chosen from the value list of the configuration file (FN037).
     - It is anchored to a block: "at this point of the story, a relationship of that type between A and B holds".
+    - The two agents are distinct (no self-relationship, RG035).
     - There can be only one relationship per (block, agent pair) (RG035).
+    - In the creation/edit dialog, the anchor block list is ordered by minimum rank across all journeys (ties by identifier) — same rule as the "Relationships" view side panel (RG069); the agent pair is not editable on update (type, anchor block, note, content are).
     - The history of an agent pair is the set of its anchored relationships, ordered by the position of their block in the journey; the current state of the pair at a block is derived (never stored).
     - Journey membership is derived from the anchor block.
     - The note is shown in a tooltip on hover.

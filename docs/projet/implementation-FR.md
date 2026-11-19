@@ -61,7 +61,7 @@
 | RG032 | Il ne peut exister qu'une seule participation par couple (bloc, agent). | implemented | core/services/participation_service.py (find_participation) ; usecases/participation_management/associate_participation_usecase.py | tests/test_agents/test_participation_usecases.py | association idempotente |
 | RG033 | La suppression d'un agent entraîne la suppression en cascade de toutes ses… | implemented | core/services/participation_service.py (cascade_delete_agent) ; usecases/agent_management/delete_agent_usecase.py | tests/test_agents/test_agent_usecases.py | comptages retournés pour le message d'information UI |
 | RG034 | La suppression d'un parcours réaffecte au parcours par défaut les rattachements… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | réaffectation au parcours par défaut (aucun bloc orphelin) |
-| RG035 | Une relation est binaire (exactement deux agents — paire non ordonnée), non dirigée et typée (TSK25), et ancrée… | not-started | — | — | RG035 durcie séance 06 : unicité (bloc, paire), lien bloc–relation unique pour le MVP (TSK20) ; entités Bloc/Relation distinctes conservées pour post-MVP |
+| RG035 | Une relation est binaire (exactement deux agents distincts — paire non ordonnée), non dirigée et typée (TSK25), et ancrée… | implemented | core/services/relationship_service.py (find_relationship, check_pair, validate_type) ; usecases/relationship_management/ (create/update/delete) ; ui/dialogs/relationship_dialog.py | tests/test_relations/ | RG035 durcie séance 06 : unicité (bloc, paire) + deux agents distincts (pas d'auto-relation) — TSK20 (Review 19-11-2026) ; entités Bloc/Relation distinctes conservées pour post-MVP |
 
 ### 3. Logique des parcours et appartenance
 
@@ -198,7 +198,7 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN034 | Gérer une relation entre agents | not-started | Project › Relationships | — | — | — | — |
+| FN034 | Gérer une relation entre agents | implemented | Project › Relationships (New.../Edit.../Delete... câblés, TSK20) | usecases/relationship_management/ ; ui/dialogs/relationship_dialog.py + relationship_selection_dialog.py | core/models/data_model.py (Relationship, paire canonique TSK25) | tests/test_relations/test_relationship_usecases.py | unicité (bloc, paire) RG035 ; liste d'ancrage du dialogue ordonnée par rang minimal multi-parcours (RG069) |
 
 ### Conditions
 
@@ -216,7 +216,7 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN037 | Liste des types de relations | not-started | — | — | — | — | — |
+| FN037 | Liste des types de relations | implemented | — | core/services/relationship_service.py (relationship_types, validate_type) | config.json `relationship_types` | tests/test_relations/test_relationship_service.py (test_fn037_*) | enrichissement par l'auteur hors MVP |
 
 ### Hors périmètre MVP / à définir en phase de conception
 
@@ -281,10 +281,10 @@
 | Projet › Parcours › Copier | Copier |  | implemented | menu_actions['journeys_copy'] (FN025) |
 | Projet › Parcours › Définir par défaut... | Définir par défaut... |  | implemented | menu_actions['journeys_set_default'] (FN038) |
 | Projet › Parcours › Supprimer... | Supprimer... |  | implemented | menu_actions['journeys_delete'] (FN027) |
-| Projet › Relations | Relations |  | stub | menu_actions['relationships_*'] (stubs — vue Relations hors MVP) |
-| Projet › Relations › Nouvelle... | Nouvelle... |  | stub | menu_actions['relationships_new'] |
-| Projet › Relations › Éditer... | Éditer... |  | stub | menu_actions['relationships_edit'] |
-| Projet › Relations › Supprimer... | Supprimer... |  | stub | menu_actions['relationships_delete'] |
+| Projet › Relations | Relations |  | implemented | menu_actions['relationships_*'] (TSK20 ; la vue « Relationships » reste TSK27) |
+| Projet › Relations › Nouvelle... | Nouvelle... |  | implemented | menu_actions['relationships_new'] (FN034, ≥ 2 agents) |
+| Projet › Relations › Éditer... | Éditer... |  | implemented | menu_actions['relationships_edit'] (FN034, ≥ 1 relation) |
+| Projet › Relations › Supprimer... | Supprimer... |  | implemented | menu_actions['relationships_delete'] (FN034, confirmation) |
 | À propos | À propos |  | not-started | — |
 | À propos › Historique des changements | Historique des changements |  | partial | menu_actions['change_log'] |
 | À propos › À propos d'Hyperscript | À propos d'Hyperscript |  | partial | menu_actions['about'] |
@@ -303,5 +303,5 @@
 | SU008 | Gérer les participations agent-bloc | FN030, FN031 | implemented |
 | SU009 | Gérer la vue agents — re-conçue séance 04 (points d'ancrage + cartes agent, TSK19b) | FN031, FN032 | implemented |
 | SU010 | Visualiser l'aperçu d'export — initialisé, à finaliser après la phase de conception | FN033 | not-started |
-| SU011 | Gérer une relation entre agents | FN034, FN037 | not-started |
+| SU011 | Gérer une relation entre agents | FN034, FN037 | implemented |
 | SU012 | Gérer la vue « Relationships » — maquette actée séance 06 (matrice + panneau latéral, `04_interface` §6) | FN032, FN036 | not-started |
