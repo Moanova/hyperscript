@@ -48,9 +48,9 @@
 
 ### 3. Barre d'onglets (centre)
 - Hauteur 40 px, style sombre. Onglets nommés en anglais, sans numérotation (application unilingue anglais, comme les entrées de menu) :
-  - **Journeys** — actif par défaut (vue principale, graphe des blocs et transitions) ;
   - **Agents** — espace dédié aux agents, points d'ancrage + cartes (voir section 5, re-conçu séance 04) ;
-  - **Relationships** — vue graphe des relations agent-agent (voir section 6) ;
+  - **Journeys** — vue principale, graphe des blocs et transitions, **actif par défaut** (ordre d'affichage inversé séance 09, TSK28 : Agents avant Journeys ; la vue active par défaut reste « Journeys ») ;
+  - **Relationships** — vue matrice des relations agent-agent (voir section 6) ;
   - **Export** — aperçu de lecture in-app (voir section 7).
 - La barre n'est visible que si un projet est ouvert. Les vues sont activées par la barre d'onglets ; les entrées « Project › View » du menu sont des stubs.
 - **Périmètre MVP** : au minimum les onglets « Journeys » et « Export » ; « Agents » et « Relationships » selon le périmètre des vues à acter. *À valider.*

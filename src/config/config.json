@@ -43,8 +43,9 @@
   "info_bar_default_message": "",
   "journey_filter_opacity": 0.25,
   "journey_list_all_label": "All journeys",
-  "relationship_types": ["friend", "ally", "rival", "enemy", "romantic", "family"],
+  "relationship_types": ["Undefined", "friend", "ally", "rival", "enemy", "romantic", "family"],
   "relationship_type_colors": {
+    "Undefined": "#9E9E9E",
     "friend": "#A7C957",
     "ally": "#E5C07B",
     "rival": "#D19A66",

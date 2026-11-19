@@ -48,9 +48,9 @@
 
 ### 3. Tab bar (center)
 - Height 40 px, dark theme. Named tabs, without numbering:
-  - **Journeys** — default active (main view, graph of blocks and transitions);
   - **Agents** — dedicated agents workspace, anchor dots + cards (see section 5, re-designed session 04);
-  - **Relationships** — agent-relationship graph view (see section 6);
+  - **Journeys** — main view, graph of blocks and transitions, **default active** (display order swapped session 09, TSK28: Agents before Journeys; the default active tab remains "Journeys");
+  - **Relationships** — agent-relationship matrix view (see section 6);
   - **Export** — in-app reading preview (see section 7).
 - The bar is visible only when a project is open. Views are activated via the tab bar; the "Project › View" menu entries are stubs.
 - **MVP scope**: at minimum the "Journeys" and "Export" tabs; "Agents" and "Relationships" according to the view scope to be decided. *To be validated.*

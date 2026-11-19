@@ -89,10 +89,10 @@ menu:
       items:
         - name: View
           items:
-            - name: Journeys
-              note: "Stub - the view is activated via the tab bar; main view"
             - name: Agents
-              note: "Stub - view activated via the tab bar; MVP view scope not decided beyond Journeys + Export"
+              note: "Stub - view activated via the tab bar; display order swapped session 09 (TSK28: Agents before Journeys in the tab bar)"
+            - name: Journeys
+              note: "Stub - the view is activated via the tab bar; main view, default active (unchanged, TSK28)"
             - name: Relationships
               note: "Stub - view activated via the tab bar; mockup to be defined during the design phase (FN036, SU012)"
             - name: Export

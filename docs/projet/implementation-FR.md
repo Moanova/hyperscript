@@ -254,8 +254,8 @@
 | Affichage › Zoom › Réinitialiser | Réinitialiser | Ctrl+0 | greyed-MVP | — |
 | Projet | Projet |  | partial | — |
 | Projet › Vue | Vue |  | stub | menu_actions['view_*'] (stubs — vues activées par la barre d'onglets) |
-| Projet › Vue › Parcours | Parcours |  | stub | menu_actions['view_journeys'] |
-| Projet › Vue › Agents | Agents |  | stub | menu_actions['view_agents'] |
+| Projet › Vue › Agents | Agents |  | stub | menu_actions['view_agents'] (ordre inversé séance 09, TSK28 : Agents avant Parcours) |
+| Projet › Vue › Parcours | Parcours |  | stub | menu_actions['view_journeys'] (vue active par défaut inchangée, TSK28) |
 | Projet › Vue › Relations | Relations |  | stub | menu_actions['view_relationships'] |
 | Projet › Vue › Export | Export |  | stub | menu_actions['view_export'] |
 | Projet › Agents | Agents |  | implemented | menu_actions['agents_*'] (TSK18 ; AGENT_DEPENDENT pour edit/copy/delete/associate) |

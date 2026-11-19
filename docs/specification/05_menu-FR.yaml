@@ -89,10 +89,10 @@ menu:
       items:
         - name: Vue
           items:
-            - name: Parcours
-              note: "Stub - la vue est activée via la barre d'onglets ; vue principale"
             - name: Agents
-              note: "Stub - vue activée via la barre d'onglets ; périmètre MVP des vues non acté au-delà de Parcours + Export"
+              note: "Stub - vue activée via la barre d'onglets ; ordre d'affichage inversé séance 09 (TSK28 : Agents avant Parcours dans la barre d'onglets)"
+            - name: Parcours
+              note: "Stub - la vue est activée via la barre d'onglets ; vue principale, active par défaut (inchangé, TSK28)"
             - name: Relations
               note: "Stub - vue activée via la barre d'onglets ; maquette à définir en phase de conception (FN036, SU012)"
             - name: Export

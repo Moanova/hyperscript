@@ -38,7 +38,9 @@ def make_rel(narrative_map, block_id, agent_1_id, agent_2_id, typ="friend"):
 
 def test_fn037_types_read_from_config():
     types = RelationshipService.relationship_types()
-    assert "friend" in types and "enemy" in types  # config.json relationship_types
+    assert types[0] == "Undefined"  # TSK28: untyped default type first (config.json)
+    assert "friend" in types and "enemy" in types
+    assert RelationshipService.validate_type("Undefined") is True
     assert RelationshipService.validate_type("friend") is True
     assert RelationshipService.validate_type("unknown") is False
 

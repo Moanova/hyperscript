@@ -26,6 +26,7 @@
 - 19-11-2026 (séance 08, validation TSC) : TSK25, TSK26, TSK20 **validées TSC et passées en Done** ; TSK27 (vue « Relationships ») passée en Doing (feu vert TSC).
 - 19-11-2026 (séance 09) : TSK27 implémentée et passée en Review (py_compile OK, 93 tests passed + 3 skipped) — To do et Doing vides.
 - 19-11-2026 (séance 09, retours TSC) : 2 correctifs TSK27 signalés en test manuel — attribut `relationships_page` manquant dans `__init__` (AttributeError à l'ouverture/création d'un projet) et import `QListWidgetItem` manquant dans `relationships_workspace.py` (NameError dans `populate`) ; corrigés + test de fumée offscreen `test_main_window_smoke_offscreen.py` ; pyflakes clean sur les fichiers TSK20/TSK27 ; 93 tests passed + 4 skipped.
+- 19-11-2026 (séance 09, évolutions TSC) : **TSK28** créée et passée en Doing (→ #TSK27) — (a) ordre des onglets « Agents » avant « Journeys » (vue active par défaut inchangée : Journeys) ; (b) type « Undefined » en tête de `relationship_types` + couleur `relationship_type_colors` (config.json).
 - Puis chantier vue « Journeys » (vue Parcours) : TSK08 (services/use cases de la carte) → TSK09 (use cases parcours) + TSK10 (nœuds graphiques) → TSK11 (workspace + intégration) → TSK12 (dialogues + menus Project) → TSK13 (tests offscreen + traçabilité) ; puis TSK14 (ports conditionnels Début/Fin, acté 11-11-2026) implémenté et passé en Review 11-11-2026 ; TSK15 (correctif z-order : grille sous les transitions, 11-11-2026) implémenté, passé en Review puis **Done** (validé TSC) 11-11-2026 ; TSK07–TSK14 et TSK16 validées TSC et passées en Done 17-11-2026.
 
 
@@ -38,6 +39,8 @@
 
 
 ### Doing
+
+- [ ] TSK28 — Évolutions mineures (demande TSC séance 09) : (a) ordre des onglets « Agents » avant « Journeys » dans la barre d'onglets (`TabBar([...])` dans `main_window.py`, `04_interface` §3 FR/EN, `05_menu` View FR/EN ; **vue active par défaut inchangée : Journeys**) ; (b) type « Undefined » ajouté en tête de `relationship_types` + couleur associée dans `relationship_type_colors` (`config.json`), test FN037 mis à jour → #TSK27 — fiche `tasks/TSK28_minor_evolutions.md` — passée en Doing 19-11-2026 (TSK27 en Review) — implémentée et passée en Review 19-11-2026 (py_compile OK, 93 tests passed + 4 skipped)
 
 ### Review
 

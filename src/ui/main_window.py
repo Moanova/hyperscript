@@ -153,7 +153,7 @@ class MainWindow(QMainWindow):
         self._create_menu_bar()
 
         # Tab bar, visible only when a project is open (04_interface section 3)
-        self.tab_bar = TabBar(["Journeys", "Agents", "Relationships", "Export"])
+        self.tab_bar = TabBar(["Agents", "Journeys", "Relationships", "Export"])  # TSK28: Agents first (Journeys stays the default active tab)
         self.tab_bar.hide()
         main_layout.addWidget(self.tab_bar)
         self.tab_bar.currentChanged.connect(self._on_tab_changed)

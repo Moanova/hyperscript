@@ -254,8 +254,8 @@
 | Display › Zoom › Reset | Reset | Ctrl+0 | greyed-MVP | — |
 | Project | Project |  | partial | — |
 | Project › View | View |  | stub | menu_actions['view_*'] (stubs — views activated via the tab bar) |
-| Project › View › Journeys | Journeys |  | stub | menu_actions['view_journeys'] |
-| Project › View › Agents | Agents |  | stub | menu_actions['view_agents'] |
+| Project › View › Agents | Agents |  | stub | menu_actions['view_agents'] (order swapped session 09, TSK28: Agents before Journeys) |
+| Project › View › Journeys | Journeys |  | stub | menu_actions['view_journeys'] (default active view unchanged, TSK28) |
 | Project › View › Relationships | Relationships |  | stub | menu_actions['view_relationships'] |
 | Project › View › Export | Export |  | stub | menu_actions['view_export'] |
 | Project › Agents | Agents |  | implemented | menu_actions['agents_*'] (TSK18; AGENT_DEPENDENT for edit/copy/delete/associate) |
