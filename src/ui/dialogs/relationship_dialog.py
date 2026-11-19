@@ -26,7 +26,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 
-from core.models.data_model import Agent, Block, NarrativeMap, Relationship
+from core.models.data_model import Agent, NarrativeMap, Relationship
 from core.services.relationship_service import RelationshipService
 from config.config_loader import get as _get_config
 from ui.utils import theme

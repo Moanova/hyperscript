@@ -25,6 +25,7 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 - 2 tests écrits avec de mauvaises attentes initiales (rang min multi-parcours, filtre agent sans participation) — corrigés, le code était bon.
 - Sandbox sans libGL : tests offscreen skippés (à valider sur poste de dev).
 - **Anomalie TSK27 signalée par TSC (test manuel)** : `AttributeError: self.relationships_page` à l'ouverture et à la création d'un projet — la page « Relationships » n'existait que dans `view_pages` (variable locale dans `__init__`). Corrigée (attribut de page créé dans `__init__`) + test de fumée offscreen `tests/test_relations/test_main_window_smoke_offscreen.py` ajouté.
+- **Anomalie TSK27 n°2 (test manuel)** : `NameError: QListWidgetItem` dans `relationships_workspace._rebuild_block_list` au chargement d'un projet (nom non importé). Corrigée (import + nettoyage pyflakes) ; `pyflakes src/ tests/` ne remonte plus aucun nom non défini.
 
 ### État en fin de séance
 - Commit + push sur `dev` (feu vert TSC explicite, sans PR). Kanban : toutes les tâches en Review/Done — attente validation TSC de TSK27.

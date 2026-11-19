@@ -18,7 +18,6 @@ from core.services.journey_sequence_service import JourneySequenceService
 from core.services.journey_filter_service import JourneyFilterService
 from core.services.agent_filter_service import AgentFilterService
 from core.services.relationship_service import RelationshipService
-from core.models.data_model import Relationship
 from usecases.project_management import CreateProjectUseCase
 from usecases.agent_management import CreateAgentUseCase
 from usecases.view_management import CreateBlockUseCase, CreateTransitionUseCase
@@ -62,7 +61,7 @@ def test_rg069_pair_state_at_block():
     a = CreateAgentUseCase(service).execute(lb="A")
     b = CreateAgentUseCase(service).execute(lb="B")
     r1 = CreateRelationshipUseCase(service).execute(a.id, b.id, "friend", s1.id)
-    r2 = CreateRelationshipUseCase(service).execute(a.id, b.id, "enemy", s2.id)
+    CreateRelationshipUseCase(service).execute(a.id, b.id, "enemy", s2.id)
     # state at start (rank 0): no anchor <= 0 -> None
     assert RelationshipService.pair_state_at_block(nm, a.id, b.id, start.id) is None
     # state at s1 (rank 1): friend

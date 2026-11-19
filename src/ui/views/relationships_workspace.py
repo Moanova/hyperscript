@@ -36,10 +36,10 @@ import logging
 from typing import List, Optional
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QHBoxLayout, QSplitter, QTableWidget, QTableWidgetItem,
-    QAbstractItemView, QComboBox, QListWidget, QLabel, QMenu,
+    QWidget, QVBoxLayout, QSplitter, QTableWidget, QTableWidgetItem,
+    QAbstractItemView, QComboBox, QListWidget, QListWidgetItem, QLabel,
 )
-from PySide6.QtCore import Qt, Signal, QPoint
+from PySide6.QtCore import Qt, Signal
 from PySide6.QtGui import QColor, QBrush
 
 from core.models.data_model import NarrativeMap, Project
