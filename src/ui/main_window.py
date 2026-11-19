@@ -624,6 +624,7 @@ class MainWindow(QMainWindow):
         relationships_workspace.journey_filter_requested.connect(self._set_journey_filter_active)
         relationships_workspace.agent_filter_requested.connect(self._set_agent_filter)
         relationships_workspace.context_menu_requested.connect(self._show_relationships_context_menu)
+        relationships_workspace.cell_clicked.connect(self._on_relationship_cell_clicked)  # TSK29
         relationships_workspace.workspace_modified.connect(self._on_workspace_modified)
         self.relationships_page.layout().addWidget(relationships_workspace)
         self.relationships_workspace = relationships_workspace
@@ -1236,8 +1237,8 @@ class MainWindow(QMainWindow):
         # not involving the filtered agent
         if (self.relationships_workspace is not None and row >= 0 and col >= 0
                 and self.agent_filter_agent_id is not None):
-            a_row = self.relationships_workspace.agent_id_at(row)
-            a_col = self.relationships_workspace.agent_id_at(col)
+            a_row = self.relationships_workspace.agent_id_at_row(row)
+            a_col = self.relationships_workspace.agent_id_at_col(col)
             if self.agent_filter_agent_id not in (a_row, a_col):
                 new_action.setEnabled(False)
         menu.addSeparator()
@@ -1246,6 +1247,50 @@ class MainWindow(QMainWindow):
         if action is view_action:
             self._view_relationship_anchor_in_journeys(row, col)
 
+    def _on_relationship_cell_clicked(self, row, col):
+        """TSK29/RG070: left click on a matrix cell - open the creation dialog
+        (pair + current anchor block pre-filled) when no relationship exists for
+        the pair at the selected block, or the edit dialog of the existing one."""
+        ws = self.relationships_workspace
+        nm = self._current_narrative_map()
+        project = self.project_service.current_project
+        if ws is None or nm is None or project is None:
+            return
+        a_row, a_col = ws.agent_id_at_row(row), ws.agent_id_at_col(col)
+        if a_row is None or a_col is None:
+            return
+        anchor = ws.get_anchor_block_id()
+        rel = RelationshipService.pair_state_at_block(nm, a_row, a_col, anchor) if anchor else None
+        if rel is not None:
+            dialog = RelationshipDialog(project.agent, nm, entity=rel, parent=self)
+            if dialog.exec() != QDialog.DialogCode.Accepted:
+                return
+            values = dialog.get_values()
+            result = self.update_relationship_usecase.execute(
+                rel, typ=values['typ'], block_id=values['block_id'],
+                note=values['note'], content=values['content'])
+            if result is None:
+                self.info_bar.show_message(
+                    "Relationship refused: the new anchor block already holds a relationship for this pair (RG035)")
+                return
+            self.info_bar.show_message("Relationship updated")
+        else:
+            dialog = RelationshipDialog(project.agent, nm, parent=self,
+                                        default_agent_1_id=a_row, default_agent_2_id=a_col,
+                                        default_block_id=anchor)
+            if dialog.exec() != QDialog.DialogCode.Accepted:
+                return
+            values = dialog.get_values()
+            rel = self.create_relationship_usecase.execute(
+                values['agent_1_id'], values['agent_2_id'], values['typ'], values['block_id'],
+                note=values['note'], content=values['content'])
+            if rel is None:
+                self.info_bar.show_message(
+                    "Relationship refused: a relationship already exists for this (block, agent pair) (RG035)")
+                return
+            self.info_bar.show_message(f"Relationship '{rel.typ}' created")
+        self._update_menu_state()
+
     def _view_relationship_anchor_in_journeys(self, row, col):
         """FN032/RG056 (TSK27): switch to "Journeys" and focus the anchor block
         of the cell's relationship state (or the current anchor block)."""
@@ -1253,7 +1298,7 @@ class MainWindow(QMainWindow):
         nm = self._current_narrative_map()
         if ws is None or nm is None:
             return
-        a_row, a_col = ws.agent_id_at(row), ws.agent_id_at(col)
+        a_row, a_col = ws.agent_id_at_row(row), ws.agent_id_at_col(col)
         block_id = ws.get_anchor_block_id()
         if a_row is not None and a_col is not None and block_id is not None:
             rel = RelationshipService.pair_state_at_block(nm, a_row, a_col, block_id)

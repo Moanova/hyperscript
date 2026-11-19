@@ -31,7 +31,7 @@ from PySide6.QtWidgets import (
 from PySide6.QtCore import Qt, QPointF, Signal, QObject, QEvent
 from PySide6.QtGui import QColor, QPen, QBrush, QPainter, QPainterPath
 
-from core.models.view_model import ConnectionLayout, WorkspaceLayout
+from core.models.view_model import WorkspaceLayout
 from core.models.data_model import Block, Transition
 from core.services.layout_service import LayoutService
 from core.services.journey_filter_service import JourneyFilterService

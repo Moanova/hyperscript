@@ -39,11 +39,18 @@ class RelationshipDialog(QDialog):
     CONTENT_MIN_HEIGHT_PX = _get_config("dialog_content_min_height_px", 160)
 
     def __init__(self, agents: List[Agent], narrative_map: NarrativeMap,
-                 entity: Optional[Relationship] = None, parent=None):
+                 entity: Optional[Relationship] = None, parent=None,
+                 default_agent_1_id: Optional[int] = None,
+                 default_agent_2_id: Optional[int] = None,
+                 default_block_id: Optional[int] = None):
         super().__init__(parent)
         self.entity = entity
         self._agents = list(agents)
         self._narrative_map = narrative_map
+        # TSK29: pre-fill on creation from a matrix cell (pair + anchor block)
+        self._default_agent_1_id = default_agent_1_id
+        self._default_agent_2_id = default_agent_2_id
+        self._default_block_id = default_block_id
         self._setup_ui()
         self._setup_content()
 
@@ -72,7 +79,11 @@ class RelationshipDialog(QDialog):
             self.agent_1_combo.setEnabled(False)
             self.agent_2_combo.setEnabled(False)
         else:
-            if len(self._agents) > 1:
+            if self._default_agent_1_id is not None:
+                self._set_combo_value(self.agent_1_combo, self._default_agent_1_id)
+            if self._default_agent_2_id is not None:
+                self._set_combo_value(self.agent_2_combo, self._default_agent_2_id)
+            elif len(self._agents) > 1:
                 self.agent_2_combo.setCurrentIndex(1)
         self.form.addRow("Agent 1:", self.agent_1_combo)
         self.form.addRow("Agent 2:", self.agent_2_combo)
@@ -95,6 +106,8 @@ class RelationshipDialog(QDialog):
             self.block_combo.addItem(f"{block.lb} ({block.typ})", block_id)
         if self.entity is not None:
             self._set_combo_value(self.block_combo, self.entity.block_id)
+        elif self._default_block_id is not None:
+            self._set_combo_value(self.block_combo, self._default_block_id)
         self.form.addRow("Anchor block:", self.block_combo)
 
         # Note field (compact area, summary notes)

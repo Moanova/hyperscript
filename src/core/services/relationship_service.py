@@ -20,7 +20,7 @@ for the MVP. No Qt dependency (RG058).
 from typing import List, Optional, Tuple
 
 from config.config_loader import get as _get_config
-from core.models.data_model import NarrativeMap, Relationship
+from core.models.data_model import Agent, NarrativeMap, Relationship
 
 
 class RelationshipService:
@@ -77,6 +77,17 @@ class RelationshipService:
         ranks = [jn.sequence_order for jn in narrative_map.journey_node
                  if jn.block_id == block_id]
         return min(ranks) if ranks else 0
+
+    @staticmethod
+    def resolve_axis_order(agents: List[Agent], saved_order: List[int]) -> List[int]:
+        """RG070 (revised session 09): resolve one matrix axis order (rows or
+        columns, independent) - the saved order first (unknown ids ignored),
+        then the missing agents by (label, id). Pure, Qt-free."""
+        by_id = {a.id: a for a in agents}
+        ordered = [i for i in saved_order if i in by_id]
+        ordered += sorted((a.id for a in agents if a.id not in ordered),
+                          key=lambda aid: (by_id[aid].lb, aid))
+        return ordered
 
     @staticmethod
     def ordered_anchor_block_ids(narrative_map: NarrativeMap) -> List[int]:

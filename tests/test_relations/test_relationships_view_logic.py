@@ -6,10 +6,11 @@
 # Design       : TSC
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Qt-free tests for the "Relationships" view logic (TSK27): RG069 derived
-pair state at a block (pair_state_at_block / block_min_rank), the RG069 anchor
-block ordering, the RG070 axis-order persistence in ProjectLayout, and the
-RG048/RG063/RG064 filter visibility of relationships."""
+"""Qt-free tests for the "Relationships" view logic (TSK27, TSK29): RG069
+derived pair state at a block (pair_state_at_block / block_min_rank), the
+RG069 anchor block ordering, the RG070 (revised session 09) independent
+row/column orders in ProjectLayout + legacy migration + resolve_axis_order,
+and the RG048/RG063/RG064 filter visibility of relationships."""
 
 from core.models.view_model import ProjectLayout
 from core.services.project_service import ProjectService
@@ -83,14 +84,36 @@ def test_rg069_pair_state_uses_min_rank_across_journeys():
     assert RelationshipService.pair_state_at_block(nm, a.id, b.id, start.id) is None  # rank 0
 
 
-def test_rg070_axis_order_persistence_roundtrip():
+def test_rg070_two_independent_orders_persistence_roundtrip():
     layout = ProjectLayout()
-    layout.relationships_axis_order = [3, 1, 2]
+    layout.relationships_view_row_order = [3, 1, 2]
+    layout.relationships_view_column_order = [2, 3, 1]
     data = layout.to_dict()
     restored = ProjectLayout.from_dict(data)
-    assert restored.relationships_axis_order == [3, 1, 2]
-    # absent key -> empty order (initial alphabetical order computed by the view)
-    assert ProjectLayout.from_dict({}).relationships_axis_order == []
+    assert restored.relationships_view_row_order == [3, 1, 2]
+    assert restored.relationships_view_column_order == [2, 3, 1]
+    # absent keys -> empty orders (initial alphabetical order computed by the view)
+    empty = ProjectLayout.from_dict({})
+    assert empty.relationships_view_row_order == []
+    assert empty.relationships_view_column_order == []
+
+
+def test_rg070_legacy_axis_order_migrated_into_both_orders():
+    restored = ProjectLayout.from_dict({'relationships_axis_order': [3, 1, 2]})
+    assert restored.relationships_view_row_order == [3, 1, 2]
+    assert restored.relationships_view_column_order == [3, 1, 2]
+
+
+def test_resolve_axis_order_saved_first_then_alphabetical():
+    service = make_service()
+    zeta = CreateAgentUseCase(service).execute(lb="Zeta")
+    alpha = CreateAgentUseCase(service).execute(lb="Alpha")
+    mid = CreateAgentUseCase(service).execute(lb="Mid")
+    agents = list(service.current_project.agent)
+    # no saved order -> alphabetical by (label, id)
+    assert RelationshipService.resolve_axis_order(agents, []) == [alpha.id, mid.id, zeta.id]
+    # saved order first (unknown ids ignored), missing agents appended by (label, id)
+    assert RelationshipService.resolve_axis_order(agents, [zeta.id, 999]) == [zeta.id, alpha.id, mid.id]
 
 
 def test_rg048_rg063_relationship_filter_visibility():

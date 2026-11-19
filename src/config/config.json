@@ -54,7 +54,7 @@
     "family": "#98C379"
   },
   "relationships_view_panel_width_px": 260,
-  "relationships_view_cell_size_px": 64,
+  "relationships_view_cell_size_px": 100,
   "log_level": "WARNING",
   "agents_view_dot_spacing_px": 20,
   "agents_view_dot_radius_px": 1.5,
