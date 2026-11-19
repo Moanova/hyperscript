@@ -61,7 +61,7 @@
 | RG032 | There can be only one participation per (block, agent) pair. | implemented | core/services/participation_service.py (find_participation); usecases/participation_management/associate_participation_usecase.py | tests/test_agents/test_participation_usecases.py | idempotent association |
 | RG033 | Deleting an agent cascades to all its participations and all its relationships,… | implemented | core/services/participation_service.py (cascade_delete_agent); usecases/agent_management/delete_agent_usecase.py | tests/test_agents/test_agent_usecases.py | counts returned for the UI information message |
 | RG034 | Deleting a journey reassigns to the default journey the attachments of the… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | reassignment to the default journey (no orphan block) |
-| RG035 | A relationship is binary (exactly two agents — unordered pair), non-directed and typed (TSK25), and anchored… | not-started | — | — | — |
+| RG035 | A relationship is binary (exactly two agents — unordered pair), non-directed and typed (TSK25), and anchored… | not-started | — | — | RG035 hardened session 06: uniqueness (block, pair), unique block–relationship link for the MVP (TSK20); Block/Relationship entities kept distinct for post-MVP |
 
 ### 3. Journey logic and membership
 
@@ -108,6 +108,8 @@
 | RG065 | "Agents" view: same dark background as "Journeys", purely decorative dots; cards freely movable in 2D during a drag (no corridor, no snap while dragging); on release, snap to the nearest cell of an invisible grid (config agents_view_cell_*, anchored on the scene origin, nearest free cell if occupied); snap also at creation and on load; on creation, first free cell right of the bounding box of the existing cards (TSK22); on release, cell constrained to the bounding box of the other cards + 1 cell (TSK23, single card = free) | implemented | ui/views/agents_workspace.py (drawBackground: visible dots, config agents_view_dot_* ; next_free_card_position: bounding-box anchor + cell snap + free cell, default-cell fallback ; create_agent_card) ; ui/nodes/agent_card.py (itemChange: _free_pos accumulation, scene limits, no snap while dragging ; mouseReleaseEvent: _cell_snap_target → scene bounds ∩ other-cards bounding box + 1 cell, then nearest free cell → setPos) ; core/services/layout_service.py (snap_to_grid, find_nearest_free_position) ; config agents_view_cell_width/height | tests/test_agents/test_agents_workspace_offscreen.py (free diagonal drag, snap on release, occupied cell, initial placement in a row, new card next to the moved group, empty workspace, far drag pulled back into the ring TSK23, single card free) ; tests/test_agents/test_project_layout.py (snap_to_grid cell, find_nearest_free_position) | visual rendering offscreen to validate |
 | RG066 | Agent card in the "Agents" view: larger than a block, no ports, label + type, single selection, note tooltip; no participation-count badge | implemented | ui/nodes/agent_card.py AgentCardItem (agents_view_card_width/height, no ports no badge, shape() RG053, single selection RG049, immediate tooltip RG054) ; ui/views/agents_workspace.py (_select_item_only) | — | visual rendering offscreen to validate |
 | RG067 | Agent card positions persisted at project level in the graphics metadata (project layout file), restored on reopening; no business value | implemented | core/models/view_model.py (AgentCardLayout, ProjectLayout) ; core/services/layout_service.py (save/load_project_layout → layouts/project.json) ; ui/views/agents_workspace.py (collect_project_layout, populate_agents) ; ui/main_window.py (_do_save, _init_workspace) | tests/test_agents/test_project_layout.py | — |
+
+| RG068 | The Start block belongs to every journey of the map, attachment not editable by the author (automatic on journey creation, list disabled in the edit dialog, never affected by RG034) | not-started | — | — | adopted session 06; TSK26 → #TSK09 |
 
 ## B. Features (`03_features-*.md`)
 
@@ -208,7 +210,7 @@
 
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN036 | "Relationships" view | not-started | — | — | — | — | — |
+| FN036 | "Relationships" view: agent×agent matrix + right side panel (mockup adopted session 06, `04_interface` §6) | not-started | — | — | — | — | later task (TSK27) after TSK20 |
 
 ### Configuration
 
@@ -302,4 +304,4 @@
 | SU009 | Manage the agents view — re-designed session 04 (anchor dots + agent cards, TSK19b) | FN031, FN032 | implemented |
 | SU010 | Preview the export — initialized, to be finalized after the design phase | FN033 | not-started |
 | SU011 | Manage a Relationship Between Agents | FN034, FN037 | not-started |
-| SU012 | Manage the "Relationships" view — initialized, to be finalized after the design phase | FN032, FN036 | not-started |
+| SU012 | Manage the "Relationships" view — mockup adopted session 06 (matrix + side panel, `04_interface` §6) | FN032, FN036 | not-started |

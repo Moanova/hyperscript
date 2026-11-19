@@ -190,7 +190,7 @@
     - Une relation est binaire : elle relie exactement deux agents. Une évolution vers des relations à plus de deux agents est hors MVP.
     - Elle est non dirigée (paire d'agents non ordonnée) et typée ; le type est lu dans une liste de valeurs définie dans un fichier de configuration (l'enrichissement de cette liste par l'auteur est hors MVP).
     - Elle est ancrée à un bloc : « à ce moment du récit, une relation de ce type entre A et B est vraie ».
-    - Il ne peut exister qu'une seule relation par couple (bloc, paire d'agents, type).
+    - Il ne peut exister qu'une seule relation par couple (bloc, paire d'agents) : le lien entre un bloc et une relation est unique pour le MVP.
     - L'historique d'une paire d'agents est l'ensemble de ses relations ancrées, ordonnées selon la position de leur bloc dans le parcours ; l'état courant de la paire à un bloc est la dernière relation ancrée à un bloc situé avant ou au même rang dans ce parcours (donnée dérivée, jamais stockée).
     - Appartenance aux parcours dérivée : une relation appartient à un parcours si et seulement si son bloc d'ancrage y appartient.
     - La suppression d'un agent ou d'un bloc entraîne la suppression en cascade de ses relations.
@@ -198,13 +198,20 @@
     - L'utilisateur peut créer une relation depuis le menu « Project » ou le menu contextuel : choix des deux agents, du type (dans la liste configurée) et du bloc d'ancrage.
     - L'utilisateur peut modifier une relation (type, bloc d'ancrage, note, contenu) via un dialogue d'édition.
     - L'utilisateur peut supprimer une relation avec confirmation préalable.
-    - L'application empêche les doublons (bloc, paire d'agents, type).
+    - L'application empêche les doublons (bloc, paire d'agents).
     - Toute création, modification ou suppression de relation marque la carte, donc le projet, comme modifiés.
 - **Périmètre MVP** :
     - Les relations agent-agent font partie du MVP (modèle + liste de types en configuration).
     - La vue dédiée (SU012) est initialisée séparément.
 
 
-## SU012 : Gérer la vue « Relations » — initialisée, à finaliser après la phase de conception
-- **Description** : En tant qu'auteur, je peux visualiser le graphe des agents et de leurs relations (arcs étiquetés par type, annotés des blocs d'ancrage) dans un espace de travail dédié, avec navigation croisée vers le bloc d'ancrage dans la vue « Parcours ».
-- **Statut** : scenario initialisé — la maquette de cette vue sera définie durant la phase de conception.
+## SU012 : Gérer la vue « Relationships »
+- **Description** : En tant qu'auteur, je peux visualiser dans un espace de travail dédié la matrice des agents (un agent par ligne et par colonne), chaque cellule matérialisant le type de l'état de la relation entre la paire d'agents au bloc sélectionné, avec un panneau latéral listant les blocs dans l'ordre de leur séquence, et avec navigation croisée vers le bloc d'ancrage dans la vue « Journeys ».
+- **Complément** :
+    - La vue « Relationships » affiche **tous les agents du projet**, même ceux qui n'ont (pas encore) aucune relation.
+    - La matrice est symétrique (relations non dirigées, RG035) ; l'ordre initial des lignes et colonnes est alphabétique sur le libellé (ex æquo par identifiant), et l'utilisateur peut déplacer chaque ligne et chaque colonne (ordre persisté au niveau projet, comme RG067).
+    - La cellule (A, B) affiche le type de l'état de la paire A-B au bloc sélectionné : la relation ancrée au dernier bloc de rang inférieur ou égal au rang du bloc sélectionné (donnée dérivée, jamais stockée) ; il n'existe qu'une seule relation par (bloc, paire), donc un seul type par cellule (RG035) ; la cellule est vide si la paire n'a aucun ancrage à rang inférieur ou égal.
+    - Le panneau latéral (à droite) comporte, de haut en bas : la zone de filtre de parcours, la zone de filtre agent (miroirs du menu « Display » — mêmes actions, état toujours synchronisé, deux voies pour la même action ; RG047/RG048/RG063), puis la liste des blocs ordonnée du haut vers le bas par **rang minimal sur tous les parcours** (ex æquo par identifiant de bloc), restreinte aux blocs visibles sous les filtres actifs (intersection RG064).
+    - Par défaut, le bloc **Start** est sélectionné (le Start appartient à tous les parcours — règle métier actée séance 06, à implémenter en tâche dédiée avant TSK20) ; si l'utilisateur arrive sur la vue depuis un bloc sélectionné dans « Journeys », ce bloc est sélectionné s'il appartient au filtre actif, sinon le Start (un élément hors filtre n'est pas sélectionnable, RG048). Cet état est visuel et non persisté (RG047/RG056).
+    - Navigation croisée : depuis « Relationships », « Voir dans la vue Journeys » bascule vers « Journeys » et met le focus sur le bloc d'ancrage de la relation (FN032 ; état visuel temporaire RG056).
+- **Périmètre MVP** : la vue « Relationships » (matrice + panneau latéral) fait partie du MVP.

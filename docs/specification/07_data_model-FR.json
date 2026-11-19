@@ -493,7 +493,8 @@
       },
       {
          "name": "relationship_card",
-         "description": "Une relation est ancrée à exactement un bloc et relie exactement deux agents ; unicité (bloc, paire, typ)",
+         "description": "Une relation est ancrée à exactement un bloc et relie exactement deux agents ; unicité (bloc, paire) — RG035 durcie séance 06 pour le MVP, plusieurs relations par paire possibles en post-MVP",
+
          "from": "Block",
          "to": "Agent",
          "relationship": "Relationship",

@@ -9,6 +9,31 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 
 --
 
+## Séance n°06 (2026-11-19)
+
+### Travaux
+- **Conception de la vue « Relationships » (SU012) actée par TSC** : matrice agent × agent + panneau latéral droit (3 zones : filtre de parcours, filtre agent, liste des blocs ordonnée du haut vers le bas par rang minimal sur tous les parcours, ex æquo par identifiant) ; cellule (A, B) = type de l'état dérivé de la paire au bloc sélectionné (dernier bloc d'ancrage de rang ≤) ; tous les agents affichés même sans relation ; les 2 zones de filtres du panneau sont des miroirs toujours synchronisés du menu « Display » (MainWindow propriétaire unique de l'état, deux voies pour la même action) ; bloc Start sélectionné par défaut, avec repli si le bloc transmis depuis « Journeys » est hors filtre actif (élément hors filtre non sélectionnable) ; ordre initial des axes alphabétique (libellé, repli id) + déplacement manuel des lignes/colonnes par drag des en-têtes, persisté au niveau projet ; filtre agent actif = agents non concernés estompés + création de relation interdite pour eux ; widget matrice : `QTableWidget` en lecture seule (drag natif des en-têtes).
+- **RG035 durcie** (décision TSC séance 06) : unicité par **(bloc, paire)** — lien bloc–relation unique pour le MVP ; entités Bloc et Relation conservées distinctes dans le modèle pour une évolution post-MVP (plusieurs types par paire). Conséquence : cellule mono-type.
+- **RG068 ajoutée** : le bloc Start appartient à tous les parcours, rattachement non modifiable (auto à la création d'un parcours, liste désactivée dans le dialogue d'édition du bloc, non concerné par la suppression RG034) → tâche **TSK26** créée (→ #TSK09) ; TSK20 révisée (→ #TSK26).
+- Documents rédigés/mis à jour FR+EN : SU012 et FN036 finalisés, `04_interface` §6 (maquette) + §2 (nouvelles clés config : `relationships_view_panel_width_px`, `relationships_view_cell_size_px`, `relationship_type_colors`) + point ouvert n°3 levé, `02_business_rules` (RG035 durcie, **RG069** et **RG070** ajoutées, RG060 retouchée, RG042 complétée), FN032 (sens Journeys → Relationships ajouté), `05_menu` FR/EN (context_menu : vue « Relationships »), `07_data_model` FR/EN (unicité bloc–paire), SU011/FN034 + conception FR/EN alignées sur RG035 durcie, kanban (TSK26 et **TSK27** créées, TSK20 révisée, chaîne critique séance 06), matrices `implementation-FR/EN.md` (lignes RG035, RG068, FN036, SU012).
+- Vérifications : JSON `07_data_model` valides, parité FR/EN des documents édités, YAML `05_menu` valides, aucune occurrence résiduelle de l'ancienne unicité (bloc, paire, type) dans `docs/`, `src/`, `tests/` ; aucun test existant ne dépendait de RG035 (la contrainte d'unicité sera codée en TSK20).
+
+### Choix actés
+- Matrice agent×agent + panneau latéral droit (3ᵉ dimension = bloc sélectionné dans la liste du panneau) ; sémantique de cellule = état dérivé (dernier ancrage de rang ≤).
+- Ordre de la liste des blocs du panneau = rang minimal multi-parcours (ex æquo id).
+- RG035 durcie en (bloc, paire) pour le MVP ; modèle à deux entités conservé pour le post-MVP.
+- RG068 : Start dans tous les parcours, non modifiable (TSK26 avant TSK20).
+- Ordre des axes : alphabétique initial + drag des en-têtes, persisté au niveau projet (RG070).
+- Panneau de filtres = deuxième voie vers la même action, état synchronisé avec le menu Display.
+
+### Problèmes rencontrés
+- Aucun.
+
+### État en fin de séance
+- Commit + push sur `dev` (demande TSC explicite, sans PR). Prochaine séance : TSK26 (RG068) → TSK20 (CRUD relations) → TSK27 (vue « Relationships »).
+
+---
+
 ## Séance n°05 (2026-11-18)
 
 ### Travaux

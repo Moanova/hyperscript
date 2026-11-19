@@ -30,6 +30,7 @@
 - Grille : pas mineur 20 px / majeur 80 px (`grid_minor_size`/`grid_major_size`), couleurs `#333333`/`#4A4A4A`, toujours visible, redessinée uniquement sur la zone visible.
 - Vue « Agents » : points à la place de la grille, purement décoratifs — espacement `agents_view_dot_spacing_px`, rayon `agents_view_dot_radius_px`, couleur `agents_view_dot_color` ; **grille de cellules invisible** pour le positionnement des cartes à la libération du déplacement (`agents_view_cell_width`×`agents_view_cell_height`, ancrée sur l'origine de la scène) ; cartes agent `agents_view_card_width`×`agents_view_card_height` (plus grandes que les blocs 80×40, sans ports) — acté séance 04 (TSK19b), cellule invisible séance 05 (TSK21).
 - **Couleurs par type de bloc narratif** (couleur de bordure du nœud) : Début `#D19A66` (or), Scène `#E5C07B` (sable), Pivot `#E06666` (rouge), Condition `#E06666` (rouge), Fin `#E5C07B` (sable) — acté séance 04 d'après les retours de tests visuels TSC (TSK16) ; Pivot et Condition partagent volontairement le même rouge, le type affiché dans le nœud les distingue.
+- Vue « Relationships » (actée séance 06) : largeur du panneau latéral droit `relationships_view_panel_width_px` ; taille des cellules de la matrice `relationships_view_cell_size_px` ; couleur par type de relation `relationship_type_colors` (indexée sur la liste `relationship_types`) ; libellés « tous » des deux zones de filtres du panneau = `journey_list_all_label` / `agent_list_all_label`.
 
 
 ---
@@ -75,8 +76,15 @@
 - Les filtres (parcours, agent) ne s'appliquent pas à cette vue (RG048/RG063).
 - Positions des cartes persistées **au niveau projet** dans les métadonnées graphiques (fichier layout projet, distinct des layouts par carte — structure conforme au modèle métier : les agents appartiennent au projet, RG067), restaurées à la réouverture ; aucune valeur métier.
 
-### 6.### 6. Vue « Relationships »
-- *Spécification laissée vide pour le moment — la maquette sera définie durant la phase de conception* (SU012 / FN036). Rappel du besoin : graphe des agents, arcs étiquetés par type, annotés des blocs d'ancrage, navigation croisée vers le bloc d'ancrage dans la vue « Journeys ».
+### 6. Vue « Relationships » — maquette actée séance 06 (SU012 / FN036)
+- **Type** : espace de travail dédié composé d'une **matrice agent × agent** (zone centrale) et d'un **panneau latéral à droite** (largeur `relationships_view_panel_width_px`, RG059).
+- **Matrice** : une ligne et une colonne par agent du projet — **tous les agents sont affichés, même ceux qui n'ont (pas encore) aucune relation** ; matrice symétrique (relations non dirigées, RG035) ; taille des cellules, couleurs et libellés des types en configuration (RG059). Ordre initial des lignes/colonnes : alphabétique sur le libellé (ex æquo par identifiant) ; l'utilisateur peut déplacer chaque ligne et chaque colonne (glisser l'en-tête) ; l'ordre est persisté au niveau projet dans le fichier layout projet (comme RG067) et restauré à la réouverture ; **widget** : `QTableWidget` en lecture seule (ou `QTableView` + modèle dédié), en-têtes affichant le libellé de l'agent, déplacement d'une ligne/colonne par glisser-déposer de son en-tête (déplacement natif du widget, RG070) ; cellules de taille `relationships_view_cell_size_px`, couleur du type selon `relationship_type_colors`.
+- **Cellule (A, B)** : affiche le **type de l'état de la paire A-B au bloc sélectionné** — la relation ancrée au dernier bloc de rang inférieur ou égal au rang du bloc sélectionné (donnée dérivée, jamais stockée, SU011) ; une seule relation par (bloc, paire), donc un seul type par cellule (RG035) ; cellule vide quand la paire n'a aucun ancrage à rang inférieur ou égal. La matrice est **dynamique** : recalculée à chaque changement de bloc sélectionné.
+- **Panneau latéral (droite)** : trois zones de haut en bas — (1) filtre de parcours, (2) filtre agent, (3) **liste des blocs** ordonnés du haut vers le bas par rang minimal sur tous les parcours (ex æquo par identifiant de bloc), restreints aux blocs visibles sous les filtres actifs (intersection RG064). Les deux zones de filtres sont des miroirs du menu « Display » : mêmes actions, état toujours synchronisé (deux voies pour la même action, RG047/RG048/RG063).
+- **Sélection du bloc courant** : par défaut le bloc **Start** (qui appartient à tous les parcours — règle métier actée séance 06, à implémenter en tâche dédiée avant TSK20) ; si l'utilisateur bascule sur « Relationships » depuis un bloc sélectionné dans « Journeys », ce bloc est sélectionné s'il appartient au filtre actif, sinon le Start (un élément hors filtre n'est pas sélectionnable, RG048). Cet état est visuel, de session, non persisté (RG047/RG056).
+- **Filtres appliqués à la vue** : filtre de parcours (RG048) — les relations dont le bloc d'ancrage est hors filtre sont estompées (opacité de configuration) et non interactives ; filtre agent (RG063) — tous les agents restent affichés, les agents non concernés sont estompés (même opacité) et la création d'une relation les concernant est interdite.
+- **Sélection et menus** : sélection unique (RG049) ; le clic sur une cellule ouvre le menu contextuel aligné sur le menu applicatif (`Project › Relationships` : New.../Edit.../Delete..., RG055) ; « Voir dans la vue Journeys » bascule vers « Journeys » avec le focus sur le bloc d'ancrage (FN032, état visuel temporaire RG056) ; note de la relation en infobulle au survol (RG054).
+- **Périmètre MVP** : la vue « Relationships » (matrice + panneau latéral) fait partie du MVP.
 
 ### 7. Vue « Export » (aperçu in-app)
 - Espace de travail « Export » : aperçu de lecture de la carte narrative courante, **en lecture seule** (liens inertes, aucune interaction sur le contenu).
@@ -106,7 +114,7 @@
 ## Points ouverts à valider en phase de conception
 1. Formes/icônes des 5 types de blocs narratifs et des transitions — code couleur acté séance 04 d'après les retours de tests visuels (TSK16, voir « Thème et style »).
 2. Badges : nombre de participations en vue « Journeys » — acté séance 03 (voir section 4) ; compteurs de transitions entrantes/sortantes en vue « Agents » (à re-concevoir).
-3. Maquette de la vue « Relationships ».
+3. Maquette de la vue « Relationships » — **actée séance 06** (voir section 6).
 4. Contenu de la vue « Agents » (re-conception).
 5. Barres latérales (intégration ou non).
 6. Zoom (post-MVP).

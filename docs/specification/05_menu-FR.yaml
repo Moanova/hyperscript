@@ -164,7 +164,7 @@ menu:
           references: "FN004"
 
   context_menu:
-    description: "Le menu contextuel doit rester aligné dynamiquement sur le menu applicatif (mêmes actions et gestionnaires), selon la vue active et les objets graphiques sélectionnés. Sur la grille vide de la vue « Parcours », les entrées de création portent des libellés propres au menu contextuel : « New Block » (sous-menu Scène / Pivot / Condition / Fin, comme Projet > Blocs > Nouveau) et « New Transition » (comme Projet > Transitions > Nouvelle) — acté séance 04 (TSK16)."
+    description: "Le menu contextuel doit rester aligné dynamiquement sur le menu applicatif (mêmes actions et gestionnaires), selon la vue active et les objets graphiques sélectionnés. Sur la grille vide de la vue « Parcours », les entrées de création portent des libellés propres au menu contextuel : « New Block » (sous-menu Scène / Pivot / Condition / Fin, comme Projet > Blocs > Nouveau) et « New Transition » (comme Projet > Transitions > Nouvelle) — acté séance 04 (TSK16) ; dans la vue « Relationships », le menu contextuel d'une cellule de la matrice reprend `Project › Relationships` (New.../Edit.../Delete...) et ajoute « View in Journeys view » (FN032 : bascule vers « Journeys » avec le focus sur le bloc d'ancrage de la relation) — acté séance 06 (TSK27)."
 
   legend:
     description: |

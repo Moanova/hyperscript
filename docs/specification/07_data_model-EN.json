@@ -493,7 +493,7 @@
       },
       {
          "name": "relationship_card",
-         "description": "A relationship is anchored to exactly one block and links exactly two agents; uniqueness (block, pair, type)",
+         "description": "A relationship is anchored to exactly one block and links exactly two agents; uniqueness (block, pair) — RG035 hardened session 06 for the MVP, several relationships per pair possible post-MVP",
          "from": "Block",
          "to": "Agent",
          "relationship": "Relationship",

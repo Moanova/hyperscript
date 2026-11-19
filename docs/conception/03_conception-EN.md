@@ -60,7 +60,7 @@
 - **Block attachment to journeys**: no orphan block — every block belongs to at least one journey; a newly created block is attached to the active journey if the journey filter is enabled, to the default journey otherwise; a block cannot be removed from its last journey.
 - **Default journey**: unique at all times, automatically created when the map is created; the author can at any time designate another journey as the default journey (the designation replaces the previous one and does not change the active journey).
 - **Sequence**: DFS from Start over the journey's transitions, branches explored by increasing transition id, cycle memoization, deterministic fallback for unreachable blocks (analogue of planoscript RG069).
-- **Uniqueness**: one transition per ordered pair of blocks; (block, pair, typ) unique for relationships; one participation per (block, agent).
+- **Uniqueness**: one transition per ordered pair of blocks; (block, pair) unique for relationships (RG035 hardened session 06 for the MVP — Block and Relationship entities kept distinct for a post-MVP evolution to several types per pair); one participation per (block, agent).
 - **Cascades**: deleting an agent → its participations and relationships; deleting a block → its transitions, participations, anchored relationships, journey nodes; deleting a transition → journey nodes referencing it. **Do not reproduce the planoscript bug** `connection.py:811`: any model change goes through the use cases/services layers (TSK34 debt taken into account from the start, §7).
 
 

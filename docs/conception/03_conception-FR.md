@@ -58,7 +58,7 @@
 - **Rattachement des blocs aux parcours** : aucun bloc orphelin — tout bloc appartient à au moins un parcours ; un bloc nouvellement créé est rattaché au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon ; un bloc ne peut pas être retiré de son dernier parcours.
 - **Parcours par défaut** : unique à tout moment, créé automatiquement à la création de la carte ; l'auteur peut à tout moment désigner un autre parcours comme parcours par défaut (la désignation remplace le précédent et ne modifie pas le parcours actif).
 - **Séquence** : DFS depuis le Début sur les transitions du parcours, branches explorées par id de transition croissant, mémoïsation des cycles, repli déterministe pour les blocs inatteignables (analogue RG069 de planoscript).
-- **Unicité** : une transition par paire ordonnée de blocs ; (bloc, paire, typ) unique pour les relations ; une participation unique par (bloc, agent).
+- **Unicité** : une transition par paire ordonnée de blocs ; (bloc, paire) unique pour les relations (RG035 durcie séance 06 pour le MVP — entités Bloc et Relation distinctes conservées pour une évolution post-MVP à plusieurs types par paire) ; une participation unique par (bloc, agent).
 - **Cascades** : suppression d'un agent → ses participations et relations ; suppression d'un bloc → ses transitions, participations, relations ancrées, nœuds de parcours ; suppression d'une transition → nœuds de parcours référençant. **Ne pas reproduire le bug planoscript** `connection.py:811` : toute modification du modèle passe par les use cases/services (dette TSK34 prise en compte dès le début, §7).
 
 

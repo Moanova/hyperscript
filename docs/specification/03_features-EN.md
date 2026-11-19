@@ -363,6 +363,7 @@
     - From the "Journeys" view, "View in Agents view" switches to the "Agents" view and highlights the targeted block's column.
     - From the "Agents" view, "View in Journeys view" switches to the "Journeys" view and sets the focus on the block (or on all the blocks of an agent).
     - From the "Relationships" view, "View in Journeys view" switches to the "Journeys" view and sets the focus on a relationship's anchor block.
+    - From the "Journeys" view, switching to the "Relationships" view selects in the side panel the block currently selected in "Journeys" if it belongs to the active filter, otherwise the Start block (RG069) - adopted session 06.
     - The focus is a temporary visual state: a click in the empty area or the Escape key releases it.
     - Navigation marks neither the map nor the project as modified.
 
@@ -391,7 +392,7 @@
     - The relationship is binary: it links exactly two agents (an evolution to more than two agents is post-MVP).
     - It is non-directed (unordered agent pair) and typed; the type is chosen from the value list of the configuration file (FN037).
     - It is anchored to a block: "at this point of the story, a relationship of that type between A and B holds".
-    - There can be only one relationship per (block, agent pair, type).
+    - There can be only one relationship per (block, agent pair) (RG035).
     - The history of an agent pair is the set of its anchored relationships, ordered by the position of their block in the journey; the current state of the pair at a block is derived (never stored).
     - Journey membership is derived from the anchor block.
     - The note is shown in a tooltip on hover.
@@ -419,11 +420,17 @@
 # "Relationships" view
 
 ## FN036: "Relationships" view
-- **Description**: Visualize the graph of agents and their relationships (arcs labeled by type, annotated with anchor blocks) in the "Relationships" workspace, with cross-navigation to the anchor block in the "Journeys" view (FN032).
-- **References**: SU012 ; journey filter FN029.
+- **Description**: Visualize in the "Relationships" workspace the agent × agent matrix of relationships between agents — each cell shows the type of the pair's state at the selected block (last anchor block of lower or equal rank, derived data) — with a right side panel (journey and agent filters, then the block list ordered by minimum rank across all journeys), and cross-navigation to the anchor block in the "Journeys" view (FN032).
+- **References**: SU012 ; journey filter FN029 ; agent filter FN039.
 - **Expected behavior**:
-    - To be specified with the view's mockup, to be defined during the design phase.
-    - The MVP view scope is not decided beyond the minimum ("Journeys" view and "Export" view).
+    - The matrix displays **all the project's agents**, even without any relationship; symmetric matrix (non-directed relationships, RG035).
+    - Initial axis order: alphabetical on the label (ties by identifier); rows and columns manually movable by the user, order persisted at project level (project layout file, as RG067) and restored on reopening.
+    - The matrix is **dynamic** according to the block selected in the panel: cell (A, B) shows the type of the single relationship possible per (block, pair) (RG035) anchored to the last block of lower or equal rank; empty cell otherwise.
+    - Right side panel, three zones from top to bottom: journey filter, agent filter (synchronized mirrors of the "Display" menu — same actions, a single state; RG047), block list ordered by minimum rank across all journeys (ties by block identifier), restricted to the blocks visible under the active filters (intersection RG064).
+    - Default selected block: the Start; when arriving from a block selected in "Journeys", that block if it belongs to the active filter, otherwise the Start (an element outside the filter is not selectable, RG048).
+    - Active journey filter (RG048): relationships whose anchor block is outside the filter are dimmed (configured opacity) and non-interactive.
+    - Active agent filter (RG063): all agents remain displayed; uninvolved agents are dimmed (same opacity as the journey filter) and creating a relationship involving them is forbidden.
+    - The "Relationships" view is part of the MVP scope.
 
 
 ---

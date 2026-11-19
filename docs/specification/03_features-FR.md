@@ -364,6 +364,7 @@
     - Depuis la vue « Parcours », « Voir dans la vue Agents » bascule vers la vue « Agents » et met en évidence la colonne du bloc ciblé.
     - Depuis la vue « Agents », « Voir dans la vue Parcours » bascule vers la vue « Parcours » et met le focus sur le bloc (ou sur l'ensemble des blocs d'un agent).
     - Depuis la vue « Relations », « Voir dans la vue Parcours » bascule vers la vue « Parcours » et met le focus sur le bloc d'ancrage d'une relation.
+    - Depuis la vue « Journeys », basculer sur la vue « Relationships » sélectionne dans le panneau latéral le bloc actuellement sélectionné dans « Journeys » s'il appartient au filtre actif, sinon le bloc Début (RG069) — acté séance 06.
     - Le focus est un état visuel temporaire : un clic dans le vide ou la touche Échap le relâche.
     - La navigation ne marque ni la carte ni le projet comme modifiés.
 
@@ -392,7 +393,7 @@
     - La relation est binaire : elle relie exactement deux agents (une évolution à plus de deux agents est hors MVP).
     - Elle est non dirigée (paire d'agents non ordonnée) et typée ; le type est choisi dans la liste de valeurs du fichier de configuration (FN037).
     - Elle est ancrée à un bloc : « à ce moment du récit, une relation de ce type entre A et B est vraie ».
-    - Il ne peut exister qu'une seule relation par couple (bloc, paire d'agents, type).
+    - Il ne peut exister qu'une seule relation par couple (bloc, paire d'agents) (RG035).
     - L'historique d'une paire d'agents est l'ensemble de ses relations ancrées, ordonnées selon la position de leur bloc dans le parcours ; l'état courant de la paire à un bloc est dérivé (jamais stocké).
     - L'appartenance aux parcours est dérivée du bloc d'ancrage.
     - La note est affichée en infobulle au survol.
@@ -419,12 +420,18 @@
 
 # Vue « Relations »
 
-## FN036 : Vue « Relations »
-- **Description** : Visualiser le graphe des agents et de leurs relations (arcs étiquetés par type, annotés des blocs d'ancrage) dans l'espace de travail « Relations », avec navigation croisée vers le bloc d'ancrage dans la vue « Parcours » (FN032).
-- **Références** : SU012 ; filtre de parcours FN029.
+## FN036 : Vue « Relationships »
+- **Description** : Visualiser dans l'espace de travail « Relationships » la matrice agent × agent des relations entre agents — chaque cellule affiche le type de l'état de la paire au bloc sélectionné (dernier bloc d'ancrage de rang inférieur ou égal, donnée dérivée) — avec un panneau latéral droit (filtres de parcours et d'agent, puis liste des blocs ordonnée par rang minimal sur tous les parcours), et navigation croisée vers le bloc d'ancrage dans la vue « Journeys » (FN032).
+- **Références** : SU012 ; filtre de parcours FN029 ; filtre agent FN039.
 - **Comportement attendu** :
-    - À préciser avec la maquette de la vue, à définir durant la phase de conception.
-    - Le périmètre MVP des vues n'est pas acté au-delà du minimum (vue « Parcours » et vue « Export »).
+    - La matrice affiche **tous les agents du projet**, même sans relation ; matrice symétrique (relations non dirigées, RG035).
+    - Ordre initial des axes : alphabétique sur le libellé (ex æquo par identifiant) ; lignes et colonnes déplaçables manuellement par l'utilisateur, ordre persisté au niveau projet (fichier layout projet, comme RG067) et restauré à la réouverture.
+    - La matrice est **dynamique** selon le bloc sélectionné dans le panneau : la cellule (A, B) affiche le type de l'unique relation possible par (bloc, paire) (RG035) ancrée au dernier bloc de rang inférieur ou égal ; cellule vide sinon.
+    - Panneau latéral droit, trois zones de haut en bas : filtre de parcours, filtre agent (miroirs synchronisés du menu « Display » — mêmes actions, un seul état ; RG047), liste des blocs ordonnée par rang minimal sur tous les parcours (ex æquo par identifiant de bloc), restreinte aux blocs visibles sous les filtres actifs (intersection RG064).
+    - Bloc sélectionné par défaut : le Start ; à l'arrivée depuis un bloc sélectionné dans « Journeys », ce bloc s'il appartient au filtre actif, sinon le Start (un élément hors filtre n'est pas sélectionnable, RG048).
+    - Filtre de parcours actif (RG048) : les relations dont le bloc d'ancrage est hors filtre sont estompées (opacité de configuration) et non interactives.
+    - Filtre agent actif (RG063) : tous les agents restent affichés ; les agents non concernés sont estompés (même opacité que le filtre de parcours) et la création d'une relation les concernant est interdite.
+    - La vue « Relationships » fait partie du périmètre MVP.
 
 
 ---

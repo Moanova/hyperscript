@@ -1,6 +1,6 @@
 # Hyperscript ::: Tableau kanban du projet
 
-- **Date de dernière modification** : 18-11-2026
+- **Date de dernière modification** : 19-11-2026
 - **Description** : Suivi de l'avancement des tâches du projet.
   - Les chantiers majeurs sont des **épics** (EPCnn) découpés en **tâches** (TSKnn).
   - Le détail de chaque tâche (analyse, décisions, journal des travaux) est consigné dans un fichier markdown dédié du sous-dossier `tasks/`, nommé d'après le code de la tâche.
@@ -20,6 +20,7 @@
 
 - TSK01 (modèle de données) → TSK02 (scenarii) → TSK03 (fonctionnalités) → TSK04 (menu) → TSK05 (interface) → TSK06 (règles de gestion), puis 99_périmètre MVP.
 - 18-11-2026 : TSK17, TSK18, TSK19a, TSK19b, TSK21–TSK24 validées TSC et passées en Done ; TSK20 (relations agent-agent) reste en To do — conception de la vue « Relationships » (SU012) en cours séance 05.
+- 19-11-2026 (séance 06) : conception de la vue « Relationships » **actée** (SU012, FN036, `04_interface` §6 FR/EN : matrice agent×agent + panneau latéral droit, cellule = état dérivé au bloc sélectionné, liste des blocs par rang minimal multi-parcours, filtres miroir du menu Display) ; RG035 **durcie** en unicité (bloc, paire) et **RG068** (Start dans tous les parcours, non modifiable) rédigées FR/EN ; **TSK26 créée** pour RG068 ; TSK20 révisée (→ #TSK26) ; **TSK27 créée** (vue « Relationships » → #TSK20, #TSK26).
 - Puis chantier vue « Journeys » (vue Parcours) : TSK08 (services/use cases de la carte) → TSK09 (use cases parcours) + TSK10 (nœuds graphiques) → TSK11 (workspace + intégration) → TSK12 (dialogues + menus Project) → TSK13 (tests offscreen + traçabilité) ; puis TSK14 (ports conditionnels Début/Fin, acté 11-11-2026) implémenté et passé en Review 11-11-2026 ; TSK15 (correctif z-order : grille sous les transitions, 11-11-2026) implémenté, passé en Review puis **Done** (validé TSC) 11-11-2026 ; TSK07–TSK14 et TSK16 validées TSC et passées en Done 17-11-2026.
 
 
@@ -29,7 +30,10 @@
 
 ### To do
 
-- [ ] TSK20 — Relations agent-agent (FN034, RG035, SU011) : use cases CRUD relation (binaire, non dirigée, typée depuis la liste config FN037, ancrée à un bloc, unicité par (bloc, paire, type)) + dialogue + entrées `Project › Relationships` ; la vue « Relationships » (SU012) fera l'objet d'une tâche ultérieure (conception en cours séance 05) → #TSK17, #TSK25 — fiche `tasks/TSK20_relationships.md`
+- [ ] TSK26 — Règle **RG068** (actée séance 06) : le bloc Start appartient à tous les parcours de la carte, rattachement non modifiable (rattachement auto à la création d'un parcours, liste des parcours désactivée pour le Start dans le dialogue d'édition, jamais concerné par la suppression RG034) : `create_journey_usecase.py`, `block_dialog.py`, garde dans `journey_service.py` (`set_block_attachments`), tests unitaires → #TSK09 — fiche `tasks/TSK26_start_all_journeys.md`
+- [ ] TSK20 — Relations agent-agent (FN034, RG035 durcie séance 06, SU011) : use cases CRUD relation (binaire, non dirigée, typée depuis la liste config FN037, ancrée à un bloc, **unicité par (bloc, paire)**) + dialogue + entrées `Project › Relationships` ; la vue « Relationships » (SU012/FN036 — maquette actée séance 06, `04_interface` §6 : matrice agent×agent + panneau latéral) fera l'objet d'une tâche ultérieure (TSK27) → #TSK17, #TSK25, #TSK26 — fiche `tasks/TSK20_relationships.md`
+
+- [ ] TSK27 — Vue « Relationships » (SU012, FN036, RG069/RG070, FN032) : `relationships_workspace.py` — matrice agent×agent (`QTableWidget` lecture seule, en-têtes déplaçables, ordre alphabétique initial puis persisté au niveau projet `ProjectLayout`, RG070) + panneau latéral droit (filtres miroir du menu Display + liste des blocs par rang minimal multi-parcours, RG069) ; cellule = état dérivé au bloc sélectionné ; sélection du bloc courant (Start par défaut RG068, repli si hors filtre, transmission depuis Journeys FN032) ; filtres RG048/RG063/RG064 (estompe + non interactif) ; menu contextuel cellule (`05_menu` context_menu) ; navigation croisée RG056 ; signaux vers MainWindow (RG058) ; clés config `04_interface` §2 ; tests unitaires Qt-free + offscreen → #TSK20, #TSK26 — fiche `tasks/TSK27_relationships_view.md`
 
 ### Doing
 
@@ -88,7 +92,9 @@
 - [x] TSK18 — Dialogues agents + menu `Project › Agents` → #TSK17 — fiche `tasks/TSK18_agent_dialogs_menus.md`
 - [x] TSK19a — Filtre agent dans la vue « Journeys » (FN039, RG063/RG064) + menu Display › Agent → #TSK11, #TSK17 — fiche `tasks/TSK19a_agent_filter.md`
 - [x] TSK19b — Vue « Agents » re-conçue : points d'ancrage + cartes agent + persistance niveau projet + menu contextuel bloc « Associate agents... » (RG065–RG067, FN030) → #TSK11, #TSK17, #TSK18 — fiche `tasks/TSK19b_agents_view.md`
-- [ ] TSK20 — Relations agent-agent (FN034/RG035) : use cases + dialogue + menu `Project › Relationships` → #TSK17, #TSK25 — fiche `tasks/TSK20_relationships.md`
+- [ ] TSK26 — RG068 : bloc Start rattaché à tous les parcours, non modifiable → #TSK09 — fiche `tasks/TSK26_start_all_journeys.md`
+- [ ] TSK20 — Relations agent-agent (FN034/RG035) : use cases + dialogue + menu `Project › Relationships` → #TSK17, #TSK25, #TSK26 — fiche `tasks/TSK20_relationships.md`
+- [ ] TSK27 — Vue « Relationships » (SU012/FN036, RG069/RG070) → #TSK20, #TSK26 — fiche `tasks/TSK27_relationships_view.md`
 - [ ] TSK25 — Relation agent-agent non dirigée (révision RG035, paire non ordonnée stockée triée) → #TSK01 — fiche `tasks/TSK25_relationship_non_directed.md`
 - [x] TSK21 — Snap des cartes agent sur cellule invisible à la libération (évolution RG065) → #TSK19b — fiche `tasks/TSK21_agent_card_cell_snap.md`
 - [x] TSK22 — Placement d'une nouvelle carte agent sur la première cellule libre à droite de la boîte englobante des cartes existantes → #TSK21 — fiche `tasks/TSK22_agent_card_placement.md`

@@ -61,7 +61,7 @@
 | RG032 | Il ne peut exister qu'une seule participation par couple (bloc, agent). | implemented | core/services/participation_service.py (find_participation) ; usecases/participation_management/associate_participation_usecase.py | tests/test_agents/test_participation_usecases.py | association idempotente |
 | RG033 | La suppression d'un agent entraîne la suppression en cascade de toutes ses… | implemented | core/services/participation_service.py (cascade_delete_agent) ; usecases/agent_management/delete_agent_usecase.py | tests/test_agents/test_agent_usecases.py | comptages retournés pour le message d'information UI |
 | RG034 | La suppression d'un parcours réaffecte au parcours par défaut les rattachements… | implemented | usecases/journey_management/delete_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | réaffectation au parcours par défaut (aucun bloc orphelin) |
-| RG035 | Une relation est binaire (exactement deux agents — paire non ordonnée), non dirigée et typée (TSK25), et ancrée… | not-started | — | — | — |
+| RG035 | Une relation est binaire (exactement deux agents — paire non ordonnée), non dirigée et typée (TSK25), et ancrée… | not-started | — | — | RG035 durcie séance 06 : unicité (bloc, paire), lien bloc–relation unique pour le MVP (TSK20) ; entités Bloc/Relation distinctes conservées pour post-MVP |
 
 ### 3. Logique des parcours et appartenance
 
@@ -108,6 +108,8 @@
 | RG065 | Vue « Agents » : même fond sombre que « Journeys », points purement décoratifs ; cartes déplaçables librement en 2D pendant le drag (pas de couloir, pas de snap en cours de drag) ; à la libération, snap sur la cellule la plus proche d'une grille invisible (config agents_view_cell_* ancrée sur l'origine scène, cellule libre la plus proche si occupée) ; snap aussi à la création et au chargement ; à la création, première cellule libre à droite de la boîte englobante des cartes existantes (TSK22) ; au dépôt, cellule contrainte à la boîte englobante des autres cartes + 1 cellule (TSK23, carte unique = libre) | implemented | ui/views/agents_workspace.py (drawBackground : points visibles, config agents_view_dot_* ; next_free_card_position : ancre boîte englobante + snap cellule + cellule libre, repli cellule défaut ; create_agent_card) ; ui/nodes/agent_card.py (itemChange : accumulation _free_pos, limites scène, aucun snap en drag ; mouseReleaseEvent : _cell_snap_target → bornes scène ∩ boîte des autres cartes + 1 cellule, puis cellule libre la plus proche → setPos) ; core/services/layout_service.py (snap_to_grid, find_nearest_free_position) ; config agents_view_cell_width/height | tests/test_agents/test_agents_workspace_offscreen.py (drag diagonal libre, snap à la libération, cellule occupée, placement initial en ligne, nouvelle carte à côté du groupe déplacé, workspace vide, drag lointain ramené dans l'anneau TSK23, carte unique libre) ; tests/test_agents/test_project_layout.py (snap_to_grid cellule, find_nearest_free_position) | rendu visuel offscreen à valider |
 | RG066 | Carte agent dans la vue « Agents » : plus grande qu'un bloc, sans ports, libellé + type, sélection unique, note en infobulle ; pas de badge de comptage | implemented | ui/nodes/agent_card.py AgentCardItem (agents_view_card_width/height, sans ports ni badge, shape() RG053, sélection unique RG049, infobulle immédiate RG054) ; ui/views/agents_workspace.py (_select_item_only) | — | rendu visuel offscreen à valider |
 | RG067 | Positions des cartes agent persistées au niveau projet dans les métadonnées graphiques (fichier layout projet), restaurées à la réouverture ; sans valeur métier | implemented | core/models/view_model.py (AgentCardLayout, ProjectLayout) ; core/services/layout_service.py (save/load_project_layout → layouts/project.json) ; ui/views/agents_workspace.py (collect_project_layout, populate_agents) ; ui/main_window.py (_do_save, _init_workspace) | tests/test_agents/test_project_layout.py | — |
+
+| RG068 | Le bloc Début appartient à tous les parcours de la carte, rattachement non modifiable par l'auteur (auto à la création d'un parcours, liste désactivée dans le dialogue d'édition, non concerné par RG034) | not-started | — | — | actée séance 06 ; TSK26 → #TSK09 |
 
 ## B. Fonctionnalités (`03_features-*.md`)
 
@@ -208,7 +210,7 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN036 | Vue « Relations » | not-started | — | — | — | — | — |
+| FN036 | Vue « Relationships » : matrice agent×agent + panneau latéral droit (maquette actée séance 06, `04_interface` §6) | not-started | — | — | — | — | tâche ultérieure (TSK27) après TSK20 |
 
 ### Configuration
 
@@ -302,4 +304,4 @@
 | SU009 | Gérer la vue agents — re-conçue séance 04 (points d'ancrage + cartes agent, TSK19b) | FN031, FN032 | implemented |
 | SU010 | Visualiser l'aperçu d'export — initialisé, à finaliser après la phase de conception | FN033 | not-started |
 | SU011 | Gérer une relation entre agents | FN034, FN037 | not-started |
-| SU012 | Gérer la vue « Relations » — initialisée, à finaliser après la phase de conception | FN032, FN036 | not-started |
+| SU012 | Gérer la vue « Relationships » — maquette actée séance 06 (matrice + panneau latéral, `04_interface` §6) | FN032, FN036 | not-started |

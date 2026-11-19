@@ -159,7 +159,7 @@
 - **Classification** : 2. Narrative map structure
 
 ## RG035
-- **Description** : A relationship is binary (exactly two agents — unordered pair, TSK25), non-directed and typed, and anchored to exactly one block; its type is read from the configuration file value list; there can be only one relationship per (block, agent pair, type).
+- **Description** : A relationship is binary (exactly two agents — unordered pair, TSK25), non-directed and typed, and anchored to exactly one block; its type is read from the configuration file value list; there can be only one relationship per (block, agent pair): the link between a block and a relationship is unique (TSC decision, session 06, for the MVP); the Block and Relationship entities remain distinct in the data model, so that a post-MVP evolution can allow several relationships — hence several types — per pair and per block.
 - **Classification** : 2. Narrative map structure
 
 ## 3. Journey logic and membership
@@ -185,7 +185,7 @@
 - **Classification** : 3. Journey logic and membership
 
 ## RG042
-- **Description** : The journeys a block is attached to are edited through the journey list shown in the block's edit dialog; this list cannot be emptied; the option is disabled when there is only one journey.
+- **Description** : The journeys a block is attached to are edited through the journey list shown in the block's edit dialog; this list cannot be emptied; the option is disabled when there is only one journey, and for the Start block (RG068).
 - **Classification** : 3. Journey logic and membership
 
 ## RG043
@@ -261,7 +261,7 @@
 - **Classification** : 5. Technical architecture and data model
 
 ## RG060
-- **Description** : Graphical representation metadata (block positions, column order) are stored in a dedicated file associated with the project and restored on reopening.
+- **Description** : Graphical representation metadata (block positions, row/column order of the "Relationships" matrix — RG070) are stored in a dedicated file associated with the project and restored on reopening.
 - **Classification** : 5. Technical architecture and data model
 
 ## RG061
@@ -291,3 +291,15 @@
 ## RG067
 - **Description** : The positions of the agent cards of the "Agents" view are stored at project level in the graphics metadata directory (project layout file, distinct from the per-map layouts, in accordance with the business data structure: agents belong to the project) and restored on reopening; they carry no business value.
 - **Classification** : 5. Technical architecture and data model
+
+## RG068
+- **Description** : The Start block belongs to every journey of the narrative map and the author can never change this attachment: when a journey is created, the Start block is automatically attached to it; in the Start block's edit dialog, the journey list is disabled (RG042); deleting a journey never affects it (RG034). Adopted session 06; implementation planned in a dedicated task before TSK20.
+- **Classification** : 3. Journey logic and membership
+
+## RG069
+- **Description** : In the "Relationships" view, the matrix displays **all the project's agents**, even those with no relationship; cell (A, B) shows the type of the A-B pair's state at the selected block, i.e. the relationship anchored to the last block of rank lower than or equal to the selected block's rank (derived data, never stored) — one relationship per (block, pair), hence a single type per cell (RG035); the side panel's block list is ordered top to bottom by **minimum rank across all journeys** (ties by block identifier), restricted to the blocks visible under the active filters (intersection RG064); the default selected block is the Start block (RG068) — when arriving from a block selected in "Journeys", that block if it belongs to the active filter, otherwise the Start (an element outside the filter is not selectable); with the agent filter active, uninvolved agents are dimmed (same opacity as RG063) and creating a relationship involving them is forbidden. Adopted session 06.
+- **Classification** : 4. Visualization and interaction
+
+## RG070
+- **Description** : In the "Relationships" view, the initial order of the matrix rows and columns is alphabetical on the agent's label (ties by identifier); the author can move each row and each column (drag the header); the resulting order is persisted at project level in the project layout file (as RG067) and restored on reopening; no business value. Adopted session 06.
+- **Classification** : 4. Visualization and interaction

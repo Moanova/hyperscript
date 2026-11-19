@@ -164,7 +164,7 @@ menu:
           references: "FN004"
 
   context_menu:
-    description: "The context menu must remain dynamically aligned with the application menu (same actions and handlers), according to the active view and the selected graphical objects. On the empty grid of the Journeys view, the creation entries carry context-menu-specific labels: 'New Block' (submenu Scene / Pivot / Condition / Ending, as in Project > Blocks > New) and 'New Transition' (as in Project > Transitions > New) - adopted session 04 (TSK16)."
+    description: "The context menu must remain dynamically aligned with the application menu (same actions and handlers), according to the active view and the selected graphical objects. On the empty grid of the Journeys view, the creation entries carry context-menu-specific labels: 'New Block' (submenu Scene / Pivot / Condition / Ending, as in Project > Blocks > New) and 'New Transition' (as in Project > Transitions > New) - adopted session 04 (TSK16); in the 'Relationships' view, a matrix cell's context menu reuses `Project › Relationships` (New.../Edit.../Delete...) and adds 'View in Journeys view' (FN032: switch to 'Journeys' with the focus on the relationship's anchor block) - adopted session 06 (TSK27)."
 
   legend:
     description: |

@@ -189,7 +189,7 @@
     - A relationship is binary: it links exactly two agents. An evolution towards relationships involving more than two agents is post-MVP.
     - It is non-directed (unordered agent pair) and typed; the type is read from a value list defined in a configuration file (enriching this list by the author is post-MVP).
     - It is anchored to a block: "at this point of the story, a relationship of that type between A and B holds".
-    - There can be only one relationship per (block, agent pair, type).
+    - There can be only one relationship per (block, agent pair): the link between a block and a relationship is unique for the MVP.
     - The history of an agent pair is the set of its anchored relationships, ordered by the position of their block in the journey; the current state of the pair at a block is the last relationship anchored to a block located before or at the same rank in that journey (derived data, never stored).
     - Derived journey membership: a relationship belongs to a journey if and only if its anchor block belongs to it.
     - Deleting an agent or a block cascades to its relationships.
@@ -197,13 +197,20 @@
     - The user can create a relationship from the "Project" menu or the context menu: choice of the two agents, the type (from the configured list) and the anchor block.
     - The user can edit a relationship (type, anchor block, note, content) via an edit dialog.
     - The user can delete a relationship with prior confirmation.
-    - The application prevents duplicates (block, agent pair, type).
+    - The application prevents duplicates (block, agent pair).
     - Any creation, modification or deletion of a relationship marks the map, and therefore the project, as modified.
 - **MVP scope**:
     - Agent-agent relationships are part of the MVP (model + configured type list).
     - The dedicated view (SU012) is initialized separately.
 
 
-## SU012: Manage the "Relationships" view — initialized, to be finalized after the design phase
-- **Description**: As an author, I can visualize the graph of agents and their relationships (arcs labeled by type, annotated with anchor blocks) in a dedicated workspace, with cross-navigation to the anchor block in the "Journeys" view.
-- **Status**: initialized scenario — the mockup of this view will be defined during the design phase.
+## SU012: Manage the "Relationships" view
+- **Description**: As an author, I can visualize in a dedicated workspace the agent matrix (one agent per row and per column), each cell showing the type of the relationship state between the agent pair at the selected block, with a side panel listing the blocks in sequence order, and with cross-navigation to the anchor block in the "Journeys" view.
+- **Details**:
+    - The "Relationships" view displays **all the project's agents**, even those with no (yet) relationship.
+    - The matrix is symmetric (non-directed relationships, RG035); the initial row/column order is alphabetical on the label (ties by identifier), and the user can move each row and each column (order persisted at project level, as RG067).
+    - Cell (A, B) shows the type of the A-B pair's state at the selected block: the relationship anchored to the last block of rank lower than or equal to the selected block's rank (derived data, never stored); there is only one relationship per (block, pair), hence a single type per cell (RG035); the cell is empty if the pair has no anchor at a lower or equal rank.
+    - The side panel (on the right) contains, from top to bottom: the journey filter zone, the agent filter zone (mirrors of the "Display" menu — same actions, always synchronized state, two ways to trigger the same action; RG047/RG048/RG063), then the block list ordered from top to bottom by **minimum rank across all journeys** (ties by block identifier), restricted to the blocks visible under the active filters (intersection RG064).
+    - By default, the **Start** block is selected (the Start belongs to all journeys — business rule adopted session 06, to be implemented in a dedicated task before TSK20); when arriving on the view from a block selected in "Journeys", that block is selected if it belongs to the active filter, otherwise the Start (an element outside the filter is not selectable, RG048). This state is visual and not persisted (RG047/RG056).
+    - Cross-navigation: from "Relationships", "View in Journeys view" switches to "Journeys" and focuses the relationship's anchor block (FN032; temporary visual state RG056).
+- **MVP scope**: the "Relationships" view (matrix + side panel) is part of the MVP.

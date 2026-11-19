@@ -30,6 +30,7 @@
 - Grid: minor 20 px / major 80 px (`grid_minor_size`/`grid_major_size`), colors `#333333`/`#4A4A4A`, always visible, redrawn on the visible area only.
 - "Agents" view: dots instead of a grid, purely decorative — spacing `agents_view_dot_spacing_px`, radius `agents_view_dot_radius_px`, color `agents_view_dot_color`; **invisible cell grid** for card positioning on drag release (`agents_view_cell_width`×`agents_view_cell_height`, anchored on the scene origin); agent cards `agents_view_card_width`×`agents_view_card_height` (larger than the 80×40 blocks, no ports) — adopted session 04 (TSK19b), invisible cell grid session 05 (TSK21).
 - **Colors per narrative block type** (node border color): Start `#D19A66` (gold), Scene `#E5C07B` (sand), Pivot `#E06666` (red), Condition `#E06666` (red), End `#E5C07B` (sand) — adopted session 04 from the TSC visual test feedback (TSK16); Pivot and Condition deliberately share the same red, the type displayed inside the node tells them apart.
+- "Relationships" view (adopted session 06): right side panel width `relationships_view_panel_width_px`; matrix cell size `relationships_view_cell_size_px`; color per relationship type `relationship_type_colors` (indexed on the `relationship_types` list); "all" labels of the two panel filter zones = `journey_list_all_label` / `agent_list_all_label`.
 
 
 ---
@@ -75,8 +76,15 @@
 - The filters (journey, agent) do not apply to this view (RG048/RG063).
 - Card positions are persisted **at project level** in the graphics metadata (project layout file, distinct from the per-map layouts — structure matching the business model: agents belong to the project, RG067), restored on reopening; no business value.
 
-### 6.### 6. "Relationships" view
-- *Specification left empty for now — the mockup will be defined during the design phase* (SU012 / FN036). Reminder of the need: graph of agents, arcs labeled by type, annotated with anchor blocks, cross-navigation to the anchor block in the "Journeys" view.
+### 6. "Relationships" view — mockup adopted session 06 (SU012 / FN036)
+- **Type**: dedicated workspace made of an **agent × agent matrix** (central area) and a **side panel on the right** (width `relationships_view_panel_width_px`, RG059).
+- **Matrix**: one row and one column per project agent — **all agents are displayed, even those with no (yet) relationship**; symmetric matrix (non-directed relationships, RG035); cell size, type colors and labels set in the configuration (RG059). Initial row/column order: alphabetical on the label (ties by identifier); the user can move each row and each column (drag the header); the order is persisted at project level in the project layout file (as RG067) and restored on reopening; **widget**: read-only `QTableWidget` (or `QTableView` + dedicated model), headers showing the agent's label, a row/column is moved by dragging its header (native widget move, RG070); cells of size `relationships_view_cell_size_px`, type color from `relationship_type_colors`.
+- **Cell (A, B)**: shows the **type of the A-B pair's state at the selected block** — the relationship anchored to the last block of rank lower than or equal to the selected block's rank (derived data, never stored, SU011); only one relationship per (block, pair), hence a single type per cell (RG035); empty cell when the pair has no anchor at a lower or equal rank. The matrix is **dynamic**: recomputed on every selected-block change.
+- **Side panel (right)**: three zones from top to bottom — (1) journey filter, (2) agent filter, (3) **block list** ordered from top to bottom by minimum rank across all journeys (ties by block identifier), restricted to the blocks visible under the active filters (intersection RG064). The two filter zones mirror the "Display" menu: same actions, always synchronized state (two ways to trigger the same action, RG047/RG048/RG063).
+- **Current block selection**: by default the **Start** block (which belongs to all journeys — business rule adopted session 06, to be implemented in a dedicated task before TSK20); when switching to "Relationships" from a block selected in "Journeys", that block is selected if it belongs to the active filter, otherwise the Start (an element outside the filter is not selectable, RG048). This state is visual, session-only, not persisted (RG047/RG056).
+- **Filters applied to the view**: journey filter (RG048) — relationships whose anchor block is outside the filter are dimmed (configured opacity) and non-interactive; agent filter (RG063) — all agents remain displayed, uninvolved agents are dimmed (same opacity) and creating a relationship involving them is forbidden.
+- **Selection and menus**: single selection (RG049); clicking a cell opens the context menu aligned with the application menu (`Project › Relationships`: New.../Edit.../Delete..., RG055); "View in Journeys view" switches to "Journeys" with the focus on the anchor block (FN032, temporary visual state RG056); relationship note in a tooltip on hover (RG054).
+- **MVP scope**: the "Relationships" view (matrix + side panel) is part of the MVP.
 
 ### 7. "Export" view (in-app preview)
 - "Export" workspace: read-only reading preview of the current narrative map (inert links, no interaction on the content).
@@ -106,7 +114,7 @@
 ## Open points to be validated during the design phase
 1. Shapes/icons of the 5 narrative block types and of transitions — color code adopted session 04 from the visual test feedback (TSK16, see "Theme and style").
 2. Badges: participation count in the "Journeys" view — adopted session 03 (see section 4); incoming/outgoing transition counts in the "Agents" view (to be re-designed).
-3. Mockup of the "Relationships" view.
+3. Mockup of the "Relationships" view — **adopted session 06** (see section 6).
 4. Content of the "Agents" view (re-design).
 5. Sidebars (whether to integrate them or not).
 6. Zoom (post-MVP).

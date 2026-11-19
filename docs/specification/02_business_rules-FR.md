@@ -159,7 +159,7 @@
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG035
-- **Description** : Une relation est binaire (exactement deux agents — paire non ordonnée, TSK25), non dirigée et typée, et ancrée à exactement un bloc ; son type est lu dans la liste de valeurs du fichier de configuration ; il ne peut exister qu'une seule relation par couple (bloc, paire d'agents, type).
+- **Description** : Une relation est binaire (exactement deux agents — paire non ordonnée, TSK25), non dirigée et typée, et ancrée à exactement un bloc ; son type est lu dans la liste de valeurs du fichier de configuration ; il ne peut exister qu'une seule relation par couple (bloc, paire d'agents) : le lien entre un bloc et une relation est unique (décision TSC séance 06, pour le MVP) ; les entités Bloc et Relation restent distinctes dans le modèle de données, afin de permettre en post-MVP plusieurs relations — donc plusieurs types — par paire et par bloc.
 - **Classification** : 2. Structure de la carte narrative
 
 ## 3. Logique des parcours et appartenance
@@ -185,7 +185,7 @@
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG042
-- **Description** : Les parcours auxquels un bloc est rattaché se modifient via la liste des parcours présentée dans le dialogue d'édition du bloc ; cette liste ne peut pas être vidée ; l'option est désactivée s'il n'existe qu'un seul parcours.
+- **Description** : Les parcours auxquels un bloc est rattaché se modifient via la liste des parcours présentée dans le dialogue d'édition du bloc ; cette liste ne peut pas être vidée ; l'option est désactivée s'il n'existe qu'un seul parcours, et pour le bloc Début (RG068).
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG043
@@ -261,7 +261,7 @@
 - **Classification** : 5. Architecture technique et modèle de données
 
 ## RG060
-- **Description** : Les métadonnées de représentation graphique (positions des blocs, ordre des colonnes) sont stockées dans un fichier dédié associé au projet et restaurées à la réouverture.
+- **Description** : Les métadonnées de représentation graphique (positions des blocs, ordre des lignes/colonnes de la matrice « Relationships » — RG070) sont stockées dans un fichier dédié associé au projet et restaurées à la réouverture.
 - **Classification** : 5. Architecture technique et modèle de données
 
 ## RG061
@@ -291,3 +291,15 @@
 ## RG067
 - **Description** : Les positions des cartes agent de la vue « Agents » sont mémorisées au niveau projet dans le répertoire des métadonnées graphiques (fichier layout projet, distinct des layouts par carte narrative, conformément à la structure des données métier : les agents appartiennent au projet) et restaurées à la réouverture ; elles n'ont aucune valeur métier.
 - **Classification** : 5. Architecture technique et modèle de données
+
+## RG068
+- **Description** : Le bloc Début appartient à tous les parcours de la carte narrative et l'auteur ne peut jamais modifier ce rattachement : à la création d'un parcours, le bloc Début y est automatiquement rattaché ; dans le dialogue d'édition du bloc Début, la liste des parcours est désactivée (RG042) ; la suppression d'un parcours ne le concerne jamais (RG034). Acté séance 06 ; implémentation prévue en tâche dédiée avant TSK20.
+- **Classification** : 3. Logique des parcours et appartenance
+
+## RG069
+- **Description** : Dans la vue « Relationships », la matrice affiche **tous les agents du projet**, même ceux qui n'ont aucune relation ; la cellule (A, B) affiche le type de l'état de la paire A-B au bloc sélectionné, c'est-à-dire la relation ancrée au dernier bloc de rang inférieur ou égal au rang du bloc sélectionné (donnée dérivée, jamais stockée) — une seule relation par (bloc, paire), donc un seul type par cellule (RG035) ; la liste des blocs du panneau latéral est ordonnée du haut vers le bas par **rang minimal sur tous les parcours** (ex æquo par identifiant de bloc), restreinte aux blocs visibles sous les filtres actifs (intersection RG064) ; le bloc sélectionné par défaut est le bloc Début (RG068) — à l'arrivée depuis un bloc sélectionné dans « Journeys », ce bloc s'il appartient au filtre actif, sinon le Début (un élément hors filtre n'est pas sélectionnable) ; sous filtre agent actif, les agents non concernés sont estompés (même opacité que RG063) et la création d'une relation les concernant est interdite. Actée séance 06.
+- **Classification** : 4. Visualisation et interaction
+
+## RG070
+- **Description** : Dans la vue « Relationships », l'ordre initial des lignes et des colonnes de la matrice est alphabétique sur le libellé de l'agent (ex æquo par identifiant) ; l'auteur peut déplacer chaque ligne et chaque colonne (glisser l'en-tête) ; l'ordre résultant est persisté au niveau projet dans le fichier layout projet (comme RG067) et restauré à la réouverture ; sans valeur métier. Actée séance 06.
+- **Classification** : 4. Visualisation et interaction
