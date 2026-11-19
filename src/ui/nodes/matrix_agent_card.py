@@ -51,9 +51,8 @@ class MatrixAgentCard(QGraphicsRectItem):
         if agent.note:
             tooltip += f"\n{agent.note}"
         self.setToolTip(tooltip)
-        self.itemChanged.connect(self._on_item_changed)
 
-    def _on_item_changed(self, change, value):
+    def itemChange(self, change, value):
         if change == QGraphicsItem.GraphicsItemChange.ItemSelectedChange:
             self._selected = bool(value)
             self.update()
