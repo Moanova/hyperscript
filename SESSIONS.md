@@ -33,7 +33,8 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 - **Anomalie TSK29 n°2 (test manuel, ouverture d'un projet existant)** : `AttributeError: 'MatrixAgentCard' object has no attribute 'itemChanged'` — `QGraphicsItem` n'a pas de signal `itemChanged` (c'est un signal de `QListWidget`) ; le pattern du dépôt est la surcharge de la méthode `itemChange` (`base_node.py:420`). Corrigée dans `matrix_agent_card.py` (override `itemChange` au lieu du `connect`). Ne se déclenchait qu'avec ≥1 agent (nouveau projet = 0 agent = aucune carte créée). Grep de contrôle : plus aucun `.itemChanged.connect` sur des items graphiques. py_compile OK, pyflakes clean, 95 tests passed + 4 skipped.
 
 ### État en fin de séance
-- Commit + push sur `dev` (feu vert TSC explicite, sans PR) de TSK26/TSK20/TSK27(+correctifs)/TSK28 ; **TSK29 implémentée, non encore committée — feu vert TSC demandé pour commit + push sur `dev`**. Kanban : TSK27, TSK28, TSK29 en Review ; TSK25/TSK26/TSK20 en Done — attente validation TSC. Tests offscreen Qt à valider sur le poste de dev (libGL absent dans le sandbox).
+- Commit + push sur `dev` (feu vert TSC explicite, sans PR) : TSK26 (`3a8c1d2`), TSK20 (`1263a0f`), TSK27 + 2 correctifs (`8651d93`, `b936e29`, `40b9e96`), TSK28 (`a7b4ab0`), TSK29 (`04a3da5`) + 2 correctifs (`8d3ad74` ImportError QToolTip, `2ec0da4` AttributeError itemChanged). Kanban : TSK27, TSK28, TSK29 en **Review** — attente validation TSC ; TSK25/TSK26/TSK20 en Done. Tests offscreen Qt à valider sur le poste de dev (libGL absent dans le sandbox : 95 tests passed + 4 skipped ici).
+- **Fin de séance 09** : anomalies et évolutions restantes actées pour une prochaine séance (retours TSC en attente).
 
 ---
 
