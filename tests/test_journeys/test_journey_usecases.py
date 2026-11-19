@@ -8,11 +8,14 @@
 # ---------------------------------------------------------------------
 """Unit tests for the journey_management use cases (TSK09).
 
-Covers FN023–FN027, FN038 and RG024/RG034/RG038/RG039/RG043/RG062: creation
-does not activate, activation, set-as-default (active unchanged, single
-default), duplication (attachments copied, not activated), deletion (last
-journey refused, reassignment to default, default/active fallback).
+Covers FN023–FN027, FN038 and RG024/RG034/RG038/RG039/RG043/RG062/RG068:
+creation does not activate, activation, set-as-default (active unchanged,
+single default), duplication (attachments copied, not activated), deletion
+(last journey refused, reassignment to default, default/active fallback),
+and RG068 (the Start block is attached to every journey, not editable).
 """
+
+import pytest
 
 from core.models.data_model import Block
 from core.services.project_service import ProjectService
@@ -124,3 +127,48 @@ def test_fn027_delete_reassigns_attachments_and_fixes_default_active():
     assert j1.default is True
     assert nm.active_journey_id == j1.id
     assert service.is_modified is True
+
+
+def test_rg068_start_attached_to_every_new_journey():
+    """RG068: the Start block is automatically attached to each new journey."""
+    service = make_service()
+    nm = service.current_project.narrative_maps[0]
+    start = next(b for b in nm.block if b.typ == "Start")  # RG025
+    assert JourneyService.attachment_journey_ids(nm, start.id) == [nm.journey[0].id]  # at map creation (RG040)
+    j2 = CreateJourneyUseCase(service).execute(lb="J2")
+    assert set(JourneyService.attachment_journey_ids(nm, start.id)) == {nm.journey[0].id, j2.id}
+    j3 = CreateJourneyUseCase(service).execute(lb="J3")
+    assert set(JourneyService.attachment_journey_ids(nm, start.id)) == {j.id for j in nm.journey}
+    # RG044: the Start gets a rank in each new journey
+    jn = next(n for n in nm.journey_node if n.journey_id == j3.id and n.block_id == start.id)
+    assert jn.sequence_order == 0
+
+
+def test_rg068_start_attachments_not_editable():
+    """RG068: the Start block's journey attachments cannot be modified (RG042 guard extended)."""
+    service = make_service()
+    nm = service.current_project.narrative_maps[0]
+    start = next(b for b in nm.block if b.typ == "Start")
+    CreateJourneyUseCase(service).execute(lb="J2")
+    all_ids = [j.id for j in nm.journey]
+    JourneyService.set_block_attachments(nm, start.id, all_ids)  # full list = no-op, allowed
+    assert set(JourneyService.attachment_journey_ids(nm, start.id)) == set(all_ids)
+    with pytest.raises(ValueError):  # partial list refused (RG068)
+        JourneyService.set_block_attachments(nm, start.id, [nm.journey[0].id])
+    assert set(JourneyService.attachment_journey_ids(nm, start.id)) == set(all_ids)
+    # a non-Start block is still editable (RG042 only forbids the empty list)
+    scene = CreateBlockUseCase(service).execute("Scene")
+    JourneyService.set_block_attachments(nm, scene.id, [nm.journey[0].id])
+    assert JourneyService.attachment_journey_ids(nm, scene.id) == [nm.journey[0].id]
+
+
+def test_rg068_start_kept_when_journey_deleted():
+    """RG068/RG034: deleting a journey never detaches the Start block."""
+    service = make_service()
+    nm = service.current_project.narrative_maps[0]
+    start = next(b for b in nm.block if b.typ == "Start")
+    j2 = CreateJourneyUseCase(service).execute(lb="J2")  # Start auto-attached (RG068)
+    assert set(JourneyService.attachment_journey_ids(nm, start.id)) == {nm.journey[0].id, j2.id}
+    result = DeleteJourneyUseCase(service).execute(j2)
+    assert result['success'] is True
+    assert JourneyService.attachment_journey_ids(nm, start.id) == [nm.journey[0].id]

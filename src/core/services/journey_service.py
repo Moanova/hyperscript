@@ -59,9 +59,18 @@ class JourneyService:
     @staticmethod
     def set_block_attachments(narrative_map: NarrativeMap, block_id: int, journey_ids: List[int]) -> None:
         """RG042: replace the journeys a block is attached to. The list cannot
-        be emptied - a block cannot be detached from its last journey."""
+        be emptied - a block cannot be detached from its last journey.
+        RG068: the Start block belongs to every journey of the map and its
+        attachments are never editable - the target list must contain all the
+        journeys of the map."""
         if not journey_ids:
             raise ValueError("A block cannot be detached from its last journey")  # RG042
+        block = next((b for b in narrative_map.block if b.id == block_id), None)
+        if block is not None and block.typ == "Start":  # RG068
+            all_journey_ids = {j.id for j in narrative_map.journey}
+            if set(journey_ids) != all_journey_ids:
+                raise ValueError("The Start block is attached to every journey; "
+                                 "its attachments cannot be modified (RG068)")
         current = set(JourneyService.attachment_journey_ids(narrative_map, block_id))
         target = set(journey_ids)
         for jid in current - target:

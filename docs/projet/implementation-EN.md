@@ -109,7 +109,7 @@
 | RG066 | Agent card in the "Agents" view: larger than a block, no ports, label + type, single selection, note tooltip; no participation-count badge | implemented | ui/nodes/agent_card.py AgentCardItem (agents_view_card_width/height, no ports no badge, shape() RG053, single selection RG049, immediate tooltip RG054) ; ui/views/agents_workspace.py (_select_item_only) | — | visual rendering offscreen to validate |
 | RG067 | Agent card positions persisted at project level in the graphics metadata (project layout file), restored on reopening; no business value | implemented | core/models/view_model.py (AgentCardLayout, ProjectLayout) ; core/services/layout_service.py (save/load_project_layout → layouts/project.json) ; ui/views/agents_workspace.py (collect_project_layout, populate_agents) ; ui/main_window.py (_do_save, _init_workspace) | tests/test_agents/test_project_layout.py | — |
 
-| RG068 | The Start block belongs to every journey of the map, attachment not editable by the author (automatic on journey creation, list disabled in the edit dialog, never affected by RG034) | not-started | — | — | adopted session 06; TSK26 → #TSK09 |
+| RG068 | The Start block belongs to every journey of the map, attachment not editable by the author (automatic on journey creation, list disabled in the edit dialog, never affected by RG034) | implemented | core/services/journey_service.py (set_block_attachments: RG068 guard) ; usecases/journey_management/create_journey_usecase.py (Start auto-attached + recompute RG044) ; ui/dialogs/block_dialog.py (list disabled for the Start block) | tests/test_journeys/test_journey_usecases.py (test_rg068_*) | adopted session 06; TSK26 (Review 19-11-2026) |
 
 ## B. Features (`03_features-*.md`)
 

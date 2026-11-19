@@ -10,6 +10,8 @@ from typing import Optional
 
 from core.models.data_model import Journey
 from core.services.project_service import ProjectService
+from core.services.journey_service import JourneyService
+from core.services.journey_sequence_service import JourneySequenceService
 
 
 class CreateJourneyUseCase:
@@ -32,6 +34,11 @@ class CreateJourneyUseCase:
             note=(note if note and note.strip() else None),
         )
         narrative_map.journey.append(journey)
+        # RG068: the Start block is automatically attached to every new journey
+        start = next((b for b in narrative_map.block if b.typ == "Start"), None)  # RG025
+        if start is not None:
+            JourneyService.attach_block(narrative_map, start.id, journey.id)
+            JourneySequenceService.recompute_journey(narrative_map, journey.id)  # RG044
         # FN023: the active journey is left unchanged
         self.project_service.set_modified(True)
         return journey

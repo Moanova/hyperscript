@@ -9,6 +9,20 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 
 --
 
+## Séance n°07 (2026-11-19)
+
+### Travaux
+- **TSK26 implémentée (RG068 — le bloc Start appartient à tous les parcours, rattachement non modifiable)** : garde dans `JourneyService.set_block_attachments` (si le bloc est Start, la liste cible doit contenir tous les parcours, sinon `ValueError`), rattachement auto du Start dans `CreateJourneyUseCase` (+ `recompute_journey` RG044), liste des parcours désactivée pour le Start dans `block_dialog.py`, +3 tests `test_rg068_*` dans `tests/test_journeys/test_journey_usecases.py` (+ `import pytest`). py_compile OK, **76 tests passed + 2 skipped** (offscreen Qt skippés sans libGL — à valider sur poste de dev, conforme aux séances précédentes). Fiche `tasks/TSK26_start_all_journeys.md` créée ; kanban : TSK26 To do → Doing → Review, chaîne critique séance 07 ; matrices `implementation-FR/EN.md` (RG068 → implemented). TSK20 reste en To do (→ #TSK17, #TSK25, #TSK26).
+- Vérifié sans modification : `duplicate_journey_usecase` (RG043 — le Start étant partout, copié avec) et `delete_journey_usecase` (RG034 — ne concerne jamais le Start).
+
+### Problèmes rencontrés
+- Sandbox sans libGL : tests offscreen Qt non exécutés (2 skipped), comme lors des séances précédentes.
+
+### État en fin de séance
+- Commit + push sur `dev` (feu vert TSC explicite, sans PR). Prochaine étape : TSK20 (CRUD relations, RG035 durcie en (bloc, paire)) puis TSK27 (vue « Relationships »).
+
+---
+
 ## Séance n°06 (2026-11-19)
 
 ### Travaux

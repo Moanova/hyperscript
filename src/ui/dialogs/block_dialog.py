@@ -109,8 +109,9 @@ class BlockDialog(QDialog):
                                else Qt.CheckState.Unchecked)
             self.journeys_list.addItem(item)
         self.journeys_list.setMaximumHeight(self.JOURNEYS_LIST_MAX_HEIGHT_PX)
-        if len(self._journeys) <= 1:
-            # RG042: the option is disabled when the map has a single journey
+        if len(self._journeys) <= 1 or self.block.typ == "Start":
+            # RG042: disabled when the map has a single journey;
+            # RG068: the Start block's attachments are never editable
             self.journeys_list.setEnabled(False)
         self.form.addRow("Journeys:", self.journeys_list)
 
