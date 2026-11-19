@@ -91,7 +91,7 @@
 | RG053 | La zone cliquable d'un élément graphique (bloc, transition) est définie par sa… | partial | ui/nodes/base_node.py; ui/nodes/connection.py (shape()/boundingRect élargis) | — | test offscreen à valider |
 | RG054 | Les notes des blocs et des transitions s'affichent en infobulle dès le survol,… | partial | ui/nodes/base_node.py; ui/nodes/connection.py (hoverEnterEvent → QToolTip.showText immédiat) | — | test offscreen à valider |
 | RG055 | À l'ouverture d'un menu contextuel, l'élément situé sous le curseur est d'abord… | partial | ui/views/journeys_workspace.py; ui/main_window.py (_show_workspace_context_menu construit depuis les QAction du menu général) | — | test offscreen à valider |
-| RG056 | Le focus de navigation croisée entre les vues (y compris la vue « Relations »)… | not-started | — | — | — |
+| RG056 | Le focus de navigation croisée entre les vues (y compris la vue « Relations ») est un état visuel temporaire, non persisté | implemented | ui/views/journeys_workspace.py (focus_block, signal selection_changed) ; ui/views/relationships_workspace.py ; ui/main_window.py (_view_relationship_anchor_in_journeys, _on_tab_changed) | tests/test_relations/test_relationships_workspace_offscreen.py | TSK27 ; « View in Journeys view » au menu contextuel cellule |
 
 ### 5. Architecture technique et modèle de données
 
@@ -109,7 +109,9 @@
 | RG066 | Carte agent dans la vue « Agents » : plus grande qu'un bloc, sans ports, libellé + type, sélection unique, note en infobulle ; pas de badge de comptage | implemented | ui/nodes/agent_card.py AgentCardItem (agents_view_card_width/height, sans ports ni badge, shape() RG053, sélection unique RG049, infobulle immédiate RG054) ; ui/views/agents_workspace.py (_select_item_only) | — | rendu visuel offscreen à valider |
 | RG067 | Positions des cartes agent persistées au niveau projet dans les métadonnées graphiques (fichier layout projet), restaurées à la réouverture ; sans valeur métier | implemented | core/models/view_model.py (AgentCardLayout, ProjectLayout) ; core/services/layout_service.py (save/load_project_layout → layouts/project.json) ; ui/views/agents_workspace.py (collect_project_layout, populate_agents) ; ui/main_window.py (_do_save, _init_workspace) | tests/test_agents/test_project_layout.py | — |
 
-| RG068 | Le bloc Début appartient à tous les parcours de la carte, rattachement non modifiable par l'auteur (auto à la création d'un parcours, liste désactivée dans le dialogue d'édition, non concerné par RG034) | implemented | core/services/journey_service.py (set_block_attachments : garde RG068) ; usecases/journey_management/create_journey_usecase.py (rattachement auto du Start + recompute RG044) ; ui/dialogs/block_dialog.py (liste désactivée pour le Start) | tests/test_journeys/test_journey_usecases.py (test_rg068_*) | actée séance 06 ; TSK26 (Review 19-11-2026) |
+| RG068 | Le bloc Début appartient à tous les parcours de la carte, rattachement non modifiable par l'auteur (auto à la création d'un parcours, liste désactivée dans le dialogue d'édition, non concerné par RG034) | implemented | core/services/journey_service.py (set_block_attachments : garde RG068) ; usecases/journey_management/create_journey_usecase.py (rattachement auto du Start + recompute RG044) ; ui/dialogs/block_dialog.py (liste désactivée pour le Start) | tests/test_journeys/test_journey_usecases.py (test_rg068_*) | actée séance 06 ; TSK26 (Done 19-11-2026) |
+| RG069 | Vue « Relationships » : tous les agents affichés ; cellule = type de l'état dérivé de la paire au bloc sélectionné (dernier ancrage de rang ≤, rang minimal multi-parcours) ; liste du panneau par rang minimal (ex æquo id), restreinte aux blocs visibles (RG064) ; Start par défaut, repli si hors filtre ; filtre agent = agents non concernés estompés + création interdite | implemented | core/services/relationship_service.py (pair_state_at_block, block_min_rank, ordered_anchor_block_ids) ; ui/views/relationships_workspace.py | tests/test_relations/test_relationships_view_logic.py + test_relationships_workspace_offscreen.py | actée séance 06 ; TSK27 |
+| RG070 | Ordre des axes de la matrice « Relationships » : alphabétique initial (libellé, repli id) ; lignes/colonnes déplaçables par drag d'en-tête ; ordre persisté au niveau projet (fichier layout projet) | implemented | core/models/view_model.py (ProjectLayout.relationships_axis_order) ; ui/views/relationships_workspace.py (_on_section_moved, collect_project_layout) ; ui/main_window.py (_do_save) ; config `relationships_view_*` | tests/test_relations/test_relationships_workspace_offscreen.py (moveSection) | actée séance 06 ; TSK27 |
 
 ## B. Fonctionnalités (`03_features-*.md`)
 
@@ -210,7 +212,7 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN036 | Vue « Relationships » : matrice agent×agent + panneau latéral droit (maquette actée séance 06, `04_interface` §6) | not-started | — | — | — | — | tâche ultérieure (TSK27) après TSK20 |
+| FN036 | Vue « Relationships » : matrice agent×agent + panneau latéral droit (maquette actée séance 06, `04_interface` §6) | implemented | onglet « Relationships » (tab bar) ; menu contextuel cellule | ui/views/relationships_workspace.py (matrice QTableWidget + panneau filtres/liste) ; ui/main_window.py (intégration, filtres resync, transmission bloc FN032, menu contextuel) | core/services/relationship_service.py (pair_state_at_block RG069) | tests/test_relations/ | TSK27 ; cellules = état dérivé RG069 ; ordre axes RG070 ; filtres RG048/RG063/RG064 |
 
 ### Configuration
 
@@ -304,4 +306,4 @@
 | SU009 | Gérer la vue agents — re-conçue séance 04 (points d'ancrage + cartes agent, TSK19b) | FN031, FN032 | implemented |
 | SU010 | Visualiser l'aperçu d'export — initialisé, à finaliser après la phase de conception | FN033 | not-started |
 | SU011 | Gérer une relation entre agents | FN034, FN037 | implemented |
-| SU012 | Gérer la vue « Relationships » — maquette actée séance 06 (matrice + panneau latéral, `04_interface` §6) | FN032, FN036 | not-started |
+| SU012 | Gérer la vue « Relationships » — maquette actée séance 06 (matrice + panneau latéral, `04_interface` §6) | FN032, FN036 | implemented |

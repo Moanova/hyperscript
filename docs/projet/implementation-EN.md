@@ -91,7 +91,7 @@
 | RG053 | The clickable area of a graphical element (block, transition) is defined by its… | partial | ui/nodes/base_node.py; ui/nodes/connection.py (enlarged shape()/boundingRect) | — | offscreen test to validate |
 | RG054 | The notes of blocks and transitions are shown in a tooltip as soon as they are… | partial | ui/nodes/base_node.py; ui/nodes/connection.py (hoverEnterEvent -> immediate QToolTip.showText) | — | offscreen test to validate |
 | RG055 | When a context menu opens, the element under the cursor is selected first; the… | partial | ui/views/journeys_workspace.py; ui/main_window.py (_show_workspace_context_menu built from the application menu's own QActions) | — | offscreen test to validate |
-| RG056 | The cross-view navigation focus (including the "Relationships" view) is a… | not-started | — | — | — |
+| RG056 | The cross-view navigation focus (including the "Relationships" view) is a temporary visual state, not persisted | implemented | ui/views/journeys_workspace.py (focus_block, selection_changed signal) ; ui/views/relationships_workspace.py ; ui/main_window.py (_view_relationship_anchor_in_journeys, _on_tab_changed) | tests/test_relations/test_relationships_workspace_offscreen.py | TSK27 ; "View in Journeys view" in the cell context menu |
 
 ### 5. Technical architecture and data model
 
@@ -109,7 +109,9 @@
 | RG066 | Agent card in the "Agents" view: larger than a block, no ports, label + type, single selection, note tooltip; no participation-count badge | implemented | ui/nodes/agent_card.py AgentCardItem (agents_view_card_width/height, no ports no badge, shape() RG053, single selection RG049, immediate tooltip RG054) ; ui/views/agents_workspace.py (_select_item_only) | — | visual rendering offscreen to validate |
 | RG067 | Agent card positions persisted at project level in the graphics metadata (project layout file), restored on reopening; no business value | implemented | core/models/view_model.py (AgentCardLayout, ProjectLayout) ; core/services/layout_service.py (save/load_project_layout → layouts/project.json) ; ui/views/agents_workspace.py (collect_project_layout, populate_agents) ; ui/main_window.py (_do_save, _init_workspace) | tests/test_agents/test_project_layout.py | — |
 
-| RG068 | The Start block belongs to every journey of the map, attachment not editable by the author (automatic on journey creation, list disabled in the edit dialog, never affected by RG034) | implemented | core/services/journey_service.py (set_block_attachments: RG068 guard) ; usecases/journey_management/create_journey_usecase.py (Start auto-attached + recompute RG044) ; ui/dialogs/block_dialog.py (list disabled for the Start block) | tests/test_journeys/test_journey_usecases.py (test_rg068_*) | adopted session 06; TSK26 (Review 19-11-2026) |
+| RG068 | The Start block belongs to every journey of the map, attachment not editable by the author (automatic on journey creation, list disabled in the edit dialog, never affected by RG034) | implemented | core/services/journey_service.py (set_block_attachments: RG068 guard) ; usecases/journey_management/create_journey_usecase.py (Start auto-attached + recompute RG044) ; ui/dialogs/block_dialog.py (list disabled for the Start block) | tests/test_journeys/test_journey_usecases.py (test_rg068_*) | adopted session 06; TSK26 (Done 19-11-2026) |
+| RG069 | "Relationships" view: all agents displayed; cell = type of the pair's derived state at the selected block (last anchor of rank <=, minimum rank across journeys); panel list by minimum rank (ties by id), restricted to visible blocks (RG064); Start by default, fallback if outside filter; agent filter = uninvolved agents dimmed + creation forbidden | implemented | core/services/relationship_service.py (pair_state_at_block, block_min_rank, ordered_anchor_block_ids) ; ui/views/relationships_workspace.py | tests/test_relations/test_relationships_view_logic.py + test_relationships_workspace_offscreen.py | adopted session 06; TSK27 |
+| RG070 | Row/column order of the "Relationships" matrix: alphabetical initial (label, ties by id); rows/columns movable by header drag; order persisted at project level (project layout file) | implemented | core/models/view_model.py (ProjectLayout.relationships_axis_order) ; ui/views/relationships_workspace.py (_on_section_moved, collect_project_layout) ; ui/main_window.py (_do_save) ; config `relationships_view_*` | tests/test_relations/test_relationships_workspace_offscreen.py (moveSection) | adopted session 06; TSK27 |
 
 ## B. Features (`03_features-*.md`)
 
@@ -210,7 +212,7 @@
 
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN036 | "Relationships" view: agent×agent matrix + right side panel (mockup adopted session 06, `04_interface` §6) | not-started | — | — | — | — | later task (TSK27) after TSK20 |
+| FN036 | "Relationships" view: agent×agent matrix + right side panel (mockup adopted session 06, `04_interface` §6) | implemented | "Relationships" tab (tab bar) ; cell context menu | ui/views/relationships_workspace.py (QTableWidget matrix + filter/block side panel) ; ui/main_window.py (integration, filter resync, block forwarding FN032, context menu) | core/services/relationship_service.py (pair_state_at_block RG069) | tests/test_relations/ | TSK27 ; cells = derived state RG069 ; axis order RG070 ; filters RG048/RG063/RG064 |
 
 ### Configuration
 
@@ -304,4 +306,4 @@
 | SU009 | Manage the agents view — re-designed session 04 (anchor dots + agent cards, TSK19b) | FN031, FN032 | implemented |
 | SU010 | Preview the export — initialized, to be finalized after the design phase | FN033 | not-started |
 | SU011 | Manage a Relationship Between Agents | FN034, FN037 | implemented |
-| SU012 | Manage the "Relationships" view — mockup adopted session 06 (matrix + side panel, `04_interface` §6) | FN032, FN036 | not-started |
+| SU012 | Manage the "Relationships" view — mockup adopted session 06 (matrix + side panel, `04_interface` §6) | FN032, FN036 | implemented |

@@ -73,6 +73,10 @@ class JourneysWorkspace(QGraphicsView, QObject):
     # MainWindow builds the context menu dynamically from the application menu
     context_menu_requested = Signal(object, object)  # item (BlockNode/Connection/None), global QPoint
 
+    # Emitted when the single selection changes (RG049) - MainWindow forwards
+    # the selected block to the "Relationships" view (FN032, TSK27)
+    selection_changed = Signal(object)  # BlockNode/Connection or None
+
     def __init__(self, narrative_map=None, info_bar=None, main_window=None):
         super().__init__()
 
@@ -537,6 +541,14 @@ class JourneysWorkspace(QGraphicsView, QObject):
                 return item
         return None
 
+    def focus_block(self, block_id: int):
+        """RG056/FN032 (TSK27): temporary cross-view focus - select the block
+        and scroll to it; released by a click on empty space (RG049)."""
+        node = self.find_block_node(block_id)
+        if node is not None:
+            self._select_item_only(node)
+            self.ensure_visible(node.pos().x(), node.pos().y())
+
     def find_connection(self, transition_id: int):
         """Find the Connection of a business transition id."""
         for item in self.scene.items():
@@ -605,12 +617,14 @@ class JourneysWorkspace(QGraphicsView, QObject):
                 existing_item.setSelected(False)
         if item.flags() & QGraphicsItem.ItemIsSelectable:
             item.setSelected(True)
+        self.selection_changed.emit(item)  # TSK27/FN032
 
     def _clear_all_selections(self):
         """Deselect every selectable item (RG049: a click on empty space)."""
         for item in self.scene.items():
             if (item.flags() & QGraphicsItem.ItemIsSelectable and item.isEnabled()):
                 item.setSelected(False)
+        self.selection_changed.emit(None)  # TSK27/FN032
 
     def get_selected_item(self):
         """Return the single selected item (BlockNode or Connection), or None."""

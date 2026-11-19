@@ -44,6 +44,16 @@
   "journey_filter_opacity": 0.25,
   "journey_list_all_label": "All journeys",
   "relationship_types": ["friend", "ally", "rival", "enemy", "romantic", "family"],
+  "relationship_type_colors": {
+    "friend": "#A7C957",
+    "ally": "#E5C07B",
+    "rival": "#D19A66",
+    "enemy": "#E06666",
+    "romantic": "#C678DD",
+    "family": "#98C379"
+  },
+  "relationships_view_panel_width_px": 260,
+  "relationships_view_cell_size_px": 64,
   "log_level": "WARNING",
   "agents_view_dot_spacing_px": 20,
   "agents_view_dot_radius_px": 1.5,

@@ -9,6 +9,27 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 
 --
 
+## Séance n°09 (2026-11-19)
+
+### Travaux
+- **Validation TSC** : TSK25, TSK26, TSK20 passées de Review en **Done** (kanban).
+- **TSK27 implémentée (vue « Relationships »)** : `ui/views/relationships_workspace.py` (nouveau) — matrice agent×agent `QTableWidget` lecture seule (en-têtes déplaçables, symétrique, diagonale désactivée, cellule = type + couleur `relationship_type_colors`, tooltip note) + panneau latéral droit (combos filtre parcours/agent miroirs du menu Display + liste des blocs par rang minimal multi-parcours restreinte aux visibles RG064) ; cellule = état dérivé au bloc sélectionné via `RelationshipService.pair_state_at_block` (nouveau, RG069, avec `block_min_rank`) ; filtres RG048/RG063/RG064 (cellules hors filtre désactivées ; filtre agent → agents non concernés estompés + création interdite sur les paires ne les impliquant pas) ; drag d'en-tête → ordre persisté au niveau projet (`ProjectLayout.relationships_axis_order`, RG070, sauvé dans `_do_save`). `journeys_workspace.py` : + signal `selection_changed` + `focus_block` (RG056/FN032). `main_window.py` : création/destruction du workspace, transmission du bloc sélectionné dans Journeys au basculement d'onglet (repli Start si hors filtre), resync des filtres depuis/vers la vue, refresh via `_update_menu_state`, menu contextuel cellule (`Project › Relationships` + « View in Journeys view » → focus bloc d'ancrage), persistance RG070. Config : `relationships_view_panel_width_px`, `relationships_view_cell_size_px`, `relationship_type_colors`.
+- Tests : `tests/test_relations/test_relationships_view_logic.py` (5 Qt-free) + `test_relationships_workspace_offscreen.py` (4 offscreen). py_compile OK, config JSON valide, **93 tests passed + 3 skipped** (offscreen Qt sans libGL — à valider sur poste de dev).
+- Suivi : fiche `tasks/TSK27_relationships_view.md` (Doing → Review) ; kanban TSK27 en Review, To do/Doing vides ; matrices `implementation-FR/EN.md` : RG056/RG069/RG070/FN036/SU012 → implemented (+ RG068 → Done).
+
+### Choix actés
+- Filtre agent actif : cellule désactivée si la paire n'implique pas l'agent filtré (création interdite pour les agents estompés, RG069).
+- Drag d'en-tête : synchronise ligne et colonne (matrice symétrique), puis rebuild complet de la matrice.
+
+### Problèmes rencontrés
+- 2 tests écrits avec de mauvaises attentes initiales (rang min multi-parcours, filtre agent sans participation) — corrigés, le code était bon.
+- Sandbox sans libGL : 3 tests offscreen skippés (à valider sur poste de dev).
+
+### État en fin de séance
+- Commit + push sur `dev` (feu vert TSC explicite, sans PR). Kanban : toutes les tâches en Review/Done — attente validation TSC de TSK27.
+
+---
+
 ## Séance n°08 (2026-11-19)
 
 ### Travaux

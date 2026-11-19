@@ -71,13 +71,34 @@ class RelationshipService:
                 if {r.agent_1_id, r.agent_2_id} == {a, b}]
 
     @staticmethod
+    def block_min_rank(narrative_map: NarrativeMap, block_id: int) -> int:
+        """Minimum rank of a block across all journeys (its journey_node
+        sequence_order values, RG044); 0 when the block has no attachment."""
+        ranks = [jn.sequence_order for jn in narrative_map.journey_node
+                 if jn.block_id == block_id]
+        return min(ranks) if ranks else 0
+
+    @staticmethod
     def ordered_anchor_block_ids(narrative_map: NarrativeMap) -> List[int]:
         """Block ids ordered by minimum rank across all journeys (ties by block
         id) - the RG069 ordering rule, shared by the "Relationships" view side
         panel and the anchor block list of the relationship dialog."""
-        def min_rank(block_id: int) -> int:
-            ranks = [jn.sequence_order for jn in narrative_map.journey_node
-                     if jn.block_id == block_id]
-            return min(ranks) if ranks else 0
         return sorted((b.id for b in narrative_map.block),
-                      key=lambda bid: (min_rank(bid), bid))
+                      key=lambda bid: (RelationshipService.block_min_rank(narrative_map, bid), bid))
+
+    @staticmethod
+    def pair_state_at_block(narrative_map: NarrativeMap, agent_1_id: int, agent_2_id: int,
+                            block_id: int) -> Optional[Relationship]:
+        """RG069/SU011: the state of an agent pair at a given block = the
+        relationship anchored to the last block of rank lower than or equal to
+        the block's rank (ranks = minimum across all journeys). Derived data,
+        never stored. With RG035 (unique (block, pair)) at most one
+        relationship per (block, pair), so the result is unambiguous."""
+        threshold = RelationshipService.block_min_rank(narrative_map, block_id)
+        best = None
+        best_rank = -1
+        for r in RelationshipService.get_pair_relationships(narrative_map, agent_1_id, agent_2_id):
+            rank = RelationshipService.block_min_rank(narrative_map, r.block_id)
+            if rank <= threshold and rank > best_rank:
+                best, best_rank = r, rank
+        return best

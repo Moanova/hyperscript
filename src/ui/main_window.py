@@ -36,7 +36,7 @@ from PySide6.QtGui import QCloseEvent
 
 from ui.widgets.info_bar import InfoBar
 from ui.widgets.tab_bar import TabBar
-from ui.views import JourneysWorkspace, AgentsWorkspace
+from ui.views import JourneysWorkspace, AgentsWorkspace, RelationshipsWorkspace
 from ui.nodes.block_node import BlockNode
 from ui.nodes.connection import Connection
 from ui.nodes.agent_card import AgentCardItem
@@ -49,11 +49,15 @@ from ui.dialogs import (
     RelationshipDialog, RelationshipSelectionDialog,
 )
 from core.services.journey_service import JourneyService
+from core.services.journey_filter_service import JourneyFilterService
+from core.services.agent_filter_service import AgentFilterService
 from core.services.participation_service import ParticipationService
 from core.services.project_service import ProjectService
 from core.services.about_service import AboutService
 from core.services.change_log_service import ChangeLogService
 from core.services.layout_service import LayoutService
+from core.services.relationship_service import RelationshipService
+from core.models.view_model import ProjectLayout
 from usecases.project_management import CreateProjectUseCase
 from usecases.file_management import (
     LoadProjectUseCase, SaveProjectUseCase, QuitApplicationUseCase
@@ -188,6 +192,8 @@ class MainWindow(QMainWindow):
         # Workspace state (created when a project is opened)
         self.journeys_workspace = None
         self.agents_workspace = None
+        self.relationships_workspace = None  # TSK27
+        self._last_journeys_block_id = None  # TSK27/FN032: block selected in "Journeys"
         self.journey_filter_active = False  # RG047/RG048: off by default, not persisted
         self.agent_filter_agent_id = None  # RG047/RG063: agent filter off by default, not persisted
 
@@ -334,6 +340,9 @@ class MainWindow(QMainWindow):
                 action.setEnabled(True)
         # "Save" is enabled only when the open project is modified (RG006)
         self.menu_actions['save'].setEnabled(has_project and self.project_service.is_modified)
+        # TSK27: keep the "Relationships" view in sync with the model
+        if has_project and self.relationships_workspace is not None:
+            self.relationships_workspace.refresh()
 
     # ---------------------------------------------------------------------
     # Welcome screen (no project open)
@@ -496,10 +505,14 @@ class MainWindow(QMainWindow):
                     nm = self.project_service.current_project.narrative_maps[0]
                     LayoutService.save_workspace_layout(
                         file_path, nm.id, self.journeys_workspace.collect_workspace_layout())
-                # RG067: agent card positions are persisted at project level
-                if self.agents_workspace is not None:
-                    LayoutService.save_project_layout(
-                        file_path, self.agents_workspace.collect_project_layout())
+                # RG067/RG070: agent card positions and the "Relationships"
+                # matrix axis order are persisted at project level
+                if self.agents_workspace is not None or self.relationships_workspace is not None:
+                    project_layout = (self.agents_workspace.collect_project_layout()
+                                      if self.agents_workspace is not None else ProjectLayout())
+                    if self.relationships_workspace is not None:  # TSK27
+                        self.relationships_workspace.collect_project_layout(project_layout)
+                    LayoutService.save_project_layout(file_path, project_layout)
                 project = self.project_service.current_project
                 self.setWindowTitle(f"{_get_config('app_window_title', 'Hyperscript')} : {project.lb} ({file_path})")
                 self._update_menu_state()  # is_modified is now False: Save is disabled (RG006)
@@ -598,12 +611,29 @@ class MainWindow(QMainWindow):
             saved_project_layout = LayoutService.load_project_layout(self.project_service.file_path)
         agents_workspace.populate_agents(project, saved_project_layout)
 
+        # Relationships view (TSK27): matrix + side panel; axis order from the
+        # project-level layout (RG070)
+        workspace.selection_changed.connect(self._on_journeys_selection_changed)
+        relationships_workspace = RelationshipsWorkspace(project=project, narrative_map=nm,
+                                                         info_bar=self.info_bar, main_window=self)
+        relationships_workspace.anchor_block_selected.connect(self._on_relationships_anchor_selected)
+        relationships_workspace.journey_filter_requested.connect(self._set_journey_filter_active)
+        relationships_workspace.agent_filter_requested.connect(self._set_agent_filter)
+        relationships_workspace.context_menu_requested.connect(self._show_relationships_context_menu)
+        relationships_workspace.workspace_modified.connect(self._on_workspace_modified)
+        self.relationships_page.layout().addWidget(relationships_workspace)
+        self.relationships_workspace = relationships_workspace
+        relationships_workspace.populate(project, nm, saved_project_layout)
+
         # RG047/RG048/RG063: the filters are disabled by default, not persisted
         # (map views only — never applied to the "Agents" view)
         self.journey_filter_active = False
         workspace.set_journey_filter_active(False)
         self.agent_filter_agent_id = None
         workspace.set_agent_filter(None)
+        if self.relationships_workspace is not None:  # TSK27
+            self.relationships_workspace.set_journey_filter_active(False)
+            self.relationships_workspace.set_agent_filter(None)
         self._rebuild_journey_menu()
         self._rebuild_agent_menu()
         self.tab_bar.show()
@@ -618,6 +648,11 @@ class MainWindow(QMainWindow):
             self.agents_workspace.setParent(None)
             self.agents_workspace.deleteLater()
             self.agents_workspace = None
+        if self.relationships_workspace is not None:  # TSK27
+            self.relationships_workspace.setParent(None)
+            self.relationships_workspace.deleteLater()
+            self.relationships_workspace = None
+        self._last_journeys_block_id = None
         self.journey_filter_active = False
         self.agent_filter_agent_id = None
         self.tab_bar.hide()
@@ -626,6 +661,41 @@ class MainWindow(QMainWindow):
         page = self.view_pages.get(tab_name)
         if page is not None:
             self.pages.setCurrentWidget(page)
+        if tab_name == "Relationships" and self.relationships_workspace is not None:
+            # FN032/RG069 (TSK27): forward the block selected in "Journeys" if
+            # it belongs to the active filters, otherwise the Start block
+            block_id = self._last_journeys_block_id
+            if block_id is None or not self._block_in_active_filters(block_id):
+                nm = self._current_narrative_map()
+                start = next((b for b in nm.block if b.typ == "Start"), None) if nm else None
+                block_id = start.id if start else None
+            if block_id is not None:
+                self.relationships_workspace.set_anchor_block(block_id)
+
+    def _block_in_active_filters(self, block_id: int) -> bool:
+        """RG048/RG063/RG064: an element outside the active filters is not selectable."""
+        nm = self._current_narrative_map()
+        if nm is None:
+            return False
+        if self.journey_filter_active:
+            active = nm.get_active_journey()
+            if block_id not in JourneyFilterService.visible_block_ids(nm, active.id if active else None):
+                return False
+        if self.agent_filter_agent_id is not None:
+            if block_id not in AgentFilterService.visible_block_ids(nm, self.agent_filter_agent_id):
+                return False
+        return True
+
+    def _on_journeys_selection_changed(self, item):
+        """TSK27/FN032: remember the block selected in "Journeys" to forward it
+        to the "Relationships" view on tab switch."""
+        self._last_journeys_block_id = item.entity.id if isinstance(item, BlockNode) else None
+
+    def _on_relationships_anchor_selected(self, block_id: int):
+        nm = self._current_narrative_map()
+        block = next((b for b in nm.block if b.id == block_id), None) if nm else None
+        if block is not None:
+            self.info_bar.show_message(f"Anchor block: {block.lb} ({block.typ})")
 
     # ---------------------------------------------------------------------
     # Blocks and transitions actions (FN014/FN016/FN018/FN020/FN022)
@@ -787,6 +857,8 @@ class MainWindow(QMainWindow):
         self.journey_filter_active = active
         if self.journeys_workspace is not None:
             self.journeys_workspace.set_journey_filter_active(active)
+        if self.relationships_workspace is not None:  # TSK27: resync the side panel
+            self.relationships_workspace.set_journey_filter_active(active)
         self._rebuild_journey_menu()
 
     def _rebuild_agent_menu(self):
@@ -814,6 +886,8 @@ class MainWindow(QMainWindow):
         self.agent_filter_agent_id = agent_id
         if self.journeys_workspace is not None:
             self.journeys_workspace.set_agent_filter(agent_id)
+        if self.relationships_workspace is not None:  # TSK27: resync the side panel
+            self.relationships_workspace.set_agent_filter(agent_id)
         self._rebuild_journey_menu()
         self._rebuild_agent_menu()
 
@@ -1142,6 +1216,48 @@ class MainWindow(QMainWindow):
                 new_block_menu.addAction(self.menu_actions[key])
             menu.addAction("New Transition", self._start_transition_creation)
         menu.exec(global_pos)
+
+    def _show_relationships_context_menu(self, row, col, global_pos):
+        """RG055 (TSK27): context menu of a matrix cell - same handlers as
+        Project > Relationships, plus 'View in Journeys view' (FN032)."""
+        menu = QMenu(self)
+        menu.setStyleSheet(theme.CONTEXT_MENU_STYLESHEET)
+        new_action = menu.addAction("New...", self._new_relationship)
+        edit_action = menu.addAction("Edit...", self._edit_relationship)
+        delete_action = menu.addAction("Delete...", self._delete_relationship)
+        new_action.setEnabled(self.menu_actions['relationships_new'].isEnabled())
+        edit_action.setEnabled(self.menu_actions['relationships_edit'].isEnabled())
+        delete_action.setEnabled(self.menu_actions['relationships_delete'].isEnabled())
+        # RG069: with the agent filter active, creation is forbidden on a pair
+        # not involving the filtered agent
+        if (self.relationships_workspace is not None and row >= 0 and col >= 0
+                and self.agent_filter_agent_id is not None):
+            a_row = self.relationships_workspace.agent_id_at(row)
+            a_col = self.relationships_workspace.agent_id_at(col)
+            if self.agent_filter_agent_id not in (a_row, a_col):
+                new_action.setEnabled(False)
+        menu.addSeparator()
+        view_action = menu.addAction("View in Journeys view")
+        action = menu.exec(global_pos)
+        if action is view_action:
+            self._view_relationship_anchor_in_journeys(row, col)
+
+    def _view_relationship_anchor_in_journeys(self, row, col):
+        """FN032/RG056 (TSK27): switch to "Journeys" and focus the anchor block
+        of the cell's relationship state (or the current anchor block)."""
+        ws = self.relationships_workspace
+        nm = self._current_narrative_map()
+        if ws is None or nm is None:
+            return
+        a_row, a_col = ws.agent_id_at(row), ws.agent_id_at(col)
+        block_id = ws.get_anchor_block_id()
+        if a_row is not None and a_col is not None and block_id is not None:
+            rel = RelationshipService.pair_state_at_block(nm, a_row, a_col, block_id)
+            if rel is not None:
+                block_id = rel.block_id
+        self.tab_bar.forceCurrentTab("Journeys")
+        if self.journeys_workspace is not None and block_id is not None:
+            self.journeys_workspace.focus_block(block_id)
 
     def _show_agents_context_menu(self, item, global_pos):
         """Context menu of the "Agents" view (RG055): same labels and enabled
