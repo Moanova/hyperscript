@@ -176,7 +176,11 @@ class MainWindow(QMainWindow):
         QVBoxLayout(self.agents_page).setContentsMargins(0, 0, 0, 0)
         self.pages.addWidget(self.agents_page)
         self.view_pages["Agents"] = self.agents_page
-        for name in ("Relationships", "Export"):
+        self.relationships_page = QWidget()  # TSK27: workspace added in _init_workspace
+        QVBoxLayout(self.relationships_page).setContentsMargins(0, 0, 0, 0)
+        self.pages.addWidget(self.relationships_page)
+        self.view_pages["Relationships"] = self.relationships_page
+        for name in ("Export",):
             page = QWidget()
             page_layout = QVBoxLayout(page)
             label = QLabel(f"{name} view — handled by a later task.")

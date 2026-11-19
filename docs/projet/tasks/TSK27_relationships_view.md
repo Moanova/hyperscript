@@ -16,4 +16,5 @@
 ## Journal
 
 - 2026-11-19 : passée en Doing (TSK20/TSK26 en Review puis Done). Implémentation réalisée ; py_compile OK ; **93 tests passed + 3 skipped** (offscreen Qt sans libGL — à valider sur poste de dev). Passée en Review 19-11-2026.
+- 2026-11-19 (retour TSC, test manuel) : anomalie à l'ouverture ET à la création d'un projet — `AttributeError: self.relationships_page` dans `_init_workspace` (`main_window.py`) : la page « Relationships » était créée en variable locale dans `__init__` (stockée seulement dans `view_pages`), sans attribut. **Corrigée** : `self.relationships_page` créé comme attribut de page dans `__init__` (« Export » seul reste en placeholder) + test de fumée offscreen `tests/test_relations/test_main_window_smoke_offscreen.py` (création de projet via MainWindow → 3 workspaces construits, ancre = Start).
 - Choix d'implémentation : filtre agent actif → une cellule est désactivée si la paire n'implique pas l'agent filtré (création interdite pour les agents estompés, RG069) ; déplacement d'en-tête synchronise ligne et colonne (matrice symétrique) puis rebuild complet.
