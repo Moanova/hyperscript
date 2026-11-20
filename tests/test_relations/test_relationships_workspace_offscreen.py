@@ -43,7 +43,7 @@ import pytest
 pytest.importorskip("PySide6")
 
 try:
-    from PySide6.QtWidgets import QApplication, QFrame, QGraphicsSceneHoverEvent, QWidget
+    from PySide6.QtWidgets import QApplication, QFrame, QGraphicsSceneHoverEvent
     from PySide6.QtCore import Qt, QPoint, QPointF, QSize, QEvent
     from PySide6.QtGui import QMouseEvent, QContextMenuEvent, QColor
 except Exception as e:  # libGL missing, no display, ...
@@ -61,6 +61,7 @@ from ui.views.relationships_workspace import (
     RelationshipsWorkspace, _GridLineItem, _CELL_SIZE, _CELLS_LEFT, _CELLS_TOP,
     _CARD_OFF_X, _CARD_OFF_Y, _PANEL_WIDTH, _SEPARATOR_HEIGHT, _DOT_COLOR,
 )
+from ui.widgets.filters_side_panel import FiltersSidePanel  # TSK33
 from ui.utils import theme
 
 
@@ -386,7 +387,7 @@ def test_no_gray_strip_on_the_right_of_the_panel(qapp):
     sizes = sp.sizes()
     assert sizes[-1] == _PANEL_WIDTH
     panel = next(c for c in sp.children()
-                 if c.isWidgetType() and c.__class__ is QWidget)
+                 if c.isWidgetType() and isinstance(c, FiltersSidePanel))  # TSK33
     assert panel.x() + panel.width() == sp.width()  # panel flush to the right edge
     ws.hide()
 

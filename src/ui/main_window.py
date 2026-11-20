@@ -36,6 +36,7 @@ from PySide6.QtGui import QCloseEvent
 
 from ui.widgets.info_bar import InfoBar
 from ui.widgets.tab_bar import TabBar
+from ui.widgets.filters_side_panel import FiltersSidePanel, SidePanelSplitter  # TSK33
 from ui.views import JourneysWorkspace, AgentsWorkspace, RelationshipsWorkspace
 from ui.nodes.block_node import BlockNode
 from ui.nodes.connection import Connection
@@ -195,6 +196,8 @@ class MainWindow(QMainWindow):
 
         # Workspace state (created when a project is opened)
         self.journeys_workspace = None
+        self.journeys_splitter = None  # TSK33: page-level splitter hosting the filters side panel
+        self.journeys_panel = None     # TSK33: FiltersSidePanel of the "Journeys" view (no block list)
         self.agents_workspace = None
         self.relationships_workspace = None  # TSK27
         self._last_journeys_block_id = None  # TSK27/FN032: block selected in "Journeys"
@@ -592,8 +595,18 @@ class MainWindow(QMainWindow):
         workspace.transition_created.connect(self._on_transition_created)
         workspace.workspace_modified.connect(self._on_workspace_modified)
         workspace.context_menu_requested.connect(self._show_workspace_context_menu)
-        self.journeys_page.layout().addWidget(workspace)
+        # TSK33: the "Journeys" page gets the same filters side panel as
+        # "Relationships" - but WITHOUT the block list (show_block_list=False,
+        # the area below the filters stays empty); the splitter lives at page
+        # level, the workspace itself is unchanged
+        journeys_panel = FiltersSidePanel(project=project, narrative_map=nm, show_block_list=False)
+        journeys_panel.journey_filter_requested.connect(self._on_journey_filter_requested)  # TSK30 (4.1), shared with the Relationships panel
+        journeys_panel.agent_filter_requested.connect(self._set_agent_filter)
+        journeys_splitter = SidePanelSplitter(workspace, journeys_panel, parent=self.journeys_page)
+        self.journeys_page.layout().addWidget(journeys_splitter)
         self.journeys_workspace = workspace
+        self.journeys_splitter = journeys_splitter
+        self.journeys_panel = journeys_panel
 
         saved = None
         if self.project_service.file_path:
@@ -621,7 +634,7 @@ class MainWindow(QMainWindow):
         relationships_workspace = RelationshipsWorkspace(project=project, narrative_map=nm,
                                                          info_bar=self.info_bar, main_window=self)
         relationships_workspace.anchor_block_selected.connect(self._on_relationships_anchor_selected)
-        relationships_workspace.journey_filter_requested.connect(self._on_relationships_journey_filter_requested)  # TSK30 (4.1)
+        relationships_workspace.journey_filter_requested.connect(self._on_journey_filter_requested)  # TSK30 (4.1) + TSK33: shared with the "Journeys" panel
         relationships_workspace.agent_filter_requested.connect(self._set_agent_filter)
         relationships_workspace.context_menu_requested.connect(self._show_relationships_context_menu)
         relationships_workspace.cell_clicked.connect(self._on_relationship_cell_clicked)  # TSK29
@@ -639,6 +652,8 @@ class MainWindow(QMainWindow):
         if self.relationships_workspace is not None:  # TSK27
             self.relationships_workspace.set_journey_filter_active(False)
             self.relationships_workspace.set_agent_filter(None)
+        if self.journeys_panel is not None:  # TSK33: build the "Journeys" panel combos (filters off, RG047)
+            self.journeys_panel.refresh()
         self._rebuild_journey_menu()
         self._rebuild_agent_menu()
         self.tab_bar.show()
@@ -649,6 +664,11 @@ class MainWindow(QMainWindow):
             self.journeys_workspace.setParent(None)
             self.journeys_workspace.deleteLater()
             self.journeys_workspace = None
+        if self.journeys_splitter is not None:  # TSK33: also destroys the side panel
+            self.journeys_splitter.setParent(None)
+            self.journeys_splitter.deleteLater()
+            self.journeys_splitter = None
+            self.journeys_panel = None
         if self.agents_workspace is not None:
             self.agents_workspace.setParent(None)
             self.agents_workspace.deleteLater()
@@ -800,18 +820,20 @@ class MainWindow(QMainWindow):
     # ---------------------------------------------------------------------
     # Journeys actions (FN023/FN025/FN027) + Display > Journey (FN026/FN029)
     # ---------------------------------------------------------------------
-    def _resync_relationships_panel(self):
-        """TSK30 (4.1): rebuild the side panel of the "Relationships" view after
-        a journey CRUD (the journey list of the combo may have changed); the
+    def _resync_filter_panels(self):
+        """TSK30 (4.1) + TSK33: rebuild the side panels of the map views after
+        a journey/agent CRUD (the combo contents may have changed); the
         current filters are kept."""
         if self.relationships_workspace is not None:
             self.relationships_workspace.refresh()
+        if self.journeys_panel is not None:
+            self.journeys_panel.refresh()
 
     def _new_journey(self):
         """FN023: create a journey (not activated; the active journey is unchanged)."""
         self.create_journey_usecase.execute()
         self._rebuild_journey_menu()
-        self._resync_relationships_panel()
+        self._resync_filter_panels()
         self._update_menu_state()
 
     def _copy_journey(self):
@@ -821,7 +843,7 @@ class MainWindow(QMainWindow):
         if active is not None:
             self.duplicate_journey_usecase.execute(active)
         self._rebuild_journey_menu()
-        self._resync_relationships_panel()
+        self._resync_filter_panels()
         self._update_menu_state()
 
     def _delete_journey(self):
@@ -838,7 +860,7 @@ class MainWindow(QMainWindow):
         self._rebuild_journey_menu()
         if self.journeys_workspace is not None:
             self.journeys_workspace.apply_filters()
-        self._resync_relationships_panel()
+        self._resync_filter_panels()
         self._update_menu_state()
 
     def _rebuild_journey_menu(self):
@@ -866,9 +888,10 @@ class MainWindow(QMainWindow):
         self._set_journey_filter_active(True)
         self._update_menu_state()
 
-    def _on_relationships_journey_filter_requested(self, journey_id):
-        """TSK30 (4.1): the side panel journey combo mirrors Display > Journey -
-        choosing a journey activates it (FN026) and enables the filter (FN029);
+    def _on_journey_filter_requested(self, journey_id):
+        """TSK30 (4.1) + TSK33: the side panel journey combo of a map view
+        ("Journeys" and "Relationships") mirrors Display > Journey - choosing
+        a journey activates it (FN026) and enables the filter (FN029);
         "All journeys" (None) disables the filter."""
         if journey_id is None:
             self._set_journey_filter_active(False)
@@ -886,6 +909,8 @@ class MainWindow(QMainWindow):
             self.journeys_workspace.set_journey_filter_active(active)
         if self.relationships_workspace is not None:  # TSK27: resync the side panel
             self.relationships_workspace.set_journey_filter_active(active)
+        if self.journeys_panel is not None:  # TSK33: resync the "Journeys" side panel
+            self.journeys_panel.set_journey_filter_active(active)
         self._rebuild_journey_menu()
 
     def _rebuild_agent_menu(self):
@@ -915,6 +940,8 @@ class MainWindow(QMainWindow):
             self.journeys_workspace.set_agent_filter(agent_id)
         if self.relationships_workspace is not None:  # TSK27: resync the side panel
             self.relationships_workspace.set_agent_filter(agent_id)
+        if self.journeys_panel is not None:  # TSK33: resync the "Journeys" side panel
+            self.journeys_panel.set_agent_filter(agent_id)
         self._rebuild_journey_menu()
         self._rebuild_agent_menu()
 
@@ -942,6 +969,7 @@ class MainWindow(QMainWindow):
             self.agents_workspace.add_agent_card(agent)  # TSK19b: one card per agent
         self.info_bar.show_message(f"Agent '{values['lb']}' created")
         self._rebuild_agent_menu()
+        self._resync_filter_panels()  # TSK33: resync both side panels (agent combos)
         self._update_menu_state()
 
     def _edit_agent(self, agent=None):
@@ -962,6 +990,7 @@ class MainWindow(QMainWindow):
         self.info_bar.show_message(f"Agent '{agent.lb}' updated")
         self._refresh_participation_badges()  # agent labels appear in the block tooltips
         self._rebuild_agent_menu()
+        self._resync_filter_panels()  # TSK33: resync both side panels (agent combos)
         self._update_menu_state()
 
     def _copy_agent(self, agent=None):
@@ -976,6 +1005,7 @@ class MainWindow(QMainWindow):
             self.agents_workspace.add_agent_card(copy)  # TSK19b
         self.info_bar.show_message(f"Agent '{copy.lb}' created")
         self._rebuild_agent_menu()
+        self._resync_filter_panels()  # TSK33: resync both side panels (agent combos)
         self._update_menu_state()
 
     def _delete_agent(self, agent=None):
@@ -1015,6 +1045,7 @@ class MainWindow(QMainWindow):
         if self.agents_workspace is not None:
             self.agents_workspace.remove_agent_card(agent.id)  # TSK19b
         self._rebuild_agent_menu()
+        self._resync_filter_panels()  # TSK33: resync both side panels (agent combos)
         self._update_menu_state()
 
     def _associate_agent_with_block(self, agent=None):
@@ -1070,6 +1101,7 @@ class MainWindow(QMainWindow):
         if self.agents_workspace is not None:
             self.agents_workspace.add_agent_card(agent)  # TSK19b
         self._rebuild_agent_menu()
+        self._resync_filter_panels()  # TSK33: resync both side panels (agent combos)
         dialog.set_status(f"Agent '{agent.lb}' created and associated")
         self._refresh_participation_badges()
         dialog.refresh(self.project_service.current_project.agent,
@@ -1193,7 +1225,7 @@ class MainWindow(QMainWindow):
         values = dialog.get_values()
         self.update_journey_usecase.execute(active, lb=values['lb'], note=values['note'])
         self._rebuild_journey_menu()
-        self._resync_relationships_panel()
+        self._resync_filter_panels()
         self._update_menu_state()
 
     def _set_default_journey(self):
@@ -1209,7 +1241,7 @@ class MainWindow(QMainWindow):
         if chosen is not None:
             self.set_default_journey_usecase.execute(chosen)
             self._rebuild_journey_menu()
-            self._resync_relationships_panel()
+            self._resync_filter_panels()
             self._update_menu_state()
 
     # ---------------------------------------------------------------------

@@ -53,6 +53,7 @@
     "romantic": "#C678DD",
     "family": "#98C379"
   },
+  "side_panel_width_px": 260,
   "relationships_view_panel_width_px": 260,
   "relationships_view_cell_size_px": 100,
   "relationships_view_checkbox_size": 20,

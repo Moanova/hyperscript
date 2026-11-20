@@ -26,6 +26,7 @@ except Exception as e:  # libGL missing, no display, ...
     pytest.skip(f"Qt not usable in this environment: {e}", allow_module_level=True)
 
 from ui.main_window import MainWindow
+from ui.widgets.filters_side_panel import FiltersSidePanel  # TSK33
 
 
 @pytest.fixture(scope="module")
@@ -45,6 +46,11 @@ def test_create_project_builds_all_workspaces(qapp):
         # each workspace is hosted in its page
         assert mw.journeys_workspace.parentWidget() is not None
         assert mw.relationships_workspace.parentWidget() is mw.relationships_page
+        # TSK33: the "Journeys" page hosts the shared filters side panel, without block list
+        assert mw.journeys_splitter is not None
+        assert isinstance(mw.journeys_panel, FiltersSidePanel)
+        assert mw.journeys_panel.block_list is None
+        assert mw.journeys_workspace.parentWidget() is mw.journeys_splitter
         # the Relationships view defaults to the Start anchor block (RG068/RG069)
         nm = mw._current_narrative_map()
         start = next(b for b in nm.block if b.typ == "Start")
@@ -78,7 +84,7 @@ def test_relationships_journey_filter_requested_activates_journey(qapp):
         assert nm.get_active_journey() is j2
         assert mw.journey_filter_active is True
         # "All journeys" disables the filter (active journey unchanged)
-        mw._on_relationships_journey_filter_requested(None)
+        mw._on_journey_filter_requested(None)  # TSK33: handler shared by both panels
         assert mw.journey_filter_active is False
         assert nm.get_active_journey() is j2
     finally:

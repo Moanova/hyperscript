@@ -65,14 +65,21 @@ separator is a thicker filled bar; the splitter slot of the panel is pinned
 to the panel width on resize (no gray strip on the right), the panel content
 is dark-themed, and the block list has an always-visible dark scrollbar
 (scrollbar only in the list zone, never next to the filters).
+
+TSK33 (session 10): the side panel is extracted into the shared widget
+FiltersSidePanel (ui/widgets/filters_side_panel.py, show_block_list=True here)
+hosted in a SidePanelSplitter; the filter/anchor state lives in the panel and
+the workspace exposes the historical attribute names (journey_combo,
+block_list, _block_ids, _anchor_block_id, ...) as delegates, so the matrix
+logic and the tests are unchanged. The "Journeys" view hosts the same panel
+with show_block_list=False (no block list) - see main_window.py.
 """
 import logging
 from typing import Dict, List, Optional, Tuple
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QSplitter, QGraphicsView, QGraphicsScene,
-    QGraphicsRectItem, QGraphicsLineItem, QFrame, QComboBox, QListWidget,
-    QListWidgetItem, QLabel,
+    QWidget, QVBoxLayout, QGraphicsView, QGraphicsScene,
+    QGraphicsRectItem, QGraphicsLineItem, QFrame,
 )
 from PySide6.QtCore import Qt, Signal, QPointF, QRectF, QEvent
 from PySide6.QtGui import QColor, QBrush, QPen, QPainter, QPainterPath, QPainterPathStroker
@@ -83,13 +90,16 @@ from core.services.journey_filter_service import JourneyFilterService
 from core.services.agent_filter_service import AgentFilterService
 from core.services.relationship_service import RelationshipService
 from ui.nodes.matrix_agent_card import MatrixAgentCard
+from ui.widgets.filters_side_panel import (
+    FiltersSidePanel, SidePanelSplitter, PANEL_WIDTH_PX, SEPARATOR_HEIGHT_PX,
+)
 from config.config_loader import get as _get_config
 from ui.utils import theme
 
-_PANEL_WIDTH = int(_get_config("relationships_view_panel_width_px", 260))
+# TSK33: the side panel is the shared FiltersSidePanel; its width comes from
+# the shared side_panel_width_px key (fallback relationships_view_panel_width_px)
+_PANEL_WIDTH = PANEL_WIDTH_PX  # alias kept for the offscreen tests
 _CELL_SIZE = int(_get_config("relationships_view_cell_size_px", 100))  # square cells (TSK29)
-_ALL_JOURNEYS_LABEL = _get_config("journey_list_all_label", "All journeys")
-_ALL_AGENTS_LABEL = _get_config("agent_list_all_label", "All agents")
 _BG_PRIMARY = _get_config("bg_primary", theme.BG_PRIMARY)
 _GRID_MINOR_COLOR = _get_config("grid_minor_color", "#333333")
 _GRID_MAJOR_COLOR = _get_config("grid_major_color", "#4A4A4A")
@@ -106,7 +116,7 @@ _CHECK_SIZE = _get_config("relationships_view_checkbox_size", 20)
 _CHECK_COLOR = _get_config("relationships_view_checkbox_color", "#383838")
 _CHECK_CIRCLE_COLOR = _get_config("relationships_view_check_color", "#E5C07B")
 # TSK31 (3.1): separator between the filter zone and the block list
-_SEPARATOR_HEIGHT = int(_get_config("relationships_view_separator_height_px", 2))
+_SEPARATOR_HEIGHT = SEPARATOR_HEIGHT_PX  # alias kept for the offscreen tests
 _CARD_W = MatrixAgentCard.WIDTH
 _CARD_H = MatrixAgentCard.HEIGHT
 _CARD_OFF_X = (_CELL_SIZE - _CARD_W) / 2   # 10 px at C=100 -> 20 px between adjacent cards
@@ -297,6 +307,29 @@ class RelationshipsWorkspace(QWidget):
     axis_order_changed = Signal(list, list)          # row_order, col_order (RG070)
     workspace_modified = Signal()
 
+    # TSK33: the side panel (FiltersSidePanel) owns the filter/anchor state;
+    # these delegates keep the historical attribute names used by the matrix
+    # logic and the tests
+    @property
+    def _block_ids(self) -> List[int]:
+        return self.panel.block_ids
+
+    @property
+    def _anchor_block_id(self) -> Optional[int]:
+        return self.panel.get_anchor_block_id()
+
+    @_anchor_block_id.setter
+    def _anchor_block_id(self, value: Optional[int]):
+        self.panel._set_anchor_block_silent(value)
+
+    @property
+    def _journey_filter_active(self) -> bool:
+        return self.panel.journey_filter_active
+
+    @property
+    def _agent_filter_agent_id(self) -> Optional[int]:
+        return self.panel.agent_filter_agent_id
+
     def __init__(self, project: Project, narrative_map: NarrativeMap,
                  info_bar=None, main_window=None):
         super().__init__()
@@ -309,13 +342,7 @@ class RelationshipsWorkspace(QWidget):
         self._row_cards: Dict[int, MatrixAgentCard] = {}
         self._col_cards: Dict[int, MatrixAgentCard] = {}
         self._cells: Dict[Tuple[int, int], _MatrixCell] = {}
-        self._block_ids: List[int] = []
-        self._anchor_block_id: Optional[int] = None
-        self._journey_filter_active = False
-        self._agent_filter_agent_id: Optional[int] = None
-        self._updating_combos = False
-        self._updating_blocks = False
-        self._build_ui()
+        self._build_ui()  # creates self.panel (FiltersSidePanel), owner of the filter/anchor state
 
     # ------------------------------------------------------------------
     # UI
@@ -323,14 +350,6 @@ class RelationshipsWorkspace(QWidget):
     def _build_ui(self):
         layout = QVBoxLayout(self)
         layout.setContentsMargins(0, 0, 0, 0)
-        splitter = QSplitter(Qt.Horizontal, self)
-        layout.addWidget(splitter)
-        self._splitter = splitter
-        # TSK31 (3.2): dark splitter (handle + any exposed background)
-        splitter.setStyleSheet(
-            f"QSplitter {{ background-color: {_get_config('bg_surface', theme.BG_SURFACE)}; }}"
-            f"QSplitter::handle {{ background-color: {_BORDER_COLOR}; }}")
-
         self.scene = QGraphicsScene()
         self.view = _MatrixGraphicsView(self)
         self.view.setScene(self.scene)
@@ -338,37 +357,24 @@ class RelationshipsWorkspace(QWidget):
         # TSK30: redraw the grid over the newly visible area on scroll
         self.view.horizontalScrollBar().valueChanged.connect(self._draw_grid)
         self.view.verticalScrollBar().valueChanged.connect(self._draw_grid)
-        splitter.addWidget(self.view)
+        # TSK33: the side panel is the shared FiltersSidePanel (block list
+        # shown here); SidePanelSplitter pins the panel slot to the panel
+        # width on resize (TSK31 3.2 - no gray strip on the right)
+        self.panel = FiltersSidePanel(project=self.project, narrative_map=self.narrative_map,
+                                      show_block_list=True)
+        self.panel.journey_filter_requested.connect(self.journey_filter_requested)
+        self.panel.agent_filter_requested.connect(self.agent_filter_requested)
+        self.panel.anchor_block_selected.connect(self._on_panel_anchor_selected)
+        # historical attribute names kept as aliases (matrix logic + tests)
+        self.journey_combo = self.panel.journey_combo
+        self.agent_combo = self.panel.agent_combo
+        self.block_list = self.panel.block_list
+        self._splitter = SidePanelSplitter(self.view, self.panel, parent=self)
+        layout.addWidget(self._splitter)
 
-        panel = QWidget()
-        panel.setFixedWidth(_PANEL_WIDTH)
-        # TSK31 (3.2): dark-themed panel content (labels, combos, list, scrollbars)
-        panel.setStyleSheet(theme.SIDE_PANEL_STYLESHEET)
-        panel_layout = QVBoxLayout(panel)
-        panel_layout.addWidget(QLabel("Journey"))
-        self.journey_combo = QComboBox()
-        self.journey_combo.currentIndexChanged.connect(self._on_journey_combo)
-        panel_layout.addWidget(self.journey_combo)
-        panel_layout.addWidget(QLabel("Agent"))
-        self.agent_combo = QComboBox()
-        self.agent_combo.currentIndexChanged.connect(self._on_agent_combo)
-        panel_layout.addWidget(self.agent_combo)
-        # TSK30 (3.8) + TSK31 (3.1): separator between the filter zone and the
-        # block list - a thicker filled bar, clearly visible
-        separator = QFrame()
-        separator.setFixedHeight(_SEPARATOR_HEIGHT)
-        separator.setStyleSheet(f"background-color: {_GRID_MAJOR_COLOR}; border: none;")
-        panel_layout.addWidget(separator)
-        panel_layout.addWidget(QLabel("Blocks"))
-        self.block_list = QListWidget()
-        self.block_list.currentRowChanged.connect(self._on_block_selected)
-        # TSK31 (3.2): the block list scrollbar is always visible, styled like
-        # the "Journeys" view scrollbars - and only in the list zone
-        self.block_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
-        self.block_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
-        panel_layout.addWidget(self.block_list, stretch=1)
-        splitter.addWidget(panel)
-        splitter.setStretchFactor(0, 1)
+    def _on_panel_anchor_selected(self, block_id: int):
+        self._rebuild_cells()
+        self.anchor_block_selected.emit(block_id)
 
     # ------------------------------------------------------------------
     # Populate / refresh
@@ -379,19 +385,18 @@ class RelationshipsWorkspace(QWidget):
         project layout (RG070), new agents appended alphabetically (label, id)."""
         self.project = project
         self.narrative_map = narrative_map
+        self.panel.set_data(project, narrative_map)  # TSK33
         agents = list(project.agent)
         saved_row = project_layout.relationships_view_row_order if project_layout else []
         saved_col = project_layout.relationships_view_column_order if project_layout else []
         self._row_order = RelationshipService.resolve_axis_order(agents, saved_row)
         self._col_order = RelationshipService.resolve_axis_order(agents, saved_col)
-        self._rebuild_filter_combos()
-        self._rebuild_block_list()
+        self.panel.refresh()  # TSK33: combos + block list are rebuilt by the panel
         start = next((b for b in narrative_map.block if b.typ == "Start"), None)  # RG025/RG068
         self._anchor_block_id = start.id if start is not None else (
             narrative_map.block[0].id if narrative_map.block else None)
         self._relayout()
         self._rebuild_cells()
-        self._sync_block_list_selection()
 
     def refresh(self):
         """Recompute from the model (agents/blocks/relationships changed);
@@ -402,15 +407,14 @@ class RelationshipsWorkspace(QWidget):
             [a.id for a in sorted(agents, key=lambda a: (a.lb, a.id)) if a.id not in self._row_order]
         self._col_order = [i for i in self._col_order if i in known] + \
             [a.id for a in sorted(agents, key=lambda a: (a.lb, a.id)) if a.id not in self._col_order]
-        self._rebuild_filter_combos()
-        self._rebuild_block_list()
+        self.panel.set_data(self.project, self.narrative_map)  # TSK33
+        self.panel.refresh()
         if self._anchor_block_id is None or self._anchor_block_id not in self._block_ids:
             start = next((b for b in self.narrative_map.block if b.typ == "Start"), None)
             self._anchor_block_id = start.id if start is not None else (
                 self._block_ids[0] if self._block_ids else None)
         self._relayout()
         self._rebuild_cells()
-        self._sync_block_list_selection()
 
     def collect_project_layout(self, layout: ProjectLayout):
         """RG070 (revised session 09): persist both independent orders at project level."""
@@ -418,7 +422,7 @@ class RelationshipsWorkspace(QWidget):
         layout.relationships_view_column_order = list(self._col_order)
 
     def get_anchor_block_id(self) -> Optional[int]:
-        return self._anchor_block_id
+        return self.panel.get_anchor_block_id()  # TSK33
 
     def agent_id_at_row(self, row: int) -> Optional[int]:
         return self._row_order[row] if 0 <= row < len(self._row_order) else None
@@ -504,10 +508,7 @@ class RelationshipsWorkspace(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
-        # TSK31 (3.2): pin the panel splitter slot to the panel width - no gray
-        # strip of splitter background on the right of the panel
-        handle = self._splitter.handleWidth()
-        self._splitter.setSizes([max(0, self.width() - _PANEL_WIDTH - handle), _PANEL_WIDTH])
+        # TSK33: the SidePanelSplitter pins the panel slot itself (TSK31 3.2)
         self._draw_grid()
 
     # ------------------------------------------------------------------
@@ -593,98 +594,17 @@ class RelationshipsWorkspace(QWidget):
     # ------------------------------------------------------------------
     # Filters (pushed by MainWindow; the panel zones only request changes)
     # ------------------------------------------------------------------
+    # TSK33: the combos and the block list are rebuilt by the side panel
+    # (FiltersSidePanel); the workspace only recomputes the matrix
     def set_journey_filter_active(self, active: bool):
-        self._journey_filter_active = active
-        self._rebuild_filter_combos()
-        self._rebuild_block_list()
+        self.panel.set_journey_filter_active(active)
         self._rebuild_cells()
 
     def set_agent_filter(self, agent_id: Optional[int]):
-        self._agent_filter_agent_id = agent_id
-        self._rebuild_filter_combos()
-        self._rebuild_block_list()
+        self.panel.set_agent_filter(agent_id)
         self._rebuild_cells()
-
-    def _rebuild_filter_combos(self):
-        self._updating_combos = True
-        try:
-            nm = self.narrative_map
-            self.journey_combo.clear()
-            self.journey_combo.addItem(_ALL_JOURNEYS_LABEL, None)
-            for j in nm.journey:
-                self.journey_combo.addItem(j.lb, j.id)
-            if self._journey_filter_active:
-                active = nm.get_active_journey()
-                idx = self.journey_combo.findData(active.id if active else None)
-                self.journey_combo.setCurrentIndex(idx if idx >= 0 else 0)
-            else:
-                self.journey_combo.setCurrentIndex(0)
-            self.agent_combo.clear()
-            self.agent_combo.addItem(_ALL_AGENTS_LABEL, None)
-            for a in sorted(self.project.agent, key=lambda a: (a.lb, a.id)):
-                self.agent_combo.addItem(f"{a.lb} ({a.typ})", a.id)
-            idx = self.agent_combo.findData(self._agent_filter_agent_id)
-            self.agent_combo.setCurrentIndex(idx if idx >= 0 else 0)
-        finally:
-            self._updating_combos = False
-
-    def _on_journey_combo(self, index):
-        if self._updating_combos:
-            return
-        # TSK30 (4.1): emit the chosen journey id (None = "All journeys") so the
-        # MainWindow can activate it, like Display > Journey does
-        self.journey_filter_requested.emit(self.journey_combo.itemData(index))
-
-    def _on_agent_combo(self, index):
-        if self._updating_combos:
-            return
-        self.agent_filter_requested.emit(self.agent_combo.itemData(index))
-
-    # ------------------------------------------------------------------
-    # Side panel block list (RG069: min rank across all journeys, ties by id,
-    # restricted to blocks visible under the active filters - RG064)
-    # ------------------------------------------------------------------
-    def _rebuild_block_list(self):
-        self._updating_blocks = True
-        try:
-            nm = self.narrative_map
-            visible = set(RelationshipService.ordered_anchor_block_ids(nm))
-            if self._journey_filter_active:
-                active = nm.get_active_journey()
-                visible &= JourneyFilterService.visible_block_ids(nm, active.id if active else None)
-            if self._agent_filter_agent_id is not None:
-                visible &= AgentFilterService.visible_block_ids(nm, self._agent_filter_agent_id)
-            blocks = {b.id: b for b in nm.block}
-            self._block_ids = [bid for bid in RelationshipService.ordered_anchor_block_ids(nm)
-                               if bid in visible]
-            self.block_list.clear()
-            for bid in self._block_ids:
-                b = blocks[bid]
-                item = QListWidgetItem(f"{b.lb} ({b.typ})")
-                item.setData(Qt.UserRole, bid)
-                self.block_list.addItem(item)
-        finally:
-            self._updating_blocks = False
-        self._sync_block_list_selection()
-
-    def _sync_block_list_selection(self):
-        if self._anchor_block_id in self._block_ids:
-            row = self._block_ids.index(self._anchor_block_id)
-            self.block_list.blockSignals(True)
-            self.block_list.setCurrentRow(row)
-            self.block_list.blockSignals(False)
-
-    def _on_block_selected(self, row):
-        if self._updating_blocks or not (0 <= row < len(self._block_ids)):
-            return
-        bid = self._block_ids[row]
-        self._anchor_block_id = bid
-        self._rebuild_cells()
-        self.anchor_block_selected.emit(bid)
 
     def set_anchor_block(self, block_id: int):
         """Select the given block in the panel and recompute the matrix (RG069)."""
-        if block_id in self._block_ids:
-            self._anchor_block_id = block_id
-            self._sync_block_list_selection()
-            self._rebuild_cells()
+        self.panel.set_anchor_block(block_id)
+        self._rebuild_cells()
