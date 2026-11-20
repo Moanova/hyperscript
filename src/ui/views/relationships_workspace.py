@@ -173,8 +173,12 @@ class _MatrixCell(QGraphicsRectItem):
         self.dimmed = dimmed
         if rel is None:
             if self.card is not None:
-                self.card.setParentItem(None)
-                self.card.deleteLater()
+                # TSK34 (retour 3): a QGraphicsItem is NOT a QObject (no
+                # deleteLater - AttributeError) - remove the card from the
+                # scene instead (same pattern as the grid lines)
+                scene = self.scene()
+                if scene is not None:
+                    scene.removeItem(self.card)
                 self.card = None
         else:
             if self.card is None:
@@ -537,6 +541,13 @@ class RelationshipsWorkspace(QWidget):
     def resizeEvent(self, event):
         super().resizeEvent(event)
         # TSK33: the SidePanelSplitter pins the panel slot itself (TSK31 3.2)
+        self._draw_grid()
+
+    def showEvent(self, event):
+        super().showEvent(event)
+        # TSK34 (retour 2): the grid is redrawn on resize/scroll, but a page
+        # hidden at populate time never received a resize event -> redraw the
+        # grid over the whole visible area when the tab is first shown
         self._draw_grid()
 
     # ------------------------------------------------------------------

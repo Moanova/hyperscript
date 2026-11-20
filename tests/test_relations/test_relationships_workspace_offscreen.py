@@ -481,3 +481,52 @@ def test_block_list_scrollbar_always_on_and_dark(qapp):
     assert ws.block_list.verticalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOn
     assert ws.block_list.horizontalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOff
     assert "QScrollBar" in ws.block_list.styleSheet() or "QScrollBar" in theme.SIDE_PANEL_STYLESHEET
+
+
+# ---------------------------------------------------------------------
+# TSK34 (session 10, 3rd feedback batch, points 2-4)
+# ---------------------------------------------------------------------
+
+def test_card_removed_without_exception_on_refresh(qapp):
+    """TSK34 (retour 3): deleting a relationship then refresh() must not raise
+    (a QGraphicsItem is not a QObject: no deleteLater) and the card is removed
+    from the scene."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws.set_anchor_block(s1.id)  # card in the active cell (0, 2)
+    card = ws._cells[(0, 2)].card
+    assert card is not None and card.scene() is ws.scene
+    nm.relationship.remove(nm.relationship[0])  # model-side delete
+    ws.refresh()  # must not raise (was AttributeError: no deleteLater)
+    assert ws._cells[(0, 2)].card is None
+    assert card not in ws.scene.items()
+
+
+def test_drag_last_agent_card_does_not_raise(qapp):
+    """TSK34 (retour 3): reordering so that a cell loses its relationship (the
+    pair lands in the lower triangle) must not raise on card removal."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws.set_anchor_block(s1.id)  # alpha x zoo = "friend" in cell (0, 2)
+    # drag the LAST column card (zoo) to column 0 -> order [zoo, alpha, mid];
+    # cell (0, 2) then maps to zoo x mid (no relationship) -> card removed there
+    ws._on_card_released(ws._col_cards[zoo.id],
+                         QPointF(_CELLS_LEFT + 0 * _CELL_SIZE + _CARD_OFF_X, _CARD_OFF_Y + 10))
+    assert ws._order == [zoo.id, alpha.id, mid.id]
+    assert ws._cells[(0, 2)].card is None      # zoo x mid: no relationship
+    assert ws._cells[(0, 1)].card is not None  # zoo x alpha: active cell, card moved
+
+
+def test_grid_redrawn_on_first_show(qapp):
+    """TSK34 (retour 2): the grid covers the whole visible area as soon as the
+    workspace is shown - no scroll/resize/drag needed."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws.resize(1200, 800)  # hidden: no resizeEvent delivered
+    ws.show()
+    qapp.processEvents()
+    lines = [it for it in ws.scene.items() if getattr(it, '_is_grid_line', False)]
+    assert lines
+    rect = ws.view.mapToScene(ws.view.viewport().rect()).boundingRect()
+    vlines = [l for l in lines if l.line().x1() == l.line().x2()]
+    hlines = [l for l in lines if l.line().y1() == l.line().y2()]
+    assert any(l.line().x1() <= rect.left() and l.line().x2() >= rect.right() for l in hlines)
+    assert any(l.line().y1() <= rect.top() and l.line().y2() >= rect.bottom() for l in vlines)
+    ws.hide()

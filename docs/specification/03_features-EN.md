@@ -318,7 +318,7 @@
     - The workspace (visualization) is virtually unlimited (within operating system limits).
     - The block alignment grid is always visible and active.
     - Scroll bar positions and zoom level are not business data: they are not kept between sessions and do not mark the map as modified.
-    - The interface remains fully functional for a window of at least 1280×720.
+    - The window starts at 1280×720 (`window_width`/`window_height`, initial geometry `setGeometry(100, 100, ...)` like planoscript) and is **freely resizable down** - no fixed minimum size (TSK34, session 10); the effective minimum is driven by the views (e.g. `setMinimumSize(0, 0)` on the matrix view, TSK30); the interface remains fully functional at 1280×720.
     - Zoom is to be defined during the design phase.
 
 ## FN029: Filter the display by journey

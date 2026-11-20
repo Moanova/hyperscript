@@ -138,10 +138,13 @@ class MainWindow(QMainWindow):
         self.update_relationship_usecase = UpdateRelationshipUseCase(self.project_service)
         self.delete_relationship_usecase = DeleteRelationshipUseCase(self.project_service)
 
-        # Window dimensions (FN028: fully functional from 1280x720)
+        # Window dimensions (TSK34 retour 4, planoscript pattern): initial
+        # geometry only, NO fixed minimum size - the effective minimum is
+        # driven by the views' own minimum sizes (TSK30 3.3); FN028: fully
+        # functional at 1280x720
         self.setWindowTitle(_get_config("app_window_title", "Hyperscript"))
-        self.setMinimumSize(int(_get_config("window_min_width", 1280)),
-                            int(_get_config("window_min_height", 720)))
+        self.setGeometry(100, 100, int(_get_config("window_width", 1280)),
+                         int(_get_config("window_height", 720)))
 
         # Central widget: menu bar on top, tab bar + stacked views in the
         # middle (welcome page / project views), info bar at the bottom

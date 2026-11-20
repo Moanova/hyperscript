@@ -45,6 +45,7 @@
 ### 2. Barre de titre de la fenêtre
 - Barre de titre native du système d'exploitation.
 - Format dynamique : `Hyperscript : {libellé_projet} ({chemin_fichier})` si le projet est enregistré, `Hyperscript : {libellé_projet}` sinon ; message d'accueil (« start your new project ») quand aucun projet n'est ouvert.
+- **Dimensions** : géométrie initiale `setGeometry(100, 100, 1280, 720)` (`window_width`/`window_height`, façon planoscript) ; **aucun minimum fixe** — la fenêtre est librement redimensionnable en réduction (TSK34, séance 10), le minimum effectif étant piloté par les vues.
 
 ### 3. Barre d'onglets (centre)
 - Hauteur 40 px, style sombre. Onglets nommés en anglais, sans numérotation (application unilingue anglais, comme les entrées de menu) :

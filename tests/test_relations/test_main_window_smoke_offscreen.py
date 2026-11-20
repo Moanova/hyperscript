@@ -31,6 +31,7 @@ from ui.widgets.filters_side_panel import FiltersSidePanel  # TSK33
 from core.services.journey_sequence_service import JourneySequenceService
 from usecases.view_management import CreateBlockUseCase, CreateTransitionUseCase
 from usecases.agent_management import CreateAgentUseCase
+from usecases.relationship_management import CreateRelationshipUseCase  # TSK34
 
 
 @pytest.fixture(scope="module")
@@ -144,6 +145,57 @@ def test_relationship_cell_actions_prefilled_and_card_in_single_cell(qapp, monke
         # filled cell -> Edit acts directly on that relationship entity
         mw._edit_relationship_entity(rel)
         assert captured["entity"] is rel
+    finally:
+        mw._teardown_workspace()
+        mw.project_service.set_modified(False)  # avoid the quit confirmation dialog
+        mw.close()
+
+
+def test_window_initial_geometry_without_fixed_minimum(qapp):
+    """TSK34 (retour 4): planoscript pattern - initial geometry 1280x720 via
+    setGeometry, NO fixed minimum size (the views drive the effective min)."""
+    mw = MainWindow()
+    try:
+        assert mw.geometry().width() == 1280 and mw.geometry().height() == 720
+        assert mw.minimumSize().width() < 1280
+        assert mw.minimumSize().height() < 720
+    finally:
+        mw.close()
+
+
+def test_delete_relationship_entity_refreshes_without_error(qapp, monkeypatch):
+    """TSK34 (retour 3): deleting a relationship from a filled cell refreshes
+    the matrix without AttributeError; the card is removed from the scene."""
+    mw = MainWindow()
+    try:
+        mw._create_project()
+        service = mw.project_service
+        nm = mw._current_narrative_map()
+        start = next(b for b in nm.block if b.typ == "Start")
+        s1 = CreateBlockUseCase(service).execute("Scene", lb="S1")
+        CreateTransitionUseCase(service).execute(start.id, s1.id)
+        JourneySequenceService.recompute_all(nm)  # RG044
+        alpha = CreateAgentUseCase(service).execute(lb="Alpha")
+        zoo = CreateAgentUseCase(service).execute(lb="Zoo")
+        rel = CreateRelationshipUseCase(service).execute(alpha.id, zoo.id, "friend", s1.id)
+        ws = mw.relationships_workspace
+        ws.refresh()
+        ws.set_anchor_block(s1.id)
+        assert ws._cells[(0, 1)].card is not None
+
+        class FakeMessageBox:
+            class StandardButton:
+                Yes = 1
+                No = 2
+
+            @staticmethod
+            def question(*args, **kwargs):
+                return FakeMessageBox.StandardButton.Yes
+
+        monkeypatch.setattr(mw_module, "QMessageBox", FakeMessageBox)
+        mw._delete_relationship_entity(rel)  # must not raise (was AttributeError)
+        assert not nm.relationship
+        assert ws._cells[(0, 1)].card is None
     finally:
         mw._teardown_workspace()
         mw.project_service.set_modified(False)  # avoid the quit confirmation dialog

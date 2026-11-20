@@ -191,6 +191,12 @@ class JourneysWorkspace(QGraphicsView, QObject):
         super().resizeEvent(event)
         self._draw_grid()
 
+    def showEvent(self, event):
+        """TSK34 (retour 2): redraw the grid when the tab is first shown - a
+        page hidden at populate time gets no resize event."""
+        super().showEvent(event)
+        self._draw_grid()
+
     def _expand_scene_to_include(self, x: float, y: float, margin: int = None):
         """Dynamically expand the sceneRect to include the point (x, y)."""
         if margin is None:

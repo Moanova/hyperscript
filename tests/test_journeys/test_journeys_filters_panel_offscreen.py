@@ -193,3 +193,25 @@ def test_agent_crud_resyncs_both_panels(qapp, monkeypatch):
         assert mw.relationships_workspace.agent_combo.count() == n0
     finally:
         close_main_window(mw)
+
+
+def test_journeys_grid_covers_visible_area_on_tab_show(qapp):
+    """TSK34 (retour 2): the "Journeys" grid is redrawn when the tab is first
+    shown (showEvent -> _draw_grid), no user action needed."""
+    mw = make_main_window()
+    try:
+        mw.resize(1280, 800)
+        mw.show()
+        qapp.processEvents()
+        mw._on_tab_changed("Journeys")
+        qapp.processEvents()
+        ws = mw.journeys_workspace
+        rect = ws.mapToScene(ws.viewport().rect()).boundingRect()
+        xs = [l.line().x1() for l in ws.grid_lines if l.line().x1() == l.line().x2()]
+        ys = [l.line().y1() for l in ws.grid_lines if l.line().y1() == l.line().y2()]
+        assert xs and ys
+        assert min(xs) <= rect.left() and max(xs) >= rect.right()
+        assert min(ys) <= rect.top() and max(ys) >= rect.bottom()
+        mw.hide()
+    finally:
+        close_main_window(mw)

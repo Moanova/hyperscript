@@ -45,6 +45,7 @@
 ### 2. Window title bar
 - Native OS title bar.
 - Dynamic format: `Hyperscript : {project_label} ({file_path})` if the project is saved, `Hyperscript : {project_label}` otherwise; welcome message ("start your new project") when no project is open. *Application language to be confirmed (unilingual for now).*
+- **Dimensions**: initial geometry `setGeometry(100, 100, 1280, 720)` (`window_width`/`window_height`, planoscript pattern); **no fixed minimum size** - the window is freely resizable down (TSK34, session 10), the effective minimum being driven by the views.
 
 ### 3. Tab bar (center)
 - Height 40 px, dark theme. Named tabs, without numbering:

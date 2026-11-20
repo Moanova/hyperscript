@@ -319,7 +319,7 @@
     - L'espace de travail (visualisation) est virtuellement illimité (dans les limites du système d'exploitation).
     - La grille d'alignement des blocs est toujours visible et active.
     - Les positions des ascenseurs et le niveau de zoom ne constituent pas des données métier : ils ne sont pas conservés entre les sessions et ne marquent pas la carte comme modifiée.
-    - L'interface reste pleinement fonctionnelle pour une fenêtre d'au moins 1280×720.
+    - La fenêtre démarre en 1280×720 (`window_width`/`window_height`, géométrie initiale `setGeometry(100, 100, …)` façon planoscript) et est **librement redimensionnable en réduction** — aucune taille minimale fixe (TSK34, séance 10) ; le minimum effectif est piloté par les vues (ex. `setMinimumSize(0, 0)` sur la vue matrice, TSK30) ; l'interface reste pleinement fonctionnelle à 1280×720.
     - Le zoom est à définir en phase de conception.
 
 ## FN029 : Filtrer l'affichage par parcours
