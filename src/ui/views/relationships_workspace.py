@@ -39,17 +39,30 @@ design note docs/conception/04_relationships_matrix-FR/EN.md:
 
 The workspace NEVER writes the business model (RG058): it emits signals and
 the MainWindow applies the use cases.
+
+TSK30 (session 10 test feedback): the matrix is anchored to the top-left
+corner (view alignment AlignLeft|AlignTop, scene (0, 0, min 4000x4000)
+growing rightwards/downwards only, scrollbars always on); the background
+grid covers the whole visible area (non-interactive _GridLineItem lines,
+redrawn on scroll and resize); each cell carries a center dot (agents-view
+style) and a checkbox (outline only; filled gold circle when the pair has a
+relationship - the type is shown in the cell tooltip); hit-testing maps
+scene positions to item-local coordinates (mapFromScene); left click on an
+empty cell creates an "Undefined" relationship directly (MainWindow), right
+click keeps the context menu; the side panel gets a separator after the
+agent filter; the journey combo emits the chosen journey id (None = All
+journeys) so the MainWindow can activate it (mirror of Display > Journey).
 """
 import logging
 from typing import Dict, List, Optional, Tuple
 
 from PySide6.QtWidgets import (
     QWidget, QVBoxLayout, QSplitter, QGraphicsView, QGraphicsScene,
-    QGraphicsRectItem, QFrame, QComboBox, QListWidget,
+    QGraphicsRectItem, QGraphicsLineItem, QFrame, QComboBox, QListWidget,
     QListWidgetItem, QLabel,
 )
-from PySide6.QtCore import Qt, Signal, QPointF, QEvent
-from PySide6.QtGui import QColor, QBrush, QPen, QPainter, QPainterPath, QPainterPathStroker, QFont
+from PySide6.QtCore import Qt, Signal, QPointF, QRectF, QEvent
+from PySide6.QtGui import QColor, QBrush, QPen, QPainter, QPainterPath, QPainterPathStroker
 
 from core.models.data_model import NarrativeMap, Project
 from core.models.view_model import ProjectLayout
@@ -62,19 +75,23 @@ from ui.utils import theme
 
 _PANEL_WIDTH = int(_get_config("relationships_view_panel_width_px", 260))
 _CELL_SIZE = int(_get_config("relationships_view_cell_size_px", 100))  # square cells (TSK29)
-_TYPE_COLORS = _get_config("relationship_type_colors", {})
-_FALLBACK_TYPE_COLOR = _get_config("block_scene_color", "#E5C07B")
 _ALL_JOURNEYS_LABEL = _get_config("journey_list_all_label", "All journeys")
 _ALL_AGENTS_LABEL = _get_config("agent_list_all_label", "All agents")
 _BG_PRIMARY = _get_config("bg_primary", theme.BG_PRIMARY)
 _GRID_MINOR_COLOR = _get_config("grid_minor_color", "#333333")
 _GRID_MAJOR_COLOR = _get_config("grid_major_color", "#4A4A4A")
 _BORDER_COLOR = _get_config("border_color", "#383838")
-_TEXT_PRIMARY = _get_config("text_primary", theme.TEXT_PRIMARY)
-_TEXT_SECONDARY = _get_config("text_secondary", theme.TEXT_SECONDARY)
-_CELL_TEXT_COLOR = _get_config("badge_text_color", "#1E1E1E")
 _CELL_HIT_WIDTH = _get_config("journeys_view_hit_area_width_px", 12.0)
 _CELL_MARGIN = 2.0
+# TSK30: scene anchored on the top-left corner, growing rightwards/downwards only
+_SCENE_MIN_SIZE = 4000
+# TSK30: center dot of each cell, same rendering as the "Agents" view anchor dots
+_DOT_RADIUS = _get_config("agents_view_dot_radius_px", 1.5)
+_DOT_COLOR = _get_config("agents_view_dot_color", "#4A4A4A")
+# TSK30: cell checkbox (planoscript MatrixCheckItem pattern) - checked = filled gold circle
+_CHECK_SIZE = _get_config("relationships_view_checkbox_size", 20)
+_CHECK_COLOR = _get_config("relationships_view_checkbox_color", "#383838")
+_CHECK_CIRCLE_COLOR = _get_config("relationships_view_check_color", "#E5C07B")
 _CARD_W = MatrixAgentCard.WIDTH
 _CARD_H = MatrixAgentCard.HEIGHT
 _CARD_OFF_X = (_CELL_SIZE - _CARD_W) / 2   # 10 px at C=100 -> 20 px between adjacent cards
@@ -86,7 +103,9 @@ logger = logging.getLogger(__name__)
 
 
 class _MatrixCell(QGraphicsRectItem):
-    """One clickable matrix cell (row, col): type text on the type color."""
+    """One clickable matrix cell (row, col): center dot (agents-view style) +
+    checkbox - outline only, or with a filled gold circle when the pair has a
+    relationship (TSK30). The relationship type shows in the cell tooltip."""
 
     def __init__(self, row: int, col: int):
         super().__init__(0, 0, _CELL_SIZE - 2 * _CELL_MARGIN, _CELL_SIZE - 2 * _CELL_MARGIN)
@@ -111,31 +130,57 @@ class _MatrixCell(QGraphicsRectItem):
         self.typ = typ
         self.note = note
         self.dimmed = dimmed
-        self.setToolTip(note or "")
+        # TSK30: the type shows in the tooltip on hover
+        tooltip = typ or ""
+        if note:
+            tooltip = f"{tooltip}\n{note}" if tooltip else note
+        self.setToolTip(tooltip)
         self.update()
 
     def paint(self, painter: QPainter, option, widget=None):
         rect = self.rect()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        if self.typ is not None:
-            color = _TYPE_COLORS.get(self.typ, _FALLBACK_TYPE_COLOR)
-            painter.setBrush(QBrush(QColor(color)))
-            text_color = _CELL_TEXT_COLOR
-        else:
-            painter.setBrush(QBrush(QColor(_BG_PRIMARY)))
-            text_color = _TEXT_SECONDARY
-        pen = QPen(QColor(_BORDER_COLOR), 1.0)
-        painter.setPen(pen)
+        painter.setBrush(QBrush(QColor(_BG_PRIMARY)))
+        painter.setPen(QPen(QColor(_BORDER_COLOR), 1.0))
         painter.drawRect(rect)
+        center = rect.center()
+        # center dot, same rendering as the "Agents" view anchor dots (TSK30)
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(QColor(_DOT_COLOR)))
+        painter.drawEllipse(center, _DOT_RADIUS, _DOT_RADIUS)
         if self.dimmed:
             painter.setBrush(QBrush(QColor(0, 0, 0, 120)))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRect(rect)
         if self.typ is not None:
-            font = QFont(_get_config("node_font_family", "Segoe UI"), _get_config("node_label_font_size_px", 9))
-            painter.setFont(font)
-            painter.setPen(QPen(QColor(text_color)))
-            painter.drawText(rect, Qt.AlignmentFlag.AlignCenter, self.typ)
+            # checkbox: outline + filled gold circle as the check symbol (TSK30)
+            half = _CHECK_SIZE / 2
+            box = QRectF(center.x() - half, center.y() - half, _CHECK_SIZE, _CHECK_SIZE)
+            painter.setPen(QPen(QColor(_CHECK_COLOR), 2.0))
+            painter.setBrush(Qt.BrushStyle.NoBrush)
+            painter.drawRoundedRect(box, 3.0, 3.0)
+            painter.setPen(Qt.PenStyle.NoPen)
+            painter.setBrush(QBrush(QColor(_CHECK_CIRCLE_COLOR)))
+            radius = _CHECK_SIZE * 0.3
+            painter.drawEllipse(center, radius, radius)
+
+
+class _GridLineItem(QGraphicsLineItem):
+    """Non-interactive grid line (TSK30, planoscript pattern): painted normally
+    but invisible to hit-testing (empty shape), so it never blocks clicks on
+    the cards and cells. boundingRect() covers the painted line, otherwise the
+    scene index would drop the item as soon as the view scrolls past it."""
+
+    def shape(self):
+        return QPainterPath()
+
+    def boundingRect(self):
+        line = self.line()
+        left = min(line.x1(), line.x2())
+        top = min(line.y1(), line.y2())
+        right = max(line.x1(), line.x2())
+        bottom = max(line.y1(), line.y2())
+        return QRectF(left - 1, top - 1, right - left + 2, bottom - top + 2)
 
 
 class _MatrixGraphicsView(QGraphicsView):
@@ -147,6 +192,12 @@ class _MatrixGraphicsView(QGraphicsView):
         self._workspace = workspace
         self.setFrameShape(QFrame.NoFrame)
         self.setRenderHint(QPainter.RenderHint.Antialiasing)
+        # TSK30: matrix anchored to the top-left corner (not centered), the
+        # workspace extends rightwards/downwards only; scrollbars always on
+        self.setAlignment(Qt.AlignmentFlag.AlignLeft | Qt.AlignmentFlag.AlignTop)
+        self.setMinimumSize(0, 0)  # never raise the window minimum size (TSK30 3.3)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self._dragged_card = None
 
     def viewportEvent(self, event):
@@ -208,7 +259,7 @@ class RelationshipsWorkspace(QWidget):
     """Workspace of the "Relationships" view: agent x agent matrix + side panel."""
 
     anchor_block_selected = Signal(int)              # block id (side panel list)
-    journey_filter_requested = Signal(bool)          # mirror of Display > Journey
+    journey_filter_requested = Signal(object)        # journey id or None (All journeys); mirror of Display > Journey (TSK30 4.1)
     agent_filter_requested = Signal(object)          # agent id or None
     cell_clicked = Signal(int, int)                  # row, col (left click, TSK29)
     context_menu_requested = Signal(int, int, object)  # row, col, global QPoint
@@ -248,6 +299,9 @@ class RelationshipsWorkspace(QWidget):
         self.view = _MatrixGraphicsView(self)
         self.view.setScene(self.scene)
         self.view.setBackgroundBrush(QBrush(QColor(_BG_PRIMARY)))
+        # TSK30: redraw the grid over the newly visible area on scroll
+        self.view.horizontalScrollBar().valueChanged.connect(self._draw_grid)
+        self.view.verticalScrollBar().valueChanged.connect(self._draw_grid)
         splitter.addWidget(self.view)
 
         panel = QWidget()
@@ -262,6 +316,11 @@ class RelationshipsWorkspace(QWidget):
         self.agent_combo = QComboBox()
         self.agent_combo.currentIndexChanged.connect(self._on_agent_combo)
         panel_layout.addWidget(self.agent_combo)
+        # TSK30 (3.8): separator between the filter zone and the block list
+        separator = QFrame()
+        separator.setFrameShape(QFrame.Shape.HLine)
+        separator.setStyleSheet(f"color: {_BORDER_COLOR};")
+        panel_layout.addWidget(separator)
         panel_layout.addWidget(QLabel("Blocks"))
         self.block_list = QListWidget()
         self.block_list.currentRowChanged.connect(self._on_block_selected)
@@ -329,14 +388,15 @@ class RelationshipsWorkspace(QWidget):
     # Scene geometry / layout
     # ------------------------------------------------------------------
     def _card_at(self, pos: QPointF):
+        # TSK30 (3.5): shape() is in item-local coordinates, map the scene pos first
         for card in list(self._row_cards.values()) + list(self._col_cards.values()):
-            if card.shape().contains(pos):
+            if card.shape().contains(card.mapFromScene(pos)):
                 return card
         return None
 
     def _cell_at(self, pos: QPointF):
         for cell in self._cells.values():
-            if cell.shape().contains(pos):
+            if cell.shape().contains(cell.mapFromScene(pos)):
                 return cell
         return None
 
@@ -367,34 +427,38 @@ class RelationshipsWorkspace(QWidget):
                     cell = _MatrixCell(i, j)
                     self.scene.addItem(cell)
                     self._cells[(i, j)] = cell
-        # scene rect
+        # scene rect: anchored on the top-left corner, grows rightwards/downwards
+        # only, at least _SCENE_MIN_SIZE so the scrollbars stay usable (TSK30)
         w = _CELLS_LEFT + len(self._col_order) * _CELL_SIZE + _CELL_SIZE
         h = _CELLS_TOP + len(self._row_order) * _CELL_SIZE + _CELL_SIZE
-        self.scene.setSceneRect(0, 0, max(w, 400), max(h, 300))
+        self.scene.setSceneRect(0, 0, max(w, _SCENE_MIN_SIZE), max(h, _SCENE_MIN_SIZE))
         self._draw_grid()
 
     def _draw_grid(self):
-        """Background grid on the visible area only; non-interactive lines."""
+        """Background grid over the WHOLE visible area (TSK30 3.6), snapped on
+        the cell grid; non-interactive lines (_GridLineItem)."""
         for item in list(self.scene.items()):
             if getattr(item, '_is_grid_line', False):
                 self.scene.removeItem(item)
         rect = self.view.mapToScene(self.view.viewport().rect()).boundingRect()
-        n_cols = len(self._col_order) + 1
-        n_rows = len(self._row_order) + 1
-        for j in range(n_cols + 1):
-            x = j * _CELL_SIZE
-            if rect.left() - _CELL_SIZE <= x <= rect.right() + _CELL_SIZE:
-                line = self.scene.addLine(x, 0, x, _CELLS_TOP + n_rows * _CELL_SIZE)
-                line.setPen(QPen(QColor(_GRID_MAJOR_COLOR if j % 4 == 0 else _GRID_MINOR_COLOR), 1))
-                line.setZValue(-2)
-                line._is_grid_line = True
-        for i in range(n_rows + 1):
-            y = i * _CELL_SIZE
-            if rect.top() - _CELL_SIZE <= y <= rect.bottom() + _CELL_SIZE:
-                line = self.scene.addLine(0, y, _CELLS_LEFT + n_cols * _CELL_SIZE, y)
-                line.setPen(QPen(QColor(_GRID_MAJOR_COLOR if i % 4 == 0 else _GRID_MINOR_COLOR), 1))
-                line.setZValue(-2)
-                line._is_grid_line = True
+        y1 = rect.top() - _CELL_SIZE
+        y2 = rect.bottom() + _CELL_SIZE
+        x1 = rect.left() - _CELL_SIZE
+        x2 = rect.right() + _CELL_SIZE
+        start_x = int(x1 - (x1 % _CELL_SIZE))
+        for x in range(start_x, int(x2) + _CELL_SIZE, _CELL_SIZE):
+            line = _GridLineItem(x, y1, x, y2)
+            line.setPen(QPen(QColor(_GRID_MAJOR_COLOR if round(x / _CELL_SIZE) % 4 == 0 else _GRID_MINOR_COLOR), 1))
+            line.setZValue(-2)
+            line._is_grid_line = True
+            self.scene.addItem(line)
+        start_y = int(y1 - (y1 % _CELL_SIZE))
+        for y in range(start_y, int(y2) + _CELL_SIZE, _CELL_SIZE):
+            line = _GridLineItem(x1, y, x2, y)
+            line.setPen(QPen(QColor(_GRID_MAJOR_COLOR if round(y / _CELL_SIZE) % 4 == 0 else _GRID_MINOR_COLOR), 1))
+            line.setZValue(-2)
+            line._is_grid_line = True
+            self.scene.addItem(line)
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
@@ -518,7 +582,9 @@ class RelationshipsWorkspace(QWidget):
     def _on_journey_combo(self, index):
         if self._updating_combos:
             return
-        self.journey_filter_requested.emit(self.journey_combo.itemData(index) is not None)
+        # TSK30 (4.1): emit the chosen journey id (None = "All journeys") so the
+        # MainWindow can activate it, like Display > Journey does
+        self.journey_filter_requested.emit(self.journey_combo.itemData(index))
 
     def _on_agent_combo(self, index):
         if self._updating_combos:

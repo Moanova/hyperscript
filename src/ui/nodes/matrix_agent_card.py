@@ -77,9 +77,14 @@ class MatrixAgentCard(QGraphicsRectItem):
             self.HIT_AREA_WIDTH / 2, self.HIT_AREA_WIDTH / 2)
 
     def hoverEnterEvent(self, event):
-        # RG054: immediate tooltip (the workspace swallows Qt's delayed one)
-        QToolTip.showText(event.screenPos(), self.toolTip(), self)
+        # RG054: immediate tooltip (the workspace swallows Qt's delayed one);
+        # no widget argument: QToolTip.showText expects a QWidget, not a QGraphicsItem
+        QToolTip.showText(event.screenPos(), self.toolTip())
         super().hoverEnterEvent(event)
+
+    def hoverLeaveEvent(self, event):
+        QToolTip.hideText()
+        super().hoverLeaveEvent(event)
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
         rect = QRectF(0, 0, self.WIDTH, self.HEIGHT)

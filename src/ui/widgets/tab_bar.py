@@ -8,7 +8,7 @@
 # ---------------------------------------------------------------------
 """Tab bar for switching between workspaces (TSK11, 04_interface section 3).
 
-Displays one tab button per workspace ('Journeys', 'Agents', 'Relationships',
+Displays one tab button per workspace ('Agents', 'Journeys', 'Relationships',
 'Export' - named in English, the application is unilingual for now) and emits
 currentChanged(name) when the user activates a tab. Single instance placed
 above the stacked workspace area (single source of truth for the active tab).
@@ -103,7 +103,7 @@ class TabBar(QWidget):
     def forceCurrentTab(self, name: str) -> None:
         """Set the active tab without emitting currentChanged.
 
-        Used when restoring the default tab ('Journeys') on project
+        Used when restoring the default tab ('Agents', TSK30) on project
         opening, where the stacked widget already shows that page.
         """
         if name not in self._tab_buttons:

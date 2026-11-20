@@ -657,6 +657,56 @@ class LayoutService:
         return current_x, current_y
 
     @classmethod
+    def find_first_free_cell(
+        cls,
+        x: float,
+        y: float,
+        width: float,
+        height: float,
+        existing_rects: list,
+        step_x: float,
+        step_y: float,
+        bounds: tuple = None,
+        max_cells: int = 10000
+    ) -> tuple:
+        """
+        Find the first free cell of a grid (steps step_x x step_y, anchored on
+        (x, y)), scanned row by row from the top-left corner (TSK30).
+
+        Args:
+            x: X of the grid origin (first column)
+            y: Y of the grid origin (first row)
+            width: Width of the item to place
+            height: Height of the item to place
+            existing_rects: List of tuples (x, y, width, height) for existing items
+            step_x: Horizontal cell size
+            step_y: Vertical cell size
+            bounds: Optional (left, top, right, bottom) the item rect must fit in
+            max_cells: Safety limit on the scanned cells
+
+        Returns:
+            Tuple (cell_x, cell_y) of the first free cell, (x, y) if none found
+        """
+        if bounds is not None:
+            left, top, right, bottom = bounds
+        else:
+            left, top = x, y
+            right, bottom = x + max_cells * step_x, y + max_cells * step_y
+        scanned = 0
+        cy = y
+        while cy + height <= bottom and scanned < max_cells:
+            cx = x
+            while cx + width <= right and scanned < max_cells:
+                if cx >= left and cy >= top and not any(
+                        cls._rects_overlap(cx, cy, width, height, ex, ey, ew, eh)
+                        for ex, ey, ew, eh in existing_rects):
+                    return cx, cy
+                cx += step_x
+                scanned += 1
+            cy += step_y
+        return x, y
+
+    @classmethod
     def find_nearest_free_position(
         cls,
         x: float,

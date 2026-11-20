@@ -51,6 +51,37 @@ def test_create_project_builds_all_workspaces(qapp):
         assert mw.relationships_workspace.get_anchor_block_id() == start.id
         # the block list of the side panel contains the Start block
         assert start.id in mw.relationships_workspace._block_ids
+        # TSK30 (1.1): the default active view on project creation is "Agents"
+        assert mw.tab_bar.currentTab() == "Agents"
+        assert mw.pages.currentWidget() is mw.view_pages["Agents"]
     finally:
         mw._teardown_workspace()
+        mw.close()
+
+
+def test_relationships_journey_filter_requested_activates_journey(qapp):
+    """TSK30 (4.1): the side panel journey combo emits the chosen journey id;
+    the MainWindow handler activates that journey (FN026) and enables the
+    filter (FN029); None = "All journeys" disables the filter."""
+    mw = MainWindow()
+    try:
+        mw._create_project()
+        mw._new_journey()  # second journey (FN023, via the real menu path)
+        nm = mw._current_narrative_map()
+        j2 = nm.journey[-1]
+        received = []
+        mw.relationships_workspace.journey_filter_requested.connect(
+            lambda jid: received.append(jid))
+        # choosing the second journey in the panel activates it + filter on
+        mw.relationships_workspace.journey_combo.setCurrentIndex(2)
+        assert received[-1] == j2.id
+        assert nm.get_active_journey() is j2
+        assert mw.journey_filter_active is True
+        # "All journeys" disables the filter (active journey unchanged)
+        mw._on_relationships_journey_filter_requested(None)
+        assert mw.journey_filter_active is False
+        assert nm.get_active_journey() is j2
+    finally:
+        mw._teardown_workspace()
+        mw.project_service.set_modified(False)  # avoid the quit confirmation dialog
         mw.close()

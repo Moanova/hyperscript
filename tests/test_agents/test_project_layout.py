@@ -114,3 +114,22 @@ def test_find_nearest_free_position_pushes_to_nearest_free_cell():
         bounds=(0.0, 0.0, 4000.0, 4000.0))
     assert (x, y) == (0.0, 280.0)
     assert x % 200.0 == 0 and y % 140.0 == 0
+
+
+def test_find_first_free_cell_scans_row_major_from_top_left():
+    """TSK30 (2.1): first free cell of the grid, scanned row by row from the
+    top-left corner (0, 0) - creation anchor of a new agent card."""
+    # empty grid -> the origin cell itself
+    assert LayoutService.find_first_free_cell(0.0, 0.0, 160.0, 100.0, [], 200.0, 140.0) == (0.0, 0.0)
+    # origin occupied -> next cell on the same row
+    assert LayoutService.find_first_free_cell(
+        0.0, 0.0, 160.0, 100.0, [(0.0, 0.0, 160.0, 100.0)], 200.0, 140.0) == (200.0, 0.0)
+    # full first row (bounded scan) -> first cell of the second row
+    rects = [(0.0, 0.0, 160.0, 100.0), (200.0, 0.0, 160.0, 100.0)]
+    assert LayoutService.find_first_free_cell(
+        0.0, 0.0, 160.0, 100.0, rects, 200.0, 140.0,
+        bounds=(0.0, 0.0, 400.0, 4000.0)) == (0.0, 140.0)
+    # a cell freed inside the group is reused before going further right
+    rects = [(200.0, 0.0, 160.0, 100.0), (400.0, 0.0, 160.0, 100.0)]
+    assert LayoutService.find_first_free_cell(
+        0.0, 0.0, 160.0, 100.0, rects, 200.0, 140.0) == (0.0, 0.0)

@@ -24,6 +24,12 @@ origin), or to the nearest free cell when the target cell is occupied
 Card positions are persisted at project level (layouts/project.json,
 RG067).
 
+TSK30 (session 10 feedback): a new card is placed on the FIRST free cell of
+the invisible grid scanned row by row from the top-left corner (0, 0), and
+the workspace extends rightwards/downwards only - the scene rect never
+grows past its left/top origin (clamped at 0, so card moves are constrained
+to the same area via scene.sceneRect()).
+
 The filters (journey/agent, RG048/RG063) do NOT apply to this view.
 
 The workspace NEVER writes the business model (RG058): it emits signals
@@ -147,19 +153,23 @@ class AgentsWorkspace(QGraphicsView, QObject):
         self.setSceneRect(x, y, w, h)
 
     def _expand_scene_to_include(self, x: float, y: float, margin: int = None):
-        """Dynamically expand the sceneRect to include the point (x, y)."""
+        """Dynamically expand the sceneRect to include the point (x, y).
+        TSK30 (2.1): the workspace extends rightwards/downwards only - the
+        left/top edges are clamped at 0 and never grow in negative coords."""
         if margin is None:
             margin = self.scene_rect_margin
         new_rect = self.scene.sceneRect()
         expanded = False
-        if x - margin < new_rect.left():
-            new_rect.setLeft(x - margin)
+        clamped_left = max(0.0, x - margin)
+        if clamped_left < new_rect.left():
+            new_rect.setLeft(clamped_left)
             expanded = True
         if x + margin > new_rect.right():
             new_rect.setRight(x + margin)
             expanded = True
-        if y - margin < new_rect.top():
-            new_rect.setTop(y - margin)
+        clamped_top = max(0.0, y - margin)
+        if clamped_top < new_rect.top():
+            new_rect.setTop(clamped_top)
             expanded = True
         if y + margin > new_rect.bottom():
             new_rect.setBottom(y + margin)
@@ -253,27 +263,21 @@ class AgentsWorkspace(QGraphicsView, QObject):
                 return item
         return None
 
-    def next_free_card_position(self, x: float = 80.0, y: float = 80.0):
+    def next_free_card_position(self, x: float = 0.0, y: float = 0.0):
         """First free cell of the invisible grid for a new card (RG050
-        non-overlapping, RG065 cells). TSK22: when cards already exist, the
-        search is anchored on the cell just right of their bounding box
-        (same top row), so the new card appears next to the existing group
-        (pattern of the Journeys view: first free spot right of the anchor,
-        TSK16); otherwise the default anchor (x, y) is used."""
+        non-overlapping, RG065 cells), scanned row by row from the top-left
+        corner of the scene (TSK30 2.1); the (x, y) anchor is only a fallback
+        when no free cell is found."""
         existing_rects = []
         for item in self.scene.items():
             if isinstance(item, AgentCardItem):
                 r = item.rect()
                 pos = item.pos()
                 existing_rects.append((pos.x(), pos.y(), r.width(), r.height()))
-        if existing_rects:
-            x = max(r[0] for r in existing_rects) + _CELL_WIDTH
-            y = min(r[1] for r in existing_rects)
-        x = LayoutService.snap_to_grid(x, _CELL_WIDTH)
-        y = LayoutService.snap_to_grid(y, _CELL_HEIGHT)
         scene_rect = self.scene.sceneRect()
-        return LayoutService.find_nearest_free_position(
-            x, y, _CARD_WIDTH, _CARD_HEIGHT, existing_rects, _CELL_WIDTH, _CELL_HEIGHT,
+        return LayoutService.find_first_free_cell(
+            scene_rect.left(), scene_rect.top(), _CARD_WIDTH, _CARD_HEIGHT,
+            existing_rects, _CELL_WIDTH, _CELL_HEIGHT,
             bounds=(scene_rect.left(), scene_rect.top(), scene_rect.right(), scene_rect.bottom()))
 
     def create_agent_card(self, agent, layout: AgentCardLayout = None, select: bool = True,

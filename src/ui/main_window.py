@@ -153,7 +153,7 @@ class MainWindow(QMainWindow):
         self._create_menu_bar()
 
         # Tab bar, visible only when a project is open (04_interface section 3)
-        self.tab_bar = TabBar(["Agents", "Journeys", "Relationships", "Export"])  # TSK28: Agents first (Journeys stays the default active tab)
+        self.tab_bar = TabBar(["Agents", "Journeys", "Relationships", "Export"])  # TSK28: Agents first; TSK30: Agents is the default active tab
         self.tab_bar.hide()
         main_layout.addWidget(self.tab_bar)
         self.tab_bar.currentChanged.connect(self._on_tab_changed)
@@ -399,7 +399,7 @@ class MainWindow(QMainWindow):
         project = self.create_project_usecase.execute()
         self.project_opened = True
         self._init_workspace()
-        self.pages.setCurrentWidget(self.view_pages["Journeys"])
+        self.pages.setCurrentWidget(self.view_pages["Agents"])  # TSK30 (1.1): default view is "Agents"
         self.setWindowTitle(f"{_get_config('app_window_title', 'Hyperscript')} : {project.lb}")
         self._update_menu_state()
         logger.debug("Project created: %s", project)
@@ -434,7 +434,7 @@ class MainWindow(QMainWindow):
         if self.load_project_usecase.execute(file_path):
             self.project_opened = True
             self._init_workspace()
-            self.pages.setCurrentWidget(self.view_pages["Journeys"])
+            self.pages.setCurrentWidget(self.view_pages["Agents"])  # TSK30 (1.1): default view is "Agents"
             project = self.project_service.current_project
             self.setWindowTitle(f"{_get_config('app_window_title', 'Hyperscript')} : {project.lb} ({file_path})")
             self._update_menu_state()
@@ -621,7 +621,7 @@ class MainWindow(QMainWindow):
         relationships_workspace = RelationshipsWorkspace(project=project, narrative_map=nm,
                                                          info_bar=self.info_bar, main_window=self)
         relationships_workspace.anchor_block_selected.connect(self._on_relationships_anchor_selected)
-        relationships_workspace.journey_filter_requested.connect(self._set_journey_filter_active)
+        relationships_workspace.journey_filter_requested.connect(self._on_relationships_journey_filter_requested)  # TSK30 (4.1)
         relationships_workspace.agent_filter_requested.connect(self._set_agent_filter)
         relationships_workspace.context_menu_requested.connect(self._show_relationships_context_menu)
         relationships_workspace.cell_clicked.connect(self._on_relationship_cell_clicked)  # TSK29
@@ -642,7 +642,7 @@ class MainWindow(QMainWindow):
         self._rebuild_journey_menu()
         self._rebuild_agent_menu()
         self.tab_bar.show()
-        self.tab_bar.forceCurrentTab("Journeys")
+        self.tab_bar.forceCurrentTab("Agents")  # TSK30 (1.1): default active tab is "Agents"
 
     def _teardown_workspace(self):
         if self.journeys_workspace is not None:
@@ -800,10 +800,18 @@ class MainWindow(QMainWindow):
     # ---------------------------------------------------------------------
     # Journeys actions (FN023/FN025/FN027) + Display > Journey (FN026/FN029)
     # ---------------------------------------------------------------------
+    def _resync_relationships_panel(self):
+        """TSK30 (4.1): rebuild the side panel of the "Relationships" view after
+        a journey CRUD (the journey list of the combo may have changed); the
+        current filters are kept."""
+        if self.relationships_workspace is not None:
+            self.relationships_workspace.refresh()
+
     def _new_journey(self):
         """FN023: create a journey (not activated; the active journey is unchanged)."""
         self.create_journey_usecase.execute()
         self._rebuild_journey_menu()
+        self._resync_relationships_panel()
         self._update_menu_state()
 
     def _copy_journey(self):
@@ -813,6 +821,7 @@ class MainWindow(QMainWindow):
         if active is not None:
             self.duplicate_journey_usecase.execute(active)
         self._rebuild_journey_menu()
+        self._resync_relationships_panel()
         self._update_menu_state()
 
     def _delete_journey(self):
@@ -829,6 +838,7 @@ class MainWindow(QMainWindow):
         self._rebuild_journey_menu()
         if self.journeys_workspace is not None:
             self.journeys_workspace.apply_filters()
+        self._resync_relationships_panel()
         self._update_menu_state()
 
     def _rebuild_journey_menu(self):
@@ -855,6 +865,18 @@ class MainWindow(QMainWindow):
         self.activate_journey_usecase.execute(journey)
         self._set_journey_filter_active(True)
         self._update_menu_state()
+
+    def _on_relationships_journey_filter_requested(self, journey_id):
+        """TSK30 (4.1): the side panel journey combo mirrors Display > Journey -
+        choosing a journey activates it (FN026) and enables the filter (FN029);
+        "All journeys" (None) disables the filter."""
+        if journey_id is None:
+            self._set_journey_filter_active(False)
+            return
+        nm = self._current_narrative_map()
+        journey = next((j for j in nm.journey if j.id == journey_id), None) if nm else None
+        if journey is not None:
+            self._activate_journey(journey)
 
     def _set_journey_filter_active(self, active: bool):
         """FN029/RG048: toggle the journey filter on the map views (visual only,
@@ -1171,6 +1193,7 @@ class MainWindow(QMainWindow):
         values = dialog.get_values()
         self.update_journey_usecase.execute(active, lb=values['lb'], note=values['note'])
         self._rebuild_journey_menu()
+        self._resync_relationships_panel()
         self._update_menu_state()
 
     def _set_default_journey(self):
@@ -1186,6 +1209,7 @@ class MainWindow(QMainWindow):
         if chosen is not None:
             self.set_default_journey_usecase.execute(chosen)
             self._rebuild_journey_menu()
+            self._resync_relationships_panel()
             self._update_menu_state()
 
     # ---------------------------------------------------------------------
@@ -1248,9 +1272,10 @@ class MainWindow(QMainWindow):
             self._view_relationship_anchor_in_journeys(row, col)
 
     def _on_relationship_cell_clicked(self, row, col):
-        """TSK29/RG070: left click on a matrix cell - open the creation dialog
-        (pair + current anchor block pre-filled) when no relationship exists for
-        the pair at the selected block, or the edit dialog of the existing one."""
+        """TSK29/TSK30 (3.7): left click on a matrix cell - if the pair has a
+        relationship at the selected block, open its edit dialog; otherwise
+        create an "Undefined" relationship directly (pair + current anchor
+        block), no dialog."""
         ws = self.relationships_workspace
         nm = self._current_narrative_map()
         project = self.project_service.current_project
@@ -1275,20 +1300,17 @@ class MainWindow(QMainWindow):
                 return
             self.info_bar.show_message("Relationship updated")
         else:
-            dialog = RelationshipDialog(project.agent, nm, parent=self,
-                                        default_agent_1_id=a_row, default_agent_2_id=a_col,
-                                        default_block_id=anchor)
-            if dialog.exec() != QDialog.DialogCode.Accepted:
+            if anchor is None:
+                self.info_bar.show_message("Select an anchor block in the side panel first")
                 return
-            values = dialog.get_values()
-            rel = self.create_relationship_usecase.execute(
-                values['agent_1_id'], values['agent_2_id'], values['typ'], values['block_id'],
-                note=values['note'], content=values['content'])
+            # TSK30 (3.7): direct creation of an "Undefined" relationship
+            rel = self.create_relationship_usecase.execute(a_row, a_col, "Undefined", anchor)
             if rel is None:
                 self.info_bar.show_message(
                     "Relationship refused: a relationship already exists for this (block, agent pair) (RG035)")
                 return
             self.info_bar.show_message(f"Relationship '{rel.typ}' created")
+        self.relationships_workspace.refresh()
         self._update_menu_state()
 
     def _view_relationship_anchor_in_journeys(self, row, col):

@@ -33,3 +33,11 @@
 - Cellule = indicateur cliquable (type + couleur), pas de case à cocher — RG035 (typée + ancrée).
 - Ordre initial alphabétique (pas id croissant).
 - Panneau latéral (filtres + liste des blocs, 3ᵉ dimension) conservé — propre à hyperscript.
+
+## Révision TSK30 (séance 10, retours de test TSC)
+
+- **Ancrage haut gauche + défilement** : alignement `AlignLeft|AlignTop` de la vue, scène d'au moins 4000×4000 ancrée sur (0, 0) et croissant uniquement vers la droite/le bas ; barres de défilement toujours visibles ; la grille couvre **toute la zone visible** (lignes `_GridLineItem` non interactives — `shape()` vide mais `boundingRect()` réelle — redessinées au scroll et au resize). La fenêtre reste réductible (pas de minimum relevé par la vue).
+- **Cellule = case à cocher** (retour au modèle plano, remplace la décision 4 de la séance 09) : contour centré (`relationships_view_checkbox_size`/`relationships_view_checkbox_color`) + **cercle de fond plein or** (`relationships_view_check_color`) quand la paire a une relation ; **point au centre de chaque cellule** (rendu des points d'ancrage de la vue « Agents ») ; le **type + la note figurent en infobulle** au survol. Clic gauche : cellule vide → **création directe « Undefined »** (paire + bloc courant, sans dialogue), cellule remplie → dialogue d'édition ; clic droit → menu contextuel (inchangé, RG055).
+- **Correctifs** : infobulle des cartes d'en-tête sans 3ᵉ argument `QWidget` (`QToolTip.showText(pos, texte)`, l'item n'est pas un widget) + `hideText` au `hoverLeaveEvent` ; hit-testing des cartes/cellules en coordonnées locales (`mapFromScene` avant `shape().contains`) — le drag lignes/colonnes et les clics de cellule refonctionnent.
+- **Panneau latéral** : séparateur horizontal après le filtre agent ; la combo de parcours émet l'id choisi (`None` = « All journeys ») et le `MainWindow` **active ce parcours** (FN026) + filtre (FN029), comme « Display > Journey » ; resync du panneau après chaque CRUD de parcours.
+- **Hors matrice** : vue active par défaut « Agents » à la création/ouverture d'un projet (révise TSK28) ; vue « Agents » : création sur la première cellule libre depuis (0, 0) en balayage ligne par ligne, espace extensible droite/bas uniquement (scène clampée à 0 en gauche/haut).

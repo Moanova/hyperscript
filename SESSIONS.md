@@ -7,7 +7,31 @@ Complément de `AGENTS.md` (règles de travail) et de `docs/project/kanban.md` (
 Les entrées sont ajoutées dans l'ordre antechronologique.
 
 
---
+---
+
+## Séance n°10 (2026-11-20)
+
+### Travaux
+- **Analyse des retours de test TSC** (10 points + 1 question, livrés après la séance 09) : causes racines identifiées avec références code — 1.1 vue par défaut encore « Journeys » (`main_window.py`) ; 2.1 placement cartes agent « à droite du groupe » (TSK22) + scène extensible en 4 directions ; 3.1 alignement `AlignCenter` de la matrice ; 3.2/3.6 grille limitée à la zone visible dans les bornes de la matrice, non redessinée au scroll ; 3.3 fenêtre non réductible dans « Relationships » (scène = taille matrice + splitter) ; 3.4 `QToolTip.showText(pos, texte, self)` avec un `QGraphicsRectItem` comme `QWidget` (`matrix_agent_card.py`) ; 3.5 `_card_at`/`_cell_at` comparent une position scène à un `shape()` local ; 3.7 remplissage cellule par couleur+texte ; 3.8 pas de séparateur dans le panneau ; 4.1 la combo Journey du panneau n'émettait qu'un booléen → resélection du parcours actif (symptômes n°1→n°2 / n°2→n°2 / All→All exactement reproduits par l'analyse) ; 5 ascenseurs `AsNeeded` + grille non redessinée au scroll.
+- **TSK30 créée** (kanban Doing → fiche `docs/projet/tasks/TSK30_tsc_feedback_session10.md` : analyse, décisions actées, plan), dépendances → #TSK27/#TSK28/#TSK29 (Review).
+- **TSK30 implémentée** (feu vert TSC) : (1.1) vue active par défaut **« Agents »** à la création/ouverture (`main_window.py` ×3, `tab_bar.py`) ; (2.1) `LayoutService.find_first_free_cell` (scan row-major depuis (0,0), Qt-free + tests) + clamp de l'expansion de scène à gauche/haut ≥ 0 dans `agents_workspace.py` ; (3.1/3.2/3.3/3.6/5) `relationships_workspace.py` : `AlignLeft|AlignTop`, scène ≥ 4000×4000 à l'origine croissant droite/bas, `setMinimumSize(0,0)`, ascenseurs `AlwaysOn`, `_GridLineItem` (shape vide + boundingRect réelle), grille sur **toute la zone visible** redessinée au scroll/resize, **point central par cellule** (rendu points d'ancrage vue Agents) ; (3.4) `QToolTip.showText(event.screenPos(), self.toolTip())` + `hoverLeaveEvent`/`hideText` ; (3.5) hit-testing via `mapFromScene` ; (3.7) cellule = **case à cocher** (contour `relationships_view_checkbox_*`, **cercle plein or** `relationships_view_check_color` = #E5C07B, type+note en infobulle) — clic gauche vide = **création directe « Undefined »** sans dialogue (`_on_relationship_cell_clicked`), clic gauche rempli = édition, **clic droit = menu contextuel** (RG055) ; (3.8) séparateur `HLine` après le filtre Agent ; (4.1) `journey_filter_requested = Signal(object)` (id ou None) + `_on_relationships_journey_filter_requested` (active le parcours FN026 + filtre FN029, None = filtre off) + `_resync_relationships_panel` après chaque CRUD de parcours. Config : nouvelles clés `relationships_view_checkbox_size/color`, `relationships_view_check_color`. Specs : `04_interface` §3/§5/§6 FR/EN, conception 04 FR/EN, matrices `implementation-FR/EN.md` (FN036).
+- Tests : +8 offscreen TSK30 (`test_relationships_workspace_offscreen.py` : ancrage/ascenseurs/scène, grille pleine zone, hit-testing scène, **vrai drag press/move/release**, infobulle type, combo journey par id, séparateur, hover sans exception), smoke (`test_main_window_smoke_offscreen.py` : onglet par défaut « Agents », activation parcours depuis le panneau), `test_agents_workspace_offscreen.py` (placement (0,0) row-major + clamp scène + attentes TSK23 recalculées), `test_project_layout.py` (`find_first_free_cell` ×4 cas).
+
+### Choix actés
+- 3.7 : cercle de la case **toujours or** (pas la couleur du type) ; type de relation **en infobulle au survol** ; clic droit = **menu contextuel** (pas de dialogue direct).
+- 1.1 : la décision TSK28 « vue par défaut inchangée : Journeys » est **révisée** → « Agents ».
+- 4.1 : choisir un parcours dans le panneau latéral = activation (FN026) + filtre (FN029), identique au menu Display > Journey.
+
+### Problèmes rencontrés
+- Sandbox sans libGL au départ : PySide6 installé par pip mais libs système manquantes → contourné en téléchargeant les .deb via `apt-get download` (listes apt en /tmp) + `dpkg -x` en local + `LD_LIBRARY_PATH` temporaire : **Qt offscreen fonctionne désormais dans le sandbox** (tests offscreen exécutés, rendu vérifié par capture d'image : matrice haut gauche, grille pleine zone, points centraux, cercles or symétriques sur la relation, diagonale estompée).
+- **3 échecs pré-existants** `tests/test_journeys/test_block_drag_offscreen.py` (`RuntimeError: Internal C++ object (BlockNode) already deleted`) : reproductibles sur l'arbre propre (`git stash`) quand la suite offscreen tourne dans un même processus — hors scope TSK30, à investiguer sur le poste de dev.
+
+### État en fin de séance
+- py_compile OK, pyflakes clean (aucun nouveau warning), config JSON valide, **125 tests passed + 3 failed pré-existants** (hors scope).
+- Kanban : **TSK30 en Review** (TSK27/TSK28/TSK29 toujours en Review, attente validation TSC).
+- Commit + push sur `dev` (feu vert TSC explicite, sans PR).
+
+---
 
 ## Séance n°09 (2026-11-19)
 

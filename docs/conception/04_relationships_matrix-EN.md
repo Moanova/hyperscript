@@ -33,3 +33,11 @@
 - Cell = clickable indicator (type + color), not a checkbox — RG035 (typed + anchored).
 - Initial order alphabetical (not ascending id).
 - Side panel (filters + block list, 3rd dimension) kept — specific to hyperscript.
+
+## Revision TSK30 (session 10, TSC test feedback)
+
+- **Top-left anchoring + scrolling**: view alignment `AlignLeft|AlignTop`, scene of at least 4000x4000 anchored on (0, 0) growing rightwards/downwards only; scrollbars always visible; the grid covers the **whole visible area** (`_GridLineItem` non-interactive lines — empty `shape()` but real `boundingRect()` — redrawn on scroll and resize). The window stays shrinkable (no minimum raised by the view).
+- **Cell = checkbox** (back to the plano model, replaces session-09 decision 4): centered box outline (`relationships_view_checkbox_size`/`relationships_view_checkbox_color`) + **solid gold circle** (`relationships_view_check_color`) when the pair has a relationship; **a dot at the center of each cell** (same rendering as the "Agents" view anchor dots); the **type + note show in the tooltip on hover**. Left click: empty cell → **direct "Undefined" creation** (pair + current block, no dialog), filled cell → edit dialog; right click → context menu (unchanged, RG055).
+- **Fixes**: header-card tooltip without the invalid `QWidget` 3rd argument (`QToolTip.showText(pos, text)`, the item is not a widget) + `hideText` on `hoverLeaveEvent`; card/cell hit-testing in item-local coordinates (`mapFromScene` before `shape().contains`) — row/column drags and cell clicks work again.
+- **Side panel**: horizontal separator after the agent filter; the journey combo emits the chosen id (`None` = "All journeys") and the `MainWindow` **activates that journey** (FN026) + enables the filter (FN029), like "Display > Journey"; panel resynced after every journey CRUD.
+- **Outside the matrix**: default active view "Agents" on project creation/open (revises TSK28); "Agents" view: creation on the first free cell from (0, 0) in row-major scan, workspace extensible rightwards/downwards only (scene clamped at 0 on the left/top).
