@@ -16,15 +16,12 @@ design note docs/conception/04_relationships_matrix-FR/EN.md:
   (`relationships_view_cell_size_px` = 100), background grid on the visible
   area only; header cards with the narrative-block rendering (MatrixAgentCard,
   80x40, sand border) - rows on the left, columns on top;
-- rows and columns have INDEPENDENT orders (RG070 revised session 09):
-  initial alphabetical (label, ties by id), reordering by dragging a header
-  card (move constrained to the card's axis), both orders persisted at
-  project level (`relationships_view_row_order` / `column_order`, RG067);
-- cell (A, B) shows the type of the pair's derived state at the selected block
-  (RG069 - RelationshipService.pair_state_at_block) and is a CLICKABLE object:
-  left click opens the creation dialog (pair + current block pre-filled) or
-  the edit dialog of the existing relationship; right click opens the context
-  menu (built by MainWindow, RG055);
+- rows and columns had independent orders (RG070 revised session 09) until
+  TSK32 (session 10): now a SINGLE shared order, upper-triangle matrix - see
+  the TSK32 paragraph below;
+- cell (A, B) shows the pair's derived state at the selected block (RG069 -
+  RelationshipService.pair_state_at_block); until TSK32 it was a clickable
+  checkbox object (left click = create/edit, right click = context menu);
 - right side panel: two filter zones (journey, agent - mirrors of the Display
   menu, state owned by MainWindow) then the block list, top to bottom by
   minimum rank across all journeys (ties by id - RG069), restricted to the
@@ -73,6 +70,24 @@ the workspace exposes the historical attribute names (journey_combo,
 block_list, _block_ids, _anchor_block_id, ...) as delegates, so the matrix
 logic and the tests are unchanged. The "Journeys" view hosts the same panel
 with show_block_list=False (no block list) - see main_window.py.
+
+TSK32 (session 10, adopted design): the symmetric matrix showed 2 checkmarks
+per relationship -> the matrix becomes an UPPER-TRIANGLE matrix. Rows and
+columns carry the SAME agents with a SINGLE shared order (persisted as
+`relationships_view_agent_order`, RG070 revised; migrating a header card moves
+the row AND the column together). The diagonal (row == col, no
+self-relationship RG035) and the lower triangle are dimmed and
+non-interactive: exactly ONE active cell per agent pair (row < col). This also
+settles the combinatorial question: with RG035 the displayed relationships are
+bounded by N(N-1)/2 for N agents, and the matrix size depends on N only. An
+active cell hosts a MatrixRelationshipCard (border #E06666 = the Pivot/Condition
+color, label = relationship type, tooltip = type + pair + anchor block + note,
+RG054); at most one card per cell (derived state at the selected block, RG069 +
+RG035). There is NO left click on cells anymore: creation/edition/deletion go
+through the right-click context menu only (RG055) - empty cell -> "New..."
+(dialog pre-filled with the pair + anchor block), filled cell -> Edit/Delete of
+that relationship + "View in Journeys view" (FN032); the context menu is also
+active on the agent header cards (agent_context_menu_requested).
 """
 import logging
 from typing import Dict, List, Optional, Tuple
@@ -90,6 +105,7 @@ from core.services.journey_filter_service import JourneyFilterService
 from core.services.agent_filter_service import AgentFilterService
 from core.services.relationship_service import RelationshipService
 from ui.nodes.matrix_agent_card import MatrixAgentCard
+from ui.nodes.matrix_relationship_card import MatrixRelationshipCard
 from ui.widgets.filters_side_panel import (
     FiltersSidePanel, SidePanelSplitter, PANEL_WIDTH_PX, SEPARATOR_HEIGHT_PX,
 )
@@ -111,10 +127,9 @@ _SCENE_MIN_SIZE = 4000
 # TSK30: center dot of each cell, same rendering as the "Agents" view anchor dots
 _DOT_RADIUS = _get_config("agents_view_dot_radius_px", 1.5)
 _DOT_COLOR = _get_config("agents_view_dot_color", "#4A4A4A")
-# TSK30: cell checkbox (planoscript MatrixCheckItem pattern) - checked = filled gold circle
-_CHECK_SIZE = _get_config("relationships_view_checkbox_size", 20)
-_CHECK_COLOR = _get_config("relationships_view_checkbox_color", "#383838")
-_CHECK_CIRCLE_COLOR = _get_config("relationships_view_check_color", "#E5C07B")
+# TSK32: the Relationship card materialized inside an active (upper-triangle) cell
+_REL_CARD_W = MatrixRelationshipCard.WIDTH
+_REL_CARD_H = MatrixRelationshipCard.HEIGHT
 # TSK31 (3.1): separator between the filter zone and the block list
 _SEPARATOR_HEIGHT = SEPARATOR_HEIGHT_PX  # alias kept for the offscreen tests
 _CARD_W = MatrixAgentCard.WIDTH
@@ -128,18 +143,20 @@ logger = logging.getLogger(__name__)
 
 
 class _MatrixCell(QGraphicsRectItem):
-    """One clickable matrix cell (row, col): center dot (agents-view style) +
-    checkbox - outline only, or with a filled gold circle when the pair has a
-    relationship (TSK30). The relationship type shows in the cell tooltip."""
+    """One matrix cell (row, col). TSK32 (upper-triangle matrix): only cells
+    with row < col are active - the diagonal (row == col, no self-relationship
+    RG035) and the lower triangle are dimmed and non-interactive. An active
+    cell with a relationship at the selected block hosts a
+    MatrixRelationshipCard (centered child item); the cell itself stays
+    transparent (the matrix lines are the background grid lines, TSK31)."""
 
     def __init__(self, row: int, col: int):
         super().__init__(0, 0, _CELL_SIZE - 2 * _CELL_MARGIN, _CELL_SIZE - 2 * _CELL_MARGIN)
         self.row = row
         self.col = col
         self.clickable = True
-        self.typ = None
-        self.note = None
         self.dimmed = False
+        self.card: Optional[MatrixRelationshipCard] = None
         self.setPos(_CELLS_LEFT + col * _CELL_SIZE + _CELL_MARGIN,
                     _CELLS_TOP + row * _CELL_SIZE + _CELL_MARGIN)
         self.setZValue(0)
@@ -151,39 +168,34 @@ class _MatrixCell(QGraphicsRectItem):
         path.addRect(self.rect())
         return stroker.createStroke(path).united(path)
 
-    def set_content(self, typ: Optional[str], note: Optional[str], dimmed: bool):
-        self.typ = typ
-        self.note = note
+    def set_content(self, rel, tooltip: str, dimmed: bool):
+        """TSK32: host (or remove) the Relationship card of this cell."""
         self.dimmed = dimmed
-        # TSK30: the type shows in the tooltip on hover
-        tooltip = typ or ""
-        if note:
-            tooltip = f"{tooltip}\n{note}" if tooltip else note
-        self.setToolTip(tooltip)
+        if rel is None:
+            if self.card is not None:
+                self.card.setParentItem(None)
+                self.card.deleteLater()
+                self.card = None
+        else:
+            if self.card is None:
+                self.card = MatrixRelationshipCard(rel.typ)
+                self.card.setParentItem(self)
+                self.card.setPos((self.rect().width() - _REL_CARD_W) / 2,
+                                 (self.rect().height() - _REL_CARD_H) / 2)
+                self.card.setZValue(1)
+            self.card.set_relationship(rel.id, rel.typ, tooltip)
+            self.card.setOpacity(JourneyFilterService.filter_opacity() if dimmed else 1.0)
         self.update()
 
     def paint(self, painter: QPainter, option, widget=None):
         # TSK31 (2.3): the cell is transparent (no fill, no border) - the
-        # background grid lines show through, so the matrix lines are exactly
-        # the workspace grid lines; hit-testing still uses the enlarged shape()
-        rect = self.rect()
-        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        # background grid lines show through; only a dim overlay when the cell
+        # is inactive (diagonal/lower triangle) or outside the filter (TSK32)
         if self.dimmed:
+            painter.setRenderHint(QPainter.RenderHint.Antialiasing)
             painter.setBrush(QBrush(QColor(0, 0, 0, 120)))
             painter.setPen(Qt.PenStyle.NoPen)
-            painter.drawRect(rect)
-        if self.typ is not None:
-            # checkbox: outline + filled gold circle as the check symbol (TSK30)
-            center = rect.center()
-            half = _CHECK_SIZE / 2
-            box = QRectF(center.x() - half, center.y() - half, _CHECK_SIZE, _CHECK_SIZE)
-            painter.setPen(QPen(QColor(_CHECK_COLOR), 2.0))
-            painter.setBrush(Qt.BrushStyle.NoBrush)
-            painter.drawRoundedRect(box, 3.0, 3.0)
-            painter.setPen(Qt.PenStyle.NoPen)
-            painter.setBrush(QBrush(QColor(_CHECK_CIRCLE_COLOR)))
-            radius = _CHECK_SIZE * 0.3
-            painter.drawEllipse(center, radius, radius)
+            painter.drawRect(self.rect())
 
 
 class _GridLineItem(QGraphicsLineItem):
@@ -260,9 +272,10 @@ class _MatrixGraphicsView(QGraphicsView):
                 event.accept()
                 return
             cell = self._workspace._cell_at(pos)
-            if cell is not None and cell.clickable and not cell.dimmed:
+            if cell is not None:
+                # TSK32: no left-click action on the cells - creation/edition
+                # only via the right-click context menu (RG055)
                 self._workspace.scene.clearSelection()
-                self._workspace.cell_clicked.emit(cell.row, cell.col)
                 event.accept()
                 return
             self._workspace.scene.clearSelection()
@@ -287,8 +300,15 @@ class _MatrixGraphicsView(QGraphicsView):
         # TSK31 (2.1): QContextMenuEvent exposes pos()/globalPos() (QPoint),
         # not position() - avoid AttributeError on right click
         pos = self.mapToScene(event.pos())
+        card = self._workspace._card_at(pos)
+        if card is not None:
+            # TSK32: the context menu is also active on the agent header cards
+            self._workspace.agent_context_menu_requested.emit(
+                card.entity.id, self.viewport().mapToGlobal(event.pos()))
+            event.accept()
+            return
         cell = self._workspace._cell_at(pos)
-        if cell is not None:
+        if cell is not None and cell.clickable and not cell.dimmed:
             self._workspace.context_menu_requested.emit(
                 cell.row, cell.col, self.viewport().mapToGlobal(event.pos()))
             event.accept()
@@ -302,9 +322,9 @@ class RelationshipsWorkspace(QWidget):
     anchor_block_selected = Signal(int)              # block id (side panel list)
     journey_filter_requested = Signal(object)        # journey id or None (All journeys); mirror of Display > Journey (TSK30 4.1)
     agent_filter_requested = Signal(object)          # agent id or None
-    cell_clicked = Signal(int, int)                  # row, col (left click, TSK29)
-    context_menu_requested = Signal(int, int, object)  # row, col, global QPoint
-    axis_order_changed = Signal(list, list)          # row_order, col_order (RG070)
+    context_menu_requested = Signal(int, int, object)  # row, col, global QPoint (right click on an active cell, RG055)
+    agent_context_menu_requested = Signal(int, object)  # agent id, global QPoint (right click on a header card, TSK32)
+    axis_order_changed = Signal(list)                # shared row/column order (RG070 revised TSK32)
     workspace_modified = Signal()
 
     # TSK33: the side panel (FiltersSidePanel) owns the filter/anchor state;
@@ -330,6 +350,16 @@ class RelationshipsWorkspace(QWidget):
     def _agent_filter_agent_id(self) -> Optional[int]:
         return self.panel.agent_filter_agent_id
 
+    # TSK32: a single shared order for rows AND columns (upper-triangle
+    # matrix); _row_order/_col_order stay as read-only aliases (tests)
+    @property
+    def _row_order(self) -> List[int]:
+        return self._order
+
+    @property
+    def _col_order(self) -> List[int]:
+        return self._order
+
     def __init__(self, project: Project, narrative_map: NarrativeMap,
                  info_bar=None, main_window=None):
         super().__init__()
@@ -337,8 +367,7 @@ class RelationshipsWorkspace(QWidget):
         self.narrative_map = narrative_map
         self.info_bar = info_bar
         self._main_window = main_window
-        self._row_order: List[int] = []     # agent ids, rows (left headers)
-        self._col_order: List[int] = []     # agent ids, columns (top headers)
+        self._order: List[int] = []         # agent ids, shared rows+columns order (RG070 revised TSK32)
         self._row_cards: Dict[int, MatrixAgentCard] = {}
         self._col_cards: Dict[int, MatrixAgentCard] = {}
         self._cells: Dict[Tuple[int, int], _MatrixCell] = {}
@@ -381,16 +410,15 @@ class RelationshipsWorkspace(QWidget):
     # ------------------------------------------------------------------
     def populate(self, project: Project, narrative_map: NarrativeMap,
                  project_layout: Optional[ProjectLayout] = None):
-        """Fill the view from the model; row/column orders from the saved
-        project layout (RG070), new agents appended alphabetically (label, id)."""
+        """Fill the view from the model; the shared row/column order comes from
+        the saved project layout (RG070 revised TSK32), new agents appended
+        alphabetically (label, id)."""
         self.project = project
         self.narrative_map = narrative_map
         self.panel.set_data(project, narrative_map)  # TSK33
         agents = list(project.agent)
-        saved_row = project_layout.relationships_view_row_order if project_layout else []
-        saved_col = project_layout.relationships_view_column_order if project_layout else []
-        self._row_order = RelationshipService.resolve_axis_order(agents, saved_row)
-        self._col_order = RelationshipService.resolve_axis_order(agents, saved_col)
+        saved = project_layout.relationships_view_agent_order if project_layout else []
+        self._order = RelationshipService.resolve_axis_order(agents, saved)
         self.panel.refresh()  # TSK33: combos + block list are rebuilt by the panel
         start = next((b for b in narrative_map.block if b.typ == "Start"), None)  # RG025/RG068
         self._anchor_block_id = start.id if start is not None else (
@@ -403,10 +431,8 @@ class RelationshipsWorkspace(QWidget):
         keeps current orders, anchor block and filters."""
         agents = list(self.project.agent)
         known = {a.id for a in agents}
-        self._row_order = [i for i in self._row_order if i in known] + \
-            [a.id for a in sorted(agents, key=lambda a: (a.lb, a.id)) if a.id not in self._row_order]
-        self._col_order = [i for i in self._col_order if i in known] + \
-            [a.id for a in sorted(agents, key=lambda a: (a.lb, a.id)) if a.id not in self._col_order]
+        self._order = [i for i in self._order if i in known] + \
+            [a.id for a in sorted(agents, key=lambda a: (a.lb, a.id)) if a.id not in self._order]
         self.panel.set_data(self.project, self.narrative_map)  # TSK33
         self.panel.refresh()
         if self._anchor_block_id is None or self._anchor_block_id not in self._block_ids:
@@ -417,18 +443,19 @@ class RelationshipsWorkspace(QWidget):
         self._rebuild_cells()
 
     def collect_project_layout(self, layout: ProjectLayout):
-        """RG070 (revised session 09): persist both independent orders at project level."""
-        layout.relationships_view_row_order = list(self._row_order)
-        layout.relationships_view_column_order = list(self._col_order)
+        """RG070 (revised session 10, TSK32): persist the single shared
+        row/column order at project level."""
+        layout.relationships_view_agent_order = list(self._order)
 
     def get_anchor_block_id(self) -> Optional[int]:
         return self.panel.get_anchor_block_id()  # TSK33
 
     def agent_id_at_row(self, row: int) -> Optional[int]:
-        return self._row_order[row] if 0 <= row < len(self._row_order) else None
+        # TSK32: rows and columns share the same order
+        return self._order[row] if 0 <= row < len(self._order) else None
 
     def agent_id_at_col(self, col: int) -> Optional[int]:
-        return self._col_order[col] if 0 <= col < len(self._col_order) else None
+        return self._order[col] if 0 <= col < len(self._order) else None
 
     # ------------------------------------------------------------------
     # Scene geometry / layout
@@ -447,18 +474,19 @@ class RelationshipsWorkspace(QWidget):
         return None
 
     def _relayout(self):
-        """(Re)create and position header cards and cells from the orders."""
+        """(Re)create and position header cards and cells from the single
+        shared order (TSK32: rows and columns carry the same agents)."""
         agents = {a.id: a for a in self.project.agent}
         # row header cards (left column)
-        for i, aid in enumerate(self._row_order):
+        for i, aid in enumerate(self._order):
             card = self._row_cards.get(aid)
             if card is None:
                 card = MatrixAgentCard(agents[aid], 'row')
                 self.scene.addItem(card)
                 self._row_cards[aid] = card
             card.setPos(_CARD_OFF_X, _CELLS_TOP + i * _CELL_SIZE + _CARD_OFF_Y)
-        # column header cards (top row)
-        for j, aid in enumerate(self._col_order):
+        # column header cards (top row) - same order, same index (TSK32)
+        for j, aid in enumerate(self._order):
             card = self._col_cards.get(aid)
             if card is None:
                 card = MatrixAgentCard(agents[aid], 'column')
@@ -466,8 +494,8 @@ class RelationshipsWorkspace(QWidget):
                 self._col_cards[aid] = card
             card.setPos(_CELLS_LEFT + j * _CELL_SIZE + _CARD_OFF_X, _CARD_OFF_Y)
         # cells
-        for i in range(len(self._row_order)):
-            for j in range(len(self._col_order)):
+        for i in range(len(self._order)):
+            for j in range(len(self._order)):
                 cell = self._cells.get((i, j))
                 if cell is None:
                     cell = _MatrixCell(i, j)
@@ -475,8 +503,8 @@ class RelationshipsWorkspace(QWidget):
                     self._cells[(i, j)] = cell
         # scene rect: anchored on the top-left corner, grows rightwards/downwards
         # only, at least _SCENE_MIN_SIZE so the scrollbars stay usable (TSK30)
-        w = _CELLS_LEFT + len(self._col_order) * _CELL_SIZE + _CELL_SIZE
-        h = _CELLS_TOP + len(self._row_order) * _CELL_SIZE + _CELL_SIZE
+        w = _CELLS_LEFT + len(self._order) * _CELL_SIZE + _CELL_SIZE
+        h = _CELLS_TOP + len(self._order) * _CELL_SIZE + _CELL_SIZE
         self.scene.setSceneRect(0, 0, max(w, _SCENE_MIN_SIZE), max(h, _SCENE_MIN_SIZE))
         self._draw_grid()
 
@@ -528,29 +556,39 @@ class RelationshipsWorkspace(QWidget):
         nm = self.narrative_map
         vis_rel = self._visible_relationship_ids()
         filtered_agent = self._agent_filter_agent_id
+        agents = {a.id: a for a in self.project.agent}
+        blocks = {b.id: b for b in nm.block}
+        anchor = blocks.get(self._anchor_block_id) if self._anchor_block_id is not None else None
         for (i, j), cell in self._cells.items():
             ai = self.agent_id_at_row(i)
             aj = self.agent_id_at_col(j)
-            # TSK31 (2.2): the diagonal is dimmed by agent IDENTITY (same agent
-            # on the row and the column), not by index - with independent
-            # row/column orders (RG070) the self-pair cell follows the cards
-            if ai is not None and ai == aj:
-                cell.set_content(None, None, dimmed=True)
+            # TSK32 (upper-triangle matrix): only cells with row < col are
+            # active - the diagonal (no self-relationship, RG035) and the lower
+            # triangle are dimmed and non-interactive; exactly ONE active cell
+            # per agent pair
+            if i >= j or ai is None or aj is None:
+                cell.set_content(None, "", dimmed=True)
                 cell.clickable = False
                 cell.setEnabled(False)
                 continue
             rel = None
-            if ai is not None and aj is not None and self._anchor_block_id is not None:
+            if self._anchor_block_id is not None:
                 rel = RelationshipService.pair_state_at_block(nm, ai, aj, self._anchor_block_id)
             dimmed = False
             clickable = True
             if rel is not None and rel.id not in vis_rel:
                 dimmed = True
                 clickable = False  # RG048/RG063: outside the filter, non-interactive
-            if filtered_agent is not None and ai is not None and aj is not None \
-                    and filtered_agent not in (ai, aj):
+            if filtered_agent is not None and filtered_agent not in (ai, aj):
                 clickable = False  # RG069: creation forbidden for uninvolved agents
-            cell.set_content(rel.typ if rel else None, rel.note if rel else None, dimmed)
+            tooltip = ""
+            if rel is not None:
+                tooltip = f"{rel.typ}\n{agents[ai].lb} — {agents[aj].lb}"
+                if anchor is not None:
+                    tooltip += f"\nAnchor: {anchor.lb} ({anchor.typ})"
+                if rel.note:
+                    tooltip += f"\n{rel.note}"
+            cell.set_content(rel, tooltip, dimmed)
             cell.clickable = clickable
             cell.setEnabled(clickable)
         self._dim_filtered_agents()
@@ -572,15 +610,15 @@ class RelationshipsWorkspace(QWidget):
             card.setPos(_CARD_OFF_X, scene_pos.y() - _CARD_H / 2)
 
     def _on_card_released(self, card: MatrixAgentCard, scene_pos: QPointF):
+        # TSK32: one shared order - the row and the column axes follow together
         if card.kind == 'column':
             target = round((scene_pos.x() - _CELLS_LEFT - _CARD_OFF_X) / _CELL_SIZE)
-            self._reorder(self._col_order, target, card.entity.id)
         else:
             target = round((scene_pos.y() - _CELLS_TOP - _CARD_OFF_Y) / _CELL_SIZE)
-            self._reorder(self._row_order, target, card.entity.id)
+        self._reorder(self._order, target, card.entity.id)
         self._relayout()
         self._rebuild_cells()
-        self.axis_order_changed.emit(list(self._row_order), list(self._col_order))
+        self.axis_order_changed.emit(list(self._order))
         self.workspace_modified.emit()
 
     def _reorder(self, order: List[int], target: int, agent_id: int):

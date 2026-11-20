@@ -21,12 +21,16 @@ import pytest
 pytest.importorskip("PySide6")
 
 try:
-    from PySide6.QtWidgets import QApplication
+    from PySide6.QtWidgets import QApplication, QDialog
 except Exception as e:  # libGL missing, no display, ...
     pytest.skip(f"Qt not usable in this environment: {e}", allow_module_level=True)
 
+import ui.main_window as mw_module
 from ui.main_window import MainWindow
 from ui.widgets.filters_side_panel import FiltersSidePanel  # TSK33
+from core.services.journey_sequence_service import JourneySequenceService
+from usecases.view_management import CreateBlockUseCase, CreateTransitionUseCase
+from usecases.agent_management import CreateAgentUseCase
 
 
 @pytest.fixture(scope="module")
@@ -87,6 +91,59 @@ def test_relationships_journey_filter_requested_activates_journey(qapp):
         mw._on_journey_filter_requested(None)  # TSK33: handler shared by both panels
         assert mw.journey_filter_active is False
         assert nm.get_active_journey() is j2
+    finally:
+        mw._teardown_workspace()
+        mw.project_service.set_modified(False)  # avoid the quit confirmation dialog
+        mw.close()
+
+
+def test_relationship_cell_actions_prefilled_and_card_in_single_cell(qapp, monkeypatch):
+    """TSK32: the cell context-menu actions work without exec(): empty cell ->
+    New... pre-filled with the pair + the current anchor block (dialog mocked);
+    the card then appears in the single active upper-triangle cell only; a
+    filled cell edits that relationship entity directly."""
+    mw = MainWindow()
+    try:
+        mw._create_project()
+        service = mw.project_service
+        nm = mw._current_narrative_map()
+        start = next(b for b in nm.block if b.typ == "Start")
+        s1 = CreateBlockUseCase(service).execute("Scene", lb="S1")
+        CreateTransitionUseCase(service).execute(start.id, s1.id)
+        JourneySequenceService.recompute_all(nm)  # RG044
+        alpha = CreateAgentUseCase(service).execute(lb="Alpha")
+        zoo = CreateAgentUseCase(service).execute(lb="Zoo")
+        ws = mw.relationships_workspace
+        ws.refresh()  # agents created after _init_workspace: rebuild the matrix order
+        captured = {}
+
+        class FakeDialog:
+            def __init__(self, agents, narrative_map, parent=None, entity=None,
+                         default_agent_1_id=None, default_agent_2_id=None, default_block_id=None):
+                captured.update(a1=default_agent_1_id, a2=default_agent_2_id,
+                                block=default_block_id, entity=entity)
+
+            def exec(self):
+                return QDialog.DialogCode.Accepted
+
+            def get_values(self):
+                return {"agent_1_id": captured["a1"], "agent_2_id": captured["a2"],
+                        "typ": "friend", "block_id": captured["block"], "note": "", "content": ""}
+
+        monkeypatch.setattr(mw_module, "RelationshipDialog", FakeDialog)
+        # order [alpha, zoo] -> cell (0, 1) is the single active cell of the pair
+        mw._new_relationship_prefilled(ws.agent_id_at_row(0), ws.agent_id_at_col(1))
+        assert captured["a1"] == alpha.id and captured["a2"] == zoo.id
+        assert captured["block"] == start.id  # current anchor block pre-filled
+        assert len(nm.relationship) == 1
+        rel = nm.relationship[0]
+        assert {rel.agent_1_id, rel.agent_2_id} == {alpha.id, zoo.id}
+        # the card appears in the single active cell (0, 1) only
+        assert ws._cells[(0, 1)].card is not None
+        assert ws._cells[(1, 0)].card is None  # lower triangle: inactive
+        # filled cell -> Edit acts directly on that relationship entity
+        mw._edit_relationship_entity(rel)
+        assert captured["entity"] is rel
     finally:
         mw._teardown_workspace()
         mw.project_service.set_modified(False)  # avoid the quit confirmation dialog

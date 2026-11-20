@@ -84,24 +84,25 @@ def test_rg069_pair_state_uses_min_rank_across_journeys():
     assert RelationshipService.pair_state_at_block(nm, a.id, b.id, start.id) is None  # rank 0
 
 
-def test_rg070_two_independent_orders_persistence_roundtrip():
+def test_rg070_shared_agent_order_persistence_roundtrip():
+    """TSK32: a single shared row/column order is persisted (RG070 revised)."""
     layout = ProjectLayout()
-    layout.relationships_view_row_order = [3, 1, 2]
-    layout.relationships_view_column_order = [2, 3, 1]
-    data = layout.to_dict()
-    restored = ProjectLayout.from_dict(data)
-    assert restored.relationships_view_row_order == [3, 1, 2]
-    assert restored.relationships_view_column_order == [2, 3, 1]
-    # absent keys -> empty orders (initial alphabetical order computed by the view)
+    layout.relationships_view_agent_order = [3, 1, 2]
+    restored = ProjectLayout.from_dict(layout.to_dict())
+    assert restored.relationships_view_agent_order == [3, 1, 2]
+    # absent key -> empty order (initial alphabetical order computed by the view)
     empty = ProjectLayout.from_dict({})
-    assert empty.relationships_view_row_order == []
-    assert empty.relationships_view_column_order == []
+    assert empty.relationships_view_agent_order == []
 
 
-def test_rg070_legacy_axis_order_migrated_into_both_orders():
+def test_rg070_legacy_orders_migrated_to_shared_agent_order():
+    """TSK32 migrations: TSK29 independent row/column orders -> the row order
+    wins; TSK27 single axis order -> used as-is."""
+    restored = ProjectLayout.from_dict({'relationships_view_row_order': [3, 1, 2],
+                                         'relationships_view_column_order': [2, 3, 1]})
+    assert restored.relationships_view_agent_order == [3, 1, 2]
     restored = ProjectLayout.from_dict({'relationships_axis_order': [3, 1, 2]})
-    assert restored.relationships_view_row_order == [3, 1, 2]
-    assert restored.relationships_view_column_order == [3, 1, 2]
+    assert restored.relationships_view_agent_order == [3, 1, 2]
 
 
 def test_resolve_axis_order_saved_first_then_alphabetical():

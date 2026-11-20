@@ -13,29 +13,34 @@ These tests need a working Qt (offscreen). They are skipped when Qt / libGL
 is not available (e.g. sandbox without libGL) - to validate on the dev
 workstation, like the other offscreen suites.
 
-Covers (RG069/RG070 revised session 09, mockup 04_interface section 6,
+Covers (RG069/RG070 revised session 10 TSK32, mockup 04_interface section 6,
 design note docs/conception/04_relationships_matrix-FR/EN.md):
-- matrix is N x N (all agents, even without relationship), symmetric, empty
-  disabled diagonal (no self-relationship, RG035); initial row AND column
-  orders alphabetical (label, ties by id);
-- square cells (`relationships_view_cell_size_px`); cell (A, B) shows the
-  type of the pair's derived state at the anchor block (default: the Start
-  block, RG068); changing the anchor block recomputes the matrix;
-- left click on a clickable cell emits cell_clicked(row, col) - the object
-  that opens the create/edit dialog (MainWindow);
+- UPPER-TRIANGLE matrix (TSK32): N x N grid, rows and columns carry the same
+  agents with a SINGLE shared order (initial alphabetical, label then id);
+  only cells with row < col are active - exactly one active cell per agent
+  pair; the diagonal (no self-relationship, RG035) and the lower triangle are
+  dimmed and non-interactive;
+- square cells (`relationships_view_cell_size_px`); an active cell shows the
+  pair's derived state at the anchor block (default: the Start block, RG068)
+  as a MatrixRelationshipCard (border #E06666 = Pivot/Condition color, label
+  = type, tooltip = type + pair + anchor + note, RG054); changing the anchor
+  block recomputes the matrix;
+- NO left click on cells (TSK32): creation/edition/deletion only via the
+  right-click context menu - context_menu_requested(row, col) on an active
+  cell, agent_context_menu_requested(agent_id) on a header card (RG055);
 - filters (RG048/RG063/RG064) dim and disable out-of-filter cells; with the
   agent filter active, uninvolved agents' header cards are dimmed and cells
   of a pair not involving the filtered agent are not clickable (RG069);
-- dragging a header card and releasing it reorders ONLY its own axis (rows
-  and columns independent, RG070), emits axis_order_changed(row, col) and
-  both orders are persisted in ProjectLayout (project level, RG067);
-- TSK30 (session 10 feedback): view anchored top-left (AlignLeft|AlignTop,
-  scene >= 4000x4000 at origin, scrollbars always on, no minimum size);
-  grid covers the whole visible area with non-interactive lines; hit-testing
-  in scene coordinates (mapFromScene) so card drags and cell clicks work;
-  cell checkbox with the type in the tooltip; separator after the agent
-  filter; journey combo emits the chosen journey id (None = All journeys);
-  MatrixAgentCard hover tooltip does not raise (QToolTip without widget arg).
+- dragging a header card and releasing it reorders the single shared order
+  (rows AND columns follow together, RG070 revised TSK32), emits
+  axis_order_changed(order) and the order is persisted in ProjectLayout
+  (`relationships_view_agent_order`, project level, RG067);
+- TSK30/TSK31 (session 10 feedback, unchanged): view anchored top-left
+  (AlignLeft|AlignTop, scene >= 4000x4000 at origin, scrollbars always on, no
+  minimum size); grid covers the whole visible area with non-interactive
+  lines; hit-testing in scene coordinates (mapFromScene); dots at every cell
+  center; separator after the agent filter; journey combo emits the chosen
+  journey id (None = All journeys); hover tooltips do not raise.
 """
 
 import pytest
@@ -62,6 +67,7 @@ from ui.views.relationships_workspace import (
     _CARD_OFF_X, _CARD_OFF_Y, _PANEL_WIDTH, _SEPARATOR_HEIGHT, _DOT_COLOR,
 )
 from ui.widgets.filters_side_panel import FiltersSidePanel  # TSK33
+from ui.nodes.matrix_relationship_card import MatrixRelationshipCard  # TSK32
 from ui.utils import theme
 
 
@@ -92,8 +98,8 @@ def make_workspace(qapp):
 def test_initial_orders_alphabetical_and_square_cells(qapp):
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
     # all 3 agents displayed on both axes, initial order alphabetical (RG070)
-    assert ws._row_order == [alpha.id, mid.id, zoo.id]
-    assert ws._col_order == [alpha.id, mid.id, zoo.id]
+    assert ws._order == [alpha.id, mid.id, zoo.id]  # TSK32: single shared order
+    assert ws._row_order == ws._col_order == ws._order
     assert ws.agent_id_at_row(0) == alpha.id
     assert ws.agent_id_at_col(2) == zoo.id
     # N x N cells, square (relationships_view_cell_size_px)
@@ -101,37 +107,50 @@ def test_initial_orders_alphabetical_and_square_cells(qapp):
     cell = ws._cells[(0, 1)]
     assert cell.rect().width() == _CELL_SIZE - 4  # _CELL_MARGIN = 2
     assert cell.rect().height() == _CELL_SIZE - 4
-    # diagonal disabled (no self-relationship, RG035)
-    assert not ws._cells[(0, 0)].clickable
+    # TSK32: diagonal and lower triangle inactive; only row < col is active
+    assert not ws._cells[(0, 0)].clickable      # diagonal (no self-relationship, RG035)
     assert not ws._cells[(0, 0)].isEnabled()
+    assert not ws._cells[(1, 0)].clickable      # lower triangle
+    assert ws._cells[(0, 1)].clickable          # upper triangle
 
 
-def test_cell_shows_derived_state_and_anchor_default_is_start(qapp):
+def test_cell_hosts_relationship_card_in_the_single_active_cell(qapp):
+    """TSK32: at anchor S1 the Alpha-Zoo pair has a "friend" relationship ->
+    exactly ONE active cell (0, 2) hosts a MatrixRelationshipCard; the
+    symmetric cell (2, 0) is in the lower triangle: no card, inactive."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
     assert ws.get_anchor_block_id() == start.id  # RG068/RG069 default
-    # at Start (rank 0) no relation yet -> empty cells
-    assert ws._cells[(0, 2)].typ is None  # Alpha x Zoo
-    # select S1 in the panel -> cell shows "friend"
+    # at Start (rank 0) no relation yet -> no card
+    assert ws._cells[(0, 2)].card is None  # Alpha x Zoo
+    # select S1 in the panel -> the active cell hosts the card
     ws.set_anchor_block(s1.id)
-    assert ws._cells[(0, 2)].typ == "friend"
-    assert ws._cells[(2, 0)].typ == "friend"  # symmetric (RG035)
+    card = ws._cells[(0, 2)].card
+    assert isinstance(card, MatrixRelationshipCard)
+    assert card.rel_id is not None and card._label == "friend"
+    # lower triangle: no card, not clickable (one active cell per pair, TSK32)
+    assert ws._cells[(2, 0)].card is None
+    assert not ws._cells[(2, 0)].clickable
 
 
-def test_cell_left_click_emits_cell_clicked(qapp):
+def test_cell_left_click_does_nothing(qapp):
+    """TSK32: no left-click action on the cells (creation/edition only via the
+    right-click context menu, RG055) - a left click on an active cell emits
+    no context-menu request and the cell_clicked signal no longer exists."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
     ws.set_anchor_block(s1.id)
     ws.resize(900, 700)
     received = []
-    ws.cell_clicked.connect(lambda r, c: received.append((r, c)))
-    cell = ws._cells[(0, 2)]  # Alpha x Zoo, clickable
+    ws.context_menu_requested.connect(lambda r, c, g: received.append((r, c)))
+    assert not hasattr(ws, "cell_clicked")
+    cell = ws._cells[(0, 2)]  # Alpha x Zoo, active (upper triangle)
     center = QPointF(cell.pos().x() + cell.rect().width() / 2,
                      cell.pos().y() + cell.rect().height() / 2)
     view_pos = ws.view.mapFromScene(center)
     ev = QMouseEvent(QEvent.Type.MouseButtonPress, QPointF(view_pos), QPointF(view_pos),
                      Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton,
                      Qt.KeyboardModifier.NoModifier)
-    ws.view.mousePressEvent(ev)
-    assert received == [(0, 2)]
+    ws.view.mousePressEvent(ev)  # must not raise nor emit
+    assert received == []
 
 
 def test_filters_dim_cells_and_uninvolved_agent_cards(qapp):
@@ -150,26 +169,28 @@ def test_filters_dim_cells_and_uninvolved_agent_cards(qapp):
     assert ws._row_cards[alpha.id].opacity() == 1.0
 
 
-def test_header_card_release_reorders_only_its_own_axis(qapp):
+def test_header_card_release_reorders_the_single_shared_order(qapp):
+    """TSK32: dragging a header card reorders the single shared order - the
+    row AND the column axes follow together (RG070 revised); one list is
+    emitted and persisted at project level."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
     received = []
-    ws.axis_order_changed.connect(lambda r, c: received.append((list(r), list(c))))
+    ws.axis_order_changed.connect(lambda order: received.append(list(order)))
     # drag the ROW card of Alpha and drop it on row index 2
     card = ws._row_cards[alpha.id]
     drop = QPointF(_CARD_OFF_X + 10, _CELLS_TOP + 2 * _CELL_SIZE + _CARD_OFF_Y)
     ws._on_card_released(card, drop)
-    assert ws._row_order == [mid.id, zoo.id, alpha.id]
-    # columns are independent (RG070 revised session 09): untouched
-    assert ws._col_order == [alpha.id, mid.id, zoo.id]
-    assert received and received[-1] == ([mid.id, zoo.id, alpha.id], [alpha.id, mid.id, zoo.id])
-    # both orders persisted at project level
+    assert ws._order == [mid.id, zoo.id, alpha.id]
+    assert ws._row_order == ws._col_order == [mid.id, zoo.id, alpha.id]  # shared
+    assert received and received[-1] == [mid.id, zoo.id, alpha.id]
+    # the single order is persisted at project level
     layout = ProjectLayout()
     ws.collect_project_layout(layout)
-    assert layout.relationships_view_row_order == [mid.id, zoo.id, alpha.id]
-    assert layout.relationships_view_column_order == [alpha.id, mid.id, zoo.id]
+    assert layout.relationships_view_agent_order == [mid.id, zoo.id, alpha.id]
 
 
-def test_saved_orders_restored_on_populate(qapp):
+def test_saved_shared_order_restored_on_populate(qapp):
+    """TSK32: the single shared order is restored on populate (RG070 revised)."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
     # move the COLUMN card of Alpha to column index 2, persist, re-populate
     card = ws._col_cards[alpha.id]
@@ -179,8 +200,8 @@ def test_saved_orders_restored_on_populate(qapp):
     ws.collect_project_layout(layout)
     ws2 = RelationshipsWorkspace(project=ws.project, narrative_map=nm)
     ws2.populate(ws.project, nm, layout)
-    assert ws2._col_order == [mid.id, zoo.id, alpha.id]
-    assert ws2._row_order == [alpha.id, mid.id, zoo.id]
+    assert ws2._order == [mid.id, zoo.id, alpha.id]
+    assert ws2._row_order == ws2._col_order == [mid.id, zoo.id, alpha.id]
 
 
 # ---------------------------------------------------------------------
@@ -237,13 +258,13 @@ def test_card_and_cell_hit_testing_in_scene_coordinates(qapp):
     assert ws._cell_at(QPointF(5, 5)) is None
 
 
-def test_real_mouse_drag_reorders_only_its_own_axis(qapp):
-    """TSK30 (3.5): full press/move/release through the view handlers reorders
-    only the dragged card's axis (RG070)."""
+def test_real_mouse_drag_reorders_the_shared_order(qapp):
+    """TSK30 (3.5) + TSK32: full press/move/release through the view handlers
+    reorders the single shared order (rows and columns follow together)."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
     ws.resize(900, 700)
     received = []
-    ws.axis_order_changed.connect(lambda r, c: received.append((list(r), list(c))))
+    ws.axis_order_changed.connect(lambda order: received.append(list(order)))
     card = ws._row_cards[alpha.id]
     press_view = ws.view.mapFromScene(card.sceneBoundingRect().center())
     target_scene = QPointF(_CARD_OFF_X + 10, _CELLS_TOP + 2 * _CELL_SIZE + _CARD_OFF_Y)
@@ -261,17 +282,20 @@ def test_real_mouse_drag_reorders_only_its_own_axis(qapp):
                           Qt.MouseButton.LeftButton, Qt.MouseButton.NoButton,
                           Qt.KeyboardModifier.NoModifier)
     ws.view.mouseReleaseEvent(release)
-    assert ws._row_order == [mid.id, zoo.id, alpha.id]
-    assert ws._col_order == [alpha.id, mid.id, zoo.id]  # untouched (RG070)
-    assert received and received[-1] == ([mid.id, zoo.id, alpha.id], [alpha.id, mid.id, zoo.id])
+    assert ws._order == [mid.id, zoo.id, alpha.id]
+    assert ws._row_order == ws._col_order == [mid.id, zoo.id, alpha.id]  # shared (TSK32)
+    assert received and received[-1] == [mid.id, zoo.id, alpha.id]
 
 
-def test_cell_tooltip_shows_relationship_type(qapp):
-    """TSK30 (3.7): the relationship type shows in the cell tooltip on hover
-    (the cell itself renders a checkbox with a filled gold circle)."""
+def test_relationship_card_tooltip_shows_type_pair_anchor(qapp):
+    """TSK32 + RG054: the card in the active cell shows the full details in its
+    tooltip on hover: type + agent pair + anchor block (+ note)."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
     ws.set_anchor_block(s1.id)  # Alpha x Zoo = "friend" at S1
-    assert "friend" in ws._cells[(0, 2)].toolTip()
+    card = ws._cells[(0, 2)].card
+    assert card is not None
+    tip = card.toolTip()
+    assert "friend" in tip and "Alpha" in tip and "Zoo" in tip and "S1" in tip
 
 
 def test_journey_combo_emits_chosen_journey_id(qapp):
@@ -334,19 +358,77 @@ def test_context_menu_event_on_cell_uses_pos_not_position(qapp):
     assert received == [(0, 1)]
 
 
-def test_diagonal_dimmed_by_agent_identity_not_index(qapp):
-    """TSK31 (2.2): with independent row/column orders, the dimmed "same agent"
-    cell is the (row, col) of the SAME agent id, not the index diagonal."""
+def test_diagonal_and_lower_triangle_dimmed_and_inactive(qapp):
+    """TSK32 (upper triangle): cells with row >= col (diagonal + lower
+    triangle) are dimmed and non-interactive; only row < col cells are active."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
-    # move the COLUMN card of Alpha to column index 2 -> col order [mid, zoo, alpha]
+    # move the COLUMN card of Alpha to column index 2 -> shared order [mid, zoo, alpha]
     ws._on_card_released(ws._col_cards[alpha.id],
                          QPointF(_CELLS_LEFT + 2 * _CELL_SIZE + _CARD_OFF_X, _CARD_OFF_Y + 10))
-    assert ws._col_order == [mid.id, zoo.id, alpha.id]
-    # row 0 = alpha, col 2 = alpha -> the self-pair cell is (0, 2), dimmed
-    assert ws._cells[(0, 2)].dimmed is True
-    assert ws._cells[(0, 2)].clickable is False
-    # the index diagonal (0, 0) = alpha x mid is NOT a self-pair -> not dimmed
-    assert ws._cells[(0, 0)].dimmed is False
+    assert ws._order == [mid.id, zoo.id, alpha.id]
+    # diagonal cell (0, 0) = mid x mid -> dimmed, inactive (no self-relationship, RG035)
+    assert ws._cells[(0, 0)].dimmed is True
+    assert ws._cells[(0, 0)].clickable is False
+    # lower triangle (2, 0) = alpha x mid -> dimmed, inactive
+    assert ws._cells[(2, 0)].dimmed is True
+    assert ws._cells[(2, 0)].clickable is False
+    # upper triangle (0, 2) = mid x alpha -> active
+    assert ws._cells[(0, 2)].clickable is True
+    assert ws._cells[(0, 2)].dimmed is False
+
+
+def test_context_menu_on_header_card_emits_agent_id(qapp):
+    """TSK32 + RG055: right click on an agent header card emits
+    agent_context_menu_requested(agent_id, global pos)."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws.resize(900, 700)
+    received = []
+    ws.agent_context_menu_requested.connect(lambda aid, g: received.append(aid))
+    card = ws._row_cards[alpha.id]
+    view_pos = ws.view.mapFromScene(card.sceneBoundingRect().center())
+    ev = QContextMenuEvent(QContextMenuEvent.Reason.Mouse, view_pos,
+                           ws.view.viewport().mapToGlobal(view_pos))
+    ws.view.contextMenuEvent(ev)
+    assert received == [alpha.id]
+
+
+def test_context_menu_not_emitted_on_lower_triangle_cell(qapp):
+    """TSK32: right click on an inactive (lower triangle) cell emits nothing."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws.resize(900, 700)
+    received = []
+    ws.context_menu_requested.connect(lambda r, c, g: received.append((r, c)))
+    cell = ws._cells[(2, 0)]  # lower triangle: inactive
+    view_pos = ws.view.mapFromScene(cell.sceneBoundingRect().center())
+    ev = QContextMenuEvent(QContextMenuEvent.Reason.Mouse, view_pos,
+                           ws.view.viewport().mapToGlobal(view_pos))
+    ws.view.contextMenuEvent(ev)
+    assert received == []
+
+
+def test_relationship_card_rendered_with_pivot_border_color(qapp):
+    """TSK32: the card in the active cell is rendered with the #E06666
+    (Pivot/Condition) border - pixel check on the card edges."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws.set_anchor_block(s1.id)  # Alpha x Zoo = "friend" at S1 -> card in cell (0, 2)
+    ws.resize(900, 700)
+    ws.show()
+    qapp.processEvents()
+    img = ws.view.grab().toImage()
+    card = ws._cells[(0, 2)].card
+    assert card is not None
+    # painted rect = mapToScene(0,0) + card size (sceneBoundingRect includes
+    # the enlarged hit area of boundingRect, RG053)
+    tl = card.mapToScene(0, 0)
+    w, h = MatrixRelationshipCard.WIDTH, MatrixRelationshipCard.HEIGHT
+    cx, cy = tl.x() + w / 2, tl.y() + h / 2
+    samples = [QPointF(tl.x() + 1, cy), QPointF(tl.x() + w - 1, cy),
+               QPointF(cx, tl.y() + 1), QPointF(cx, tl.y() + h - 1)]
+    colors = {img.pixelColor(ws.view.mapFromScene(p)).name() for p in samples}
+    assert "#e06666" in colors  # the Pivot/Condition border color
+    # the card fill is the surface color, not the scene background
+    assert img.pixelColor(ws.view.mapFromScene(QPointF(cx, cy))).name() == "#2d2d2d"
+    ws.hide()
 
 
 def test_dots_painted_over_the_whole_visible_area(qapp):

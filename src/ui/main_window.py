@@ -637,7 +637,7 @@ class MainWindow(QMainWindow):
         relationships_workspace.journey_filter_requested.connect(self._on_journey_filter_requested)  # TSK30 (4.1) + TSK33: shared with the "Journeys" panel
         relationships_workspace.agent_filter_requested.connect(self._set_agent_filter)
         relationships_workspace.context_menu_requested.connect(self._show_relationships_context_menu)
-        relationships_workspace.cell_clicked.connect(self._on_relationship_cell_clicked)  # TSK29
+        relationships_workspace.agent_context_menu_requested.connect(self._show_relationships_agent_context_menu)  # TSK32
         relationships_workspace.workspace_modified.connect(self._on_workspace_modified)
         self.relationships_page.layout().addWidget(relationships_workspace)
         self.relationships_workspace = relationships_workspace
@@ -1127,9 +1127,20 @@ class MainWindow(QMainWindow):
 
     def _new_relationship(self):
         """FN034: create a relationship (creation dialog)."""
+        self._new_relationship_prefilled()
+
+    def _new_relationship_prefilled(self, agent_1_id=None, agent_2_id=None):
+        """FN034 + TSK32: creation dialog, optionally pre-filled - matrix cell:
+        the pair + the current anchor block; agent header card: the agent +
+        the current anchor block."""
         project = self.project_service.current_project
         nm = self._current_narrative_map()
-        dialog = RelationshipDialog(project.agent, nm, parent=self)
+        anchor = self.relationships_workspace.get_anchor_block_id() \
+            if self.relationships_workspace is not None else None
+        dialog = RelationshipDialog(project.agent, nm, parent=self,
+                                    default_agent_1_id=agent_1_id,
+                                    default_agent_2_id=agent_2_id,
+                                    default_block_id=anchor)
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
         values = dialog.get_values()
@@ -1141,13 +1152,18 @@ class MainWindow(QMainWindow):
                 "Relationship refused: a relationship already exists for this (block, agent pair) (RG035)")
             return
         self.info_bar.show_message(f"Relationship '{rel.typ}' created")
+        if self.relationships_workspace is not None:
+            self.relationships_workspace.refresh()
         self._update_menu_state()
 
     def _edit_relationship(self):
         """FN034: edit a relationship (selection dialog + edition dialog)."""
         rel = self._select_relationship("Edit Relationship")
-        if rel is None:
-            return
+        if rel is not None:
+            self._edit_relationship_entity(rel)
+
+    def _edit_relationship_entity(self, rel):
+        """FN034 + TSK32: edit the given relationship (also from a filled matrix cell)."""
         project = self.project_service.current_project
         nm = self._current_narrative_map()
         dialog = RelationshipDialog(project.agent, nm, entity=rel, parent=self)
@@ -1162,13 +1178,19 @@ class MainWindow(QMainWindow):
                 "Relationship refused: the new anchor block already holds a relationship for this pair (RG035)")
             return
         self.info_bar.show_message("Relationship updated")
+        if self.relationships_workspace is not None:
+            self.relationships_workspace.refresh()
         self._update_menu_state()
 
     def _delete_relationship(self):
-        """FN034/SU011: delete a relationship, with prior confirmation."""
+        """FN034/SU011: delete a relationship (selection), with prior confirmation."""
         rel = self._select_relationship("Delete Relationship")
-        if rel is None:
-            return
+        if rel is not None:
+            self._delete_relationship_entity(rel)
+
+    def _delete_relationship_entity(self, rel):
+        """FN034/SU011 + TSK32: delete the given relationship (also from a filled
+        matrix cell), with prior confirmation."""
         reply = QMessageBox.question(
             self, "Confirmation",
             f"Delete the relationship '{rel.typ}' (anchor block #{rel.block_id})?",
@@ -1177,6 +1199,8 @@ class MainWindow(QMainWindow):
             return
         if self.delete_relationship_usecase.execute(rel.id):
             self.info_bar.show_message("Relationship deleted")
+        if self.relationships_workspace is not None:
+            self.relationships_workspace.refresh()
         self._update_menu_state()
 
     # ---------------------------------------------------------------------
@@ -1279,23 +1303,33 @@ class MainWindow(QMainWindow):
         menu.exec(global_pos)
 
     def _show_relationships_context_menu(self, row, col, global_pos):
-        """RG055 (TSK27): context menu of a matrix cell - same handlers as
-        Project > Relationships, plus 'View in Journeys view' (FN032)."""
+        """RG055 + TSK32: context menu of an active matrix cell (upper
+        triangle). Empty cell -> "New..." (dialog pre-filled with the pair +
+        the current anchor block); filled cell -> "Edit..."/"Delete..." of that
+        relationship, plus "View in Journeys view" (FN032). There is no
+        left-click action on cells anymore (TSK32)."""
+        ws = self.relationships_workspace
+        nm = self._current_narrative_map()
+        if ws is None or nm is None:
+            return
+        a_row, a_col = ws.agent_id_at_row(row), ws.agent_id_at_col(col)
+        anchor = ws.get_anchor_block_id()
+        rel = None
+        if a_row is not None and a_col is not None and anchor is not None:
+            rel = RelationshipService.pair_state_at_block(nm, a_row, a_col, anchor)
         menu = QMenu(self)
         menu.setStyleSheet(theme.CONTEXT_MENU_STYLESHEET)
-        new_action = menu.addAction("New...", self._new_relationship)
-        edit_action = menu.addAction("Edit...", self._edit_relationship)
-        delete_action = menu.addAction("Delete...", self._delete_relationship)
-        new_action.setEnabled(self.menu_actions['relationships_new'].isEnabled())
-        edit_action.setEnabled(self.menu_actions['relationships_edit'].isEnabled())
-        delete_action.setEnabled(self.menu_actions['relationships_delete'].isEnabled())
-        # RG069: with the agent filter active, creation is forbidden on a pair
-        # not involving the filtered agent
-        if (self.relationships_workspace is not None and row >= 0 and col >= 0
-                and self.agent_filter_agent_id is not None):
-            a_row = self.relationships_workspace.agent_id_at_row(row)
-            a_col = self.relationships_workspace.agent_id_at_col(col)
-            if self.agent_filter_agent_id not in (a_row, a_col):
+        if rel is not None:
+            edit_action = menu.addAction("Edit...", lambda: self._edit_relationship_entity(rel))
+            delete_action = menu.addAction("Delete...", lambda: self._delete_relationship_entity(rel))
+            edit_action.setEnabled(self.menu_actions['relationships_edit'].isEnabled())
+            delete_action.setEnabled(self.menu_actions['relationships_delete'].isEnabled())
+        else:
+            new_action = menu.addAction("New...", lambda: self._new_relationship_prefilled(a_row, a_col))
+            new_action.setEnabled(self.menu_actions['relationships_new'].isEnabled())
+            # RG069: with the agent filter active, creation is forbidden on a
+            # pair not involving the filtered agent
+            if self.agent_filter_agent_id is not None and self.agent_filter_agent_id not in (a_row, a_col):
                 new_action.setEnabled(False)
         menu.addSeparator()
         view_action = menu.addAction("View in Journeys view")
@@ -1303,47 +1337,51 @@ class MainWindow(QMainWindow):
         if action is view_action:
             self._view_relationship_anchor_in_journeys(row, col)
 
-    def _on_relationship_cell_clicked(self, row, col):
-        """TSK29/TSK30 (3.7): left click on a matrix cell - if the pair has a
-        relationship at the selected block, open its edit dialog; otherwise
-        create an "Undefined" relationship directly (pair + current anchor
-        block), no dialog."""
-        ws = self.relationships_workspace
+    def _show_relationships_agent_context_menu(self, agent_id, global_pos):
+        """RG055 + TSK32: context menu of an agent header card in the
+        "Relationships" matrix - relationship creation/edition/deletion scoped
+        to that agent (same enabled states as Project > Relationships)."""
+        menu = QMenu(self)
+        menu.setStyleSheet(theme.CONTEXT_MENU_STYLESHEET)
+        new_action = menu.addAction("New Relationship...",
+                                    lambda: self._new_relationship_prefilled(agent_1_id=agent_id))
+        edit_action = menu.addAction("Edit Relationship...",
+                                     lambda: self._edit_relationship_of_agent(agent_id))
+        delete_action = menu.addAction("Delete Relationship...",
+                                       lambda: self._delete_relationship_of_agent(agent_id))
+        new_action.setEnabled(self.menu_actions['relationships_new'].isEnabled())
+        edit_action.setEnabled(self.menu_actions['relationships_edit'].isEnabled())
+        delete_action.setEnabled(self.menu_actions['relationships_delete'].isEnabled())
+        menu.exec(global_pos)
+
+    def _agent_relationships(self, agent_id):
+        """The relationships involving the given agent (TSK32)."""
         nm = self._current_narrative_map()
+        if nm is None:
+            return []
+        return [r for r in nm.relationship if agent_id in (r.agent_1_id, r.agent_2_id)]
+
+    def _select_agent_relationship(self, agent_id, title):
+        """TSK32: selection dialog restricted to the relationships of the agent."""
+        rels = self._agent_relationships(agent_id)
+        if not rels:
+            return None
         project = self.project_service.current_project
-        if ws is None or nm is None or project is None:
-            return
-        a_row, a_col = ws.agent_id_at_row(row), ws.agent_id_at_col(col)
-        if a_row is None or a_col is None:
-            return
-        anchor = ws.get_anchor_block_id()
-        rel = RelationshipService.pair_state_at_block(nm, a_row, a_col, anchor) if anchor else None
+        nm = self._current_narrative_map()
+        dialog = RelationshipSelectionDialog(rels, project, nm, parent=self, title=title)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return None
+        return dialog.get_selected_relationship()
+
+    def _edit_relationship_of_agent(self, agent_id):
+        rel = self._select_agent_relationship(agent_id, "Edit Relationship")
         if rel is not None:
-            dialog = RelationshipDialog(project.agent, nm, entity=rel, parent=self)
-            if dialog.exec() != QDialog.DialogCode.Accepted:
-                return
-            values = dialog.get_values()
-            result = self.update_relationship_usecase.execute(
-                rel, typ=values['typ'], block_id=values['block_id'],
-                note=values['note'], content=values['content'])
-            if result is None:
-                self.info_bar.show_message(
-                    "Relationship refused: the new anchor block already holds a relationship for this pair (RG035)")
-                return
-            self.info_bar.show_message("Relationship updated")
-        else:
-            if anchor is None:
-                self.info_bar.show_message("Select an anchor block in the side panel first")
-                return
-            # TSK30 (3.7): direct creation of an "Undefined" relationship
-            rel = self.create_relationship_usecase.execute(a_row, a_col, "Undefined", anchor)
-            if rel is None:
-                self.info_bar.show_message(
-                    "Relationship refused: a relationship already exists for this (block, agent pair) (RG035)")
-                return
-            self.info_bar.show_message(f"Relationship '{rel.typ}' created")
-        self.relationships_workspace.refresh()
-        self._update_menu_state()
+            self._edit_relationship_entity(rel)
+
+    def _delete_relationship_of_agent(self, agent_id):
+        rel = self._select_agent_relationship(agent_id, "Delete Relationship")
+        if rel is not None:
+            self._delete_relationship_entity(rel)
 
     def _view_relationship_anchor_in_journeys(self, row, col):
         """FN032/RG056 (TSK27): switch to "Journeys" and focus the anchor block

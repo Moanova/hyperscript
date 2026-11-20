@@ -320,33 +320,33 @@ class ProjectLayout:
 
     Attributes:
         agent_cards: Dict keyed by Agent.id
-        relationships_view_row_order: row order of the "Relationships" matrix
-            (Agent ids, RG070 revised session 09 - independent from columns)
-        relationships_view_column_order: column order of the "Relationships"
-            matrix (Agent ids, RG070)
+        relationships_view_agent_order: shared order of the rows AND columns of
+            the "Relationships" matrix (Agent ids, RG070 revised session 10
+            TSK32 - upper-triangle matrix, a single order for both axes)
     """
     agent_cards: Dict[int, AgentCardLayout] = field(default_factory=dict)
-    relationships_view_row_order: List[int] = field(default_factory=list)
-    relationships_view_column_order: List[int] = field(default_factory=list)
+    relationships_view_agent_order: List[int] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
         """Convert to dictionary for JSON serialization."""
         return {
             'agent_cards': {str(k): v.to_dict() for k, v in self.agent_cards.items()},
-            'relationships_view_row_order': [int(a) for a in self.relationships_view_row_order],
-            'relationships_view_column_order': [int(a) for a in self.relationships_view_column_order],
+            'relationships_view_agent_order': [int(a) for a in self.relationships_view_agent_order],
         }
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'ProjectLayout':
-        """Create a ProjectLayout from a dictionary. Migration TSK27 -> TSK29:
-        the old single `relationships_axis_order` feeds both orders."""
-        legacy = [int(a) for a in data.get('relationships_axis_order', [])]
+        """Create a ProjectLayout from a dictionary. Migrations: TSK27 -> TSK29
+        (single `relationships_axis_order`) then TSK29 -> TSK32 (independent
+        `row_order`/`column_order` -> shared `agent_order`, the row order wins)."""
+        legacy_axis = [int(a) for a in data.get('relationships_axis_order', [])]
+        legacy_row = [int(a) for a in data.get('relationships_view_row_order', legacy_axis)]
+        agent_order = [int(a) for a in data.get(
+            'relationships_view_agent_order', legacy_row)]
         return cls(
             agent_cards={int(k): AgentCardLayout.from_dict(v)
                          for k, v in data.get('agent_cards', {}).items()},
-            relationships_view_row_order=[int(a) for a in data.get('relationships_view_row_order', legacy)],
-            relationships_view_column_order=[int(a) for a in data.get('relationships_view_column_order', legacy)],
+            relationships_view_agent_order=agent_order,
         )
 
     def get_agent_card_layout(self, agent_id: int) -> Optional[AgentCardLayout]:
