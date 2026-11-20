@@ -40,6 +40,15 @@ def qapp():
     yield app
 
 
+@pytest.fixture(autouse=True)
+def _isolated_user_state(tmp_path, monkeypatch):
+    """TSK35: redirect user_state.json reads/writes to a temp file (the real
+    one is tracked in git)."""
+    import config.user_state_loader as usl
+    monkeypatch.setattr(usl, "_STATE_PATH", str(tmp_path / "user_state.json"))
+    monkeypatch.setattr(usl, "_state", {})
+
+
 def test_create_project_builds_all_workspaces(qapp):
     mw = MainWindow()
     try:

@@ -26,10 +26,11 @@ import logging
 from typing import List, Optional
 
 from PySide6.QtWidgets import (
-    QWidget, QVBoxLayout, QSplitter, QComboBox, QListWidget, QListWidgetItem,
-    QFrame, QLabel,
+    QWidget, QVBoxLayout, QSplitter, QSplitterHandle, QComboBox, QListWidget,
+    QListWidgetItem, QFrame, QLabel,
 )
-from PySide6.QtCore import Qt, Signal
+from PySide6.QtCore import Qt, Signal, QPointF
+from PySide6.QtGui import QPainter, QPen, QColor
 
 from core.models.data_model import NarrativeMap, Project
 from core.services.journey_filter_service import JourneyFilterService
@@ -42,12 +43,15 @@ from ui.utils import theme
 # relationships_view_panel_width_px key)
 PANEL_WIDTH_PX = int(_get_config("side_panel_width_px",
                                  _get_config("relationships_view_panel_width_px", 260)))
+# TSK35: minimum width of the resizable side panel
+PANEL_MIN_WIDTH_PX = int(_get_config("side_panel_min_width_px", 180))
 SEPARATOR_HEIGHT_PX = int(_get_config("relationships_view_separator_height_px", 2))
 _ALL_JOURNEYS_LABEL = _get_config("journey_list_all_label", "All journeys")
 _ALL_AGENTS_LABEL = _get_config("agent_list_all_label", "All agents")
 _GRID_MAJOR_COLOR = _get_config("grid_major_color", "#4A4A4A")
 _BG_SURFACE = _get_config("bg_surface", theme.BG_SURFACE)
 _BORDER_COLOR = _get_config("border_color", theme.BORDER_COLOR)
+_TEXT_SECONDARY = _get_config("text_secondary", theme.TEXT_SECONDARY)
 
 logger = logging.getLogger(__name__)
 
@@ -77,7 +81,9 @@ class FiltersSidePanel(QWidget):
         self._build_ui()
 
     def _build_ui(self):
-        self.setFixedWidth(PANEL_WIDTH_PX)
+        # TSK35: resizable panel - minimum width only; the width itself is
+        # driven by the splitter (SidePanelSplitter) and persisted at app level
+        self.setMinimumWidth(PANEL_MIN_WIDTH_PX)
         # TSK31 (3.2): dark-themed panel content (labels, combos, list, scrollbars)
         self.setStyleSheet(theme.SIDE_PANEL_STYLESHEET)
         layout = QVBoxLayout(self)
@@ -234,14 +240,64 @@ class FiltersSidePanel(QWidget):
         self.anchor_block_selected.emit(bid)
 
 
+class SidePanelHandle(QSplitterHandle):
+    """Handle of the side panel splitter (TSK35): paints a chevron icon -
+    left-pointing when the panel is expanded (click to collapse), right-
+    pointing when collapsed (click to expand). A click without drag toggles
+    the collapse; a drag resizes the panel normally."""
+
+    CLICK_SLOP_PX = 4
+
+    def __init__(self, orientation, parent):
+        super().__init__(orientation, parent)
+        self._press_pos = None
+        self.setCursor(Qt.CursorShape.SizeHorCursor)
+
+    def paintEvent(self, event):
+        super().paintEvent(event)
+        painter = QPainter(self)
+        painter.setRenderHint(QPainter.RenderHint.Antialiasing)
+        painter.setPen(QPen(QColor(_TEXT_SECONDARY), 1.6))
+        cx, cy = self.width() / 2.0, self.height() / 2.0
+        d = 3.5
+        if getattr(self.splitter(), "collapsed", False):
+            points = [QPointF(cx - d / 2, cy - d), QPointF(cx + d / 2, cy),
+                      QPointF(cx - d / 2, cy + d)]
+        else:
+            points = [QPointF(cx + d / 2, cy - d), QPointF(cx - d / 2, cy),
+                      QPointF(cx + d / 2, cy + d)]
+        painter.drawPolyline(points)
+
+    def mousePressEvent(self, event):
+        self._press_pos = event.position().toPoint()
+        super().mousePressEvent(event)
+
+    def mouseReleaseEvent(self, event):
+        super().mouseReleaseEvent(event)
+        if self._press_pos is not None and \
+                (event.position().toPoint() - self._press_pos).manhattanLength() < self.CLICK_SLOP_PX:
+            self.splitter().toggle_collapse()  # click (no drag) = collapse/expand
+        self._press_pos = None
+
+
 class SidePanelSplitter(QSplitter):
-    """Horizontal splitter: map view + fixed-width FiltersSidePanel. The panel
-    slot is pinned to the panel width on resize (TSK31 3.2 pattern: no exposed
-    splitter background strip on the right of the panel)."""
+    """Horizontal splitter: map view + FiltersSidePanel.
+
+    TSK35: the panel is RESIZABLE (drag the handle) and COLLAPSIBLE (click the
+    chevron handle) - the fixed-width pin of TSK31 3.2 is removed (a splitter's
+    sizes always fill its width, so no exposed background strip remains; only
+    the dark stylesheet is kept). The panel width is emitted through
+    panel_width_changed (drag / set_panel_width) so the MainWindow can persist
+    it at app level and sync the other map view.
+    """
+
+    panel_width_changed = Signal(int)
 
     def __init__(self, view: QWidget, panel: FiltersSidePanel, parent=None):
         super().__init__(Qt.Orientation.Horizontal, parent)
         self._panel = panel
+        self._expanded_width = PANEL_WIDTH_PX
+        self.collapsed = False
         # TSK31 (3.2): dark splitter (handle + any exposed background)
         self.setStyleSheet(
             f"QSplitter {{ background-color: {_BG_SURFACE}; }}"
@@ -249,8 +305,56 @@ class SidePanelSplitter(QSplitter):
         self.addWidget(view)
         self.addWidget(panel)
         self.setStretchFactor(0, 1)
+        self.splitterMoved.connect(self._on_splitter_moved)
+
+    def createHandle(self):
+        return SidePanelHandle(Qt.Orientation.Horizontal, self)  # TSK35
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        # TSK35: on resize the splitter scales its sizes proportionally -
+        # re-apply the CURRENT panel width (unlike the old fixed pin of
+        # TSK31 3.2); sizes always fill the splitter, so no exposed strip
+        if not self.collapsed:
+            handle = self.handleWidth()
+            self.setSizes([max(0, self.width() - self._expanded_width - handle),
+                           self._expanded_width])
+
+    def _on_splitter_moved(self, pos, index):
+        width = self.sizes()[-1]
+        if not self.collapsed and width > 0:
+            self._expanded_width = width
+            self.panel_width_changed.emit(width)
+
+    def set_panel_width(self, width: int):
+        """Set the panel width (clamped to the configured minimum) and emit
+        panel_width_changed. No size change while collapsed."""
+        width = max(PANEL_MIN_WIDTH_PX, int(width))
+        self._expanded_width = width
+        if not self.collapsed:
+            handle = self.handleWidth()
+            self.setSizes([max(0, self.width() - width - handle), width])
+        self.panel_width_changed.emit(width)
+
+    def toggle_collapse(self):
+        if self.collapsed:
+            self.expand()
+        else:
+            self.collapse()
+
+    def collapse(self):
+        """Hide the panel; the handle with its chevron stays visible."""
+        if self.collapsed:
+            return
+        self.collapsed = True
+        self._panel.hide()
+        self.setSizes([self.width(), 0])
+
+    def expand(self):
+        """Show the panel back at its last width."""
+        if not self.collapsed:
+            return
+        self.collapsed = False
+        self._panel.show()
         handle = self.handleWidth()
-        self.setSizes([max(0, self.width() - PANEL_WIDTH_PX - handle), PANEL_WIDTH_PX])
+        self.setSizes([max(0, self.width() - self._expanded_width - handle), self._expanded_width])

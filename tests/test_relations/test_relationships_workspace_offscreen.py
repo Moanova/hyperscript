@@ -459,9 +459,11 @@ def test_view_scrollbars_styled_like_journeys_view(qapp):
 
 
 def test_no_gray_strip_on_the_right_of_the_panel(qapp):
-    """TSK31 (3.2): the panel splitter slot is pinned to the panel width on
-    resize - no exposed (light) splitter background on the right edge."""
+    """TSK31 (3.2) + TSK35: the panel slot keeps its width on resize (resizable
+    panel set via set_panel_width - no pin needed) - no exposed (light)
+    splitter background on the right edge."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws._splitter.set_panel_width(_PANEL_WIDTH)  # TSK35: width via the splitter API
     ws.resize(1100, 700)
     ws.show()
     qapp.processEvents()

@@ -19,18 +19,32 @@ pytest.importorskip("PySide6")
 
 try:
     from PySide6.QtWidgets import QApplication, QDialog
+    from PySide6.QtCore import Qt, QPointF, QEvent
+    from PySide6.QtGui import QMouseEvent
 except Exception as e:  # libGL missing, no display, ...
     pytest.skip(f"Qt not usable in this environment: {e}", allow_module_level=True)
 
 import ui.main_window as mw_module
 from ui.main_window import MainWindow
-from ui.widgets.filters_side_panel import FiltersSidePanel, SidePanelSplitter, PANEL_WIDTH_PX
+from ui.widgets.filters_side_panel import (
+    FiltersSidePanel, SidePanelSplitter, SidePanelHandle, PANEL_WIDTH_PX, PANEL_MIN_WIDTH_PX,
+)
+from config.user_state_loader import get as get_user_state
 
 
 @pytest.fixture(scope="module")
 def qapp():
     app = QApplication.instance() or QApplication([])
     yield app
+
+
+@pytest.fixture(autouse=True)
+def _isolated_user_state(tmp_path, monkeypatch):
+    """TSK35: redirect user_state.json reads/writes to a temp file (the real
+    one is tracked in git)."""
+    import config.user_state_loader as usl
+    monkeypatch.setattr(usl, "_STATE_PATH", str(tmp_path / "user_state.json"))
+    monkeypatch.setattr(usl, "_state", {})
 
 
 def make_main_window():
@@ -70,16 +84,17 @@ def test_journeys_page_hosts_filters_panel_without_block_list(qapp):
         close_main_window(mw)
 
 
-def test_panel_slot_pinned_to_panel_width_on_resize(qapp):
-    """TSK33 + TSK31 (3.2): the panel slot of both map views is pinned to
-    side_panel_width_px on resize - no exposed splitter strip on the right."""
+def test_panel_slot_keeps_its_width_on_resize(qapp):
+    """TSK33 + TSK35: both map views get the side panel at side_panel_width_px
+    (set via set_panel_width at init); on resize the slot keeps its width (the
+    view absorbs the extra space) - no exposed splitter strip on the right."""
     mw = make_main_window()
     try:
         mw.resize(1280, 800)
         mw.show()
         qapp.processEvents()
         # activate the "Journeys" tab (default tab is "Agents", TSK30 1.1) so
-        # the page's splitter is visible and its resizeEvent fires
+        # the page's splitter is visible and gets its real width
         mw._on_tab_changed("Journeys")
         qapp.processEvents()
         sp = mw.journeys_splitter
@@ -90,6 +105,8 @@ def test_panel_slot_pinned_to_panel_width_on_resize(qapp):
         mw._on_tab_changed("Relationships")
         qapp.processEvents()
         rel_sp = mw.relationships_workspace._splitter
+        rel_sp.set_panel_width(PANEL_WIDTH_PX)
+        qapp.processEvents()
         assert rel_sp.sizes()[-1] == PANEL_WIDTH_PX
         mw.hide()
     finally:
@@ -212,6 +229,87 @@ def test_journeys_grid_covers_visible_area_on_tab_show(qapp):
         assert xs and ys
         assert min(xs) <= rect.left() and max(xs) >= rect.right()
         assert min(ys) <= rect.top() and max(ys) >= rect.bottom()
+        mw.hide()
+    finally:
+        close_main_window(mw)
+
+
+# ---------------------------------------------------------------------
+# TSK35 (session 10): resizable + collapsible side panel
+# ---------------------------------------------------------------------
+
+def test_panel_resizable_width_persisted_and_synced_between_views(qapp):
+    """TSK35: the side panel is resizable via the splitter; the width is
+    emitted (panel_width_changed), clamped to the min, persisted at app level
+    (user_state.json) and synced to the other map view."""
+    mw = make_main_window()
+    try:
+        mw.resize(1280, 800)
+        mw.show()
+        qapp.processEvents()
+        mw._on_tab_changed("Journeys")
+        qapp.processEvents()
+        sp_j = mw.journeys_splitter
+        sp_r = mw.relationships_workspace._splitter
+        received = []
+        sp_j.panel_width_changed.connect(lambda w: received.append(w))
+        sp_j.set_panel_width(320)
+        assert sp_j.sizes()[-1] == 320
+        assert mw.journeys_panel.width() == 320
+        assert 320 in received
+        # persisted at app level (user_state.json, redirected to tmp by the fixture)
+        assert get_user_state("side_panel_width_px") == 320
+        # synced to the "Relationships" view splitter (hidden: size clamped to
+        # the splitter width, but the expanded width is synced...)
+        assert sp_r._expanded_width == 320
+        # ...and applied when that view becomes visible
+        mw._on_tab_changed("Relationships")
+        qapp.processEvents()
+        assert sp_r.sizes()[-1] == 320
+        # minimum width respected
+        mw._on_tab_changed("Journeys")
+        qapp.processEvents()
+        sp_j.set_panel_width(10)
+        assert sp_j.sizes()[-1] == PANEL_MIN_WIDTH_PX
+        mw.hide()
+    finally:
+        close_main_window(mw)
+
+
+def test_handle_click_collapses_and_expands_panel(qapp):
+    """TSK35: the splitter handle is a custom chevron handle; a click without
+    drag collapses the panel (slot 0, panel hidden), another click expands it
+    back at the last width."""
+    mw = make_main_window()
+    try:
+        mw.resize(1280, 800)
+        mw.show()
+        qapp.processEvents()
+        mw._on_tab_changed("Journeys")
+        qapp.processEvents()
+        sp = mw.journeys_splitter
+        sp.set_panel_width(260)
+        handle = sp.handle(1)
+        assert isinstance(handle, SidePanelHandle)
+        assert sp.collapsed is False
+        press = QMouseEvent(QEvent.Type.MouseButtonPress, QPointF(2, 100), QPointF(2, 100),
+                            Qt.MouseButton.LeftButton, Qt.MouseButton.LeftButton,
+                            Qt.KeyboardModifier.NoModifier)
+        release = QMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(2, 100), QPointF(2, 100),
+                              Qt.MouseButton.LeftButton, Qt.MouseButton.NoButton,
+                              Qt.KeyboardModifier.NoModifier)
+        # click without drag -> collapse
+        handle.mousePressEvent(press)
+        handle.mouseReleaseEvent(release)
+        assert sp.collapsed is True
+        assert sp.sizes()[-1] == 0
+        assert not mw.journeys_panel.isVisible()
+        # second click -> expand back at the last width
+        handle.mousePressEvent(press)
+        handle.mouseReleaseEvent(release)
+        assert sp.collapsed is False
+        assert sp.sizes()[-1] == 260
+        assert mw.journeys_panel.isVisible()
         mw.hide()
     finally:
         close_main_window(mw)

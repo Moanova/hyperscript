@@ -36,7 +36,7 @@ from PySide6.QtGui import QCloseEvent
 
 from ui.widgets.info_bar import InfoBar
 from ui.widgets.tab_bar import TabBar
-from ui.widgets.filters_side_panel import FiltersSidePanel, SidePanelSplitter  # TSK33
+from ui.widgets.filters_side_panel import FiltersSidePanel, SidePanelSplitter, PANEL_WIDTH_PX  # TSK33/TSK35
 from ui.views import JourneysWorkspace, AgentsWorkspace, RelationshipsWorkspace
 from ui.nodes.block_node import BlockNode
 from ui.nodes.connection import Connection
@@ -201,6 +201,7 @@ class MainWindow(QMainWindow):
         self.journeys_workspace = None
         self.journeys_splitter = None  # TSK33: page-level splitter hosting the filters side panel
         self.journeys_panel = None     # TSK33: FiltersSidePanel of the "Journeys" view (no block list)
+        self._syncing_panel_width = False  # TSK35: recursion guard for the panel width sync
         self.agents_workspace = None
         self.relationships_workspace = None  # TSK27
         self._last_journeys_block_id = None  # TSK27/FN032: block selected in "Journeys"
@@ -646,6 +647,13 @@ class MainWindow(QMainWindow):
         self.relationships_workspace = relationships_workspace
         relationships_workspace.populate(project, nm, saved_project_layout)
 
+        # TSK35: side panel width - resizable/collapsible handle; the width is
+        # shared by both map views and persisted at app level (user_state.json)
+        panel_width = int(_get_user_state("side_panel_width_px", PANEL_WIDTH_PX))
+        for sp in (self.journeys_splitter, relationships_workspace._splitter):
+            sp.panel_width_changed.connect(lambda w, src=sp: self._on_side_panel_width_changed(w, src))
+            sp.set_panel_width(panel_width)
+
         # RG047/RG048/RG063: the filters are disabled by default, not persisted
         # (map views only — never applied to the "Agents" view)
         self.journey_filter_active = False
@@ -823,6 +831,23 @@ class MainWindow(QMainWindow):
     # ---------------------------------------------------------------------
     # Journeys actions (FN023/FN025/FN027) + Display > Journey (FN026/FN029)
     # ---------------------------------------------------------------------
+    def _on_side_panel_width_changed(self, width, source):
+        """TSK35: keep the side panels of both map views at the same width and
+        persist the width at app level (user_state.json, like last_project_dir)."""
+        if self._syncing_panel_width:
+            return
+        self._syncing_panel_width = True
+        try:
+            splitters = [self.journeys_splitter]
+            if self.relationships_workspace is not None:
+                splitters.append(self.relationships_workspace._splitter)
+            for sp in splitters:
+                if sp is not None and sp is not source:
+                    sp.set_panel_width(width)
+            _set_user_state("side_panel_width_px", int(width))
+        finally:
+            self._syncing_panel_width = False
+
     def _resync_filter_panels(self):
         """TSK30 (4.1) + TSK33: rebuild the side panels of the map views after
         a journey/agent CRUD (the combo contents may have changed); the

@@ -54,6 +54,7 @@
     "family": "#98C379"
   },
   "side_panel_width_px": 260,
+  "side_panel_min_width_px": 180,
   "relationships_view_panel_width_px": 260,
   "relationships_view_cell_size_px": 100,
   "relationships_view_card_width_px": 84,
