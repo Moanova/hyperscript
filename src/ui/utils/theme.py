@@ -373,3 +373,11 @@ DIALOG_STYLESHEET = f"""
         width: 0px;
     }}
 """
+
+# Dark theme for the side panel of the "Relationships" view (TSK31 3.2):
+# same control styling as the dialogs, rooted on a plain QWidget
+SIDE_PANEL_STYLESHEET = DIALOG_STYLESHEET + f"""
+    QWidget {{
+        background-color: {BG_SURFACE};
+    }}
+"""

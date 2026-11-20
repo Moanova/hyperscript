@@ -27,9 +27,11 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 - **3 échecs pré-existants** `tests/test_journeys/test_block_drag_offscreen.py` (`RuntimeError: Internal C++ object (BlockNode) already deleted`) : reproductibles sur l'arbre propre (`git stash`) quand la suite offscreen tourne dans un même processus — hors scope TSK30, à investiguer sur le poste de dev.
 
 ### État en fin de séance
-- py_compile OK, pyflakes clean (aucun nouveau warning), config JSON valide, **125 tests passed + 3 failed pré-existants** (hors scope).
+- py_compile OK, pyflakes clean (aucun nouveau warning), config JSON valide, **132 tests passed + 3 failed pré-existants** (hors scope, `test_block_drag_offscreen.py`).
 - Kanban : **TSK30 en Review** (TSK27/TSK28/TSK29 toujours en Review, attente validation TSC).
 - Commit + push sur `dev` (feu vert TSC explicite, sans PR).
+- **TSK31 (2ᵉ salve de retours séance 10, 8 points) implémentée** (feu vert TSC) : (1.1) marge de la 1ʳᵉ carte agent = écart entre deux cartes (40 px, grille invisible décalée via `snap_to_grid(offset=...)`, `agent_card.GRID_OFFSET_*`) ; (2.1) `contextMenuEvent` → `event.pos()`/`globalPos()` (`QContextMenuEvent` sans `position()`) ; (2.2) diagonale estompée par identité d'agent (`ai == aj`) ; (2.3) cellules transparentes → lignes matrice = lignes de grille ; (2.4) points au centre de chaque cellule sur toute la zone visible (`drawBackground`) ; (2.5) ascenseurs matrice = `theme.WORKSPACE_STYLESHEET` comme Journeys ; (3.1) séparateur = barre 2 px `grid_major_color` ; (3.2) fente splitter calée à 260 px au resize (plus de bande grise à droite), panneau en `theme.SIDE_PANEL_STYLESHEET`, ascenseur vertical de la liste des blocs toujours visible et stylé Journeys (zone liste uniquement). Tests : +6 offscreen TSK31, attentes agents recalées, 132 tests passed (+3 pré-existants hors scope) ; rendu vérifié par captures offscreen. Kanban : **TSK31 en Review** ; fiche `tasks/TSK31_tsc_feedback_session10b.md`.
+- **Point ouvert acté** : la matrice symétrique affiche **2 coches par relation** (cellules (A,B) et (B,A)) — confusion utilisateur ; re-conception à mener à part (pistes : coche uniquement dans le triangle supérieur, matrice dirigée, ou liste de relations).
 
 ---
 

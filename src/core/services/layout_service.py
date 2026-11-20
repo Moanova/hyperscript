@@ -571,13 +571,15 @@ class LayoutService:
         )
 
     @classmethod
-    def snap_to_grid(cls, value: float, grid_size: float = None) -> float:
+    def snap_to_grid(cls, value: float, grid_size: float = None, offset: float = 0.0) -> float:
         """
         Snap a coordinate value to the nearest grid step (RG046).
 
         Args:
             value: The coordinate to snap
             grid_size: Grid step in pixels (defaults to grid_minor_size from config)
+            offset: Origin of the grid (TSK31): the grid lines are at
+                offset + k * grid_size; 0 by default (other views unchanged)
 
         Returns:
             The snapped coordinate
@@ -586,7 +588,7 @@ class LayoutService:
             grid_size = _GRID_MINOR_SIZE
         if grid_size <= 0:
             return value
-        return round(value / grid_size) * grid_size
+        return round((value - offset) / grid_size) * grid_size + offset
 
     @staticmethod
     def _rects_overlap(x1, y1, w1, h1, x2, y2, w2, h2) -> bool:

@@ -52,6 +52,19 @@ empty cell creates an "Undefined" relationship directly (MainWindow), right
 click keeps the context menu; the side panel gets a separator after the
 agent filter; the journey combo emits the chosen journey id (None = All
 journeys) so the MainWindow can activate it (mirror of Display > Journey).
+
+TSK31 (session 10, 2nd feedback batch): contextMenuEvent uses QContextMenuEvent
+pos()/globalPos() (no position() attribute); the diagonal is dimmed by agent
+IDENTITY (ai == aj), not by index, so it follows the dragged header card with
+independent row/column orders; cells are transparent (no fill/border) so the
+matrix lines are the background grid lines themselves; a dot is painted at
+the center of every cell of the workspace over the whole visible area
+(drawBackground, agents-view style); the view gets theme.WORKSPACE_STYLESHEET
+so its scrollbars look/behave like the "Journeys" view; the side panel
+separator is a thicker filled bar; the splitter slot of the panel is pinned
+to the panel width on resize (no gray strip on the right), the panel content
+is dark-themed, and the block list has an always-visible dark scrollbar
+(scrollbar only in the list zone, never next to the filters).
 """
 import logging
 from typing import Dict, List, Optional, Tuple
@@ -92,6 +105,8 @@ _DOT_COLOR = _get_config("agents_view_dot_color", "#4A4A4A")
 _CHECK_SIZE = _get_config("relationships_view_checkbox_size", 20)
 _CHECK_COLOR = _get_config("relationships_view_checkbox_color", "#383838")
 _CHECK_CIRCLE_COLOR = _get_config("relationships_view_check_color", "#E5C07B")
+# TSK31 (3.1): separator between the filter zone and the block list
+_SEPARATOR_HEIGHT = int(_get_config("relationships_view_separator_height_px", 2))
 _CARD_W = MatrixAgentCard.WIDTH
 _CARD_H = MatrixAgentCard.HEIGHT
 _CARD_OFF_X = (_CELL_SIZE - _CARD_W) / 2   # 10 px at C=100 -> 20 px between adjacent cards
@@ -138,22 +153,18 @@ class _MatrixCell(QGraphicsRectItem):
         self.update()
 
     def paint(self, painter: QPainter, option, widget=None):
+        # TSK31 (2.3): the cell is transparent (no fill, no border) - the
+        # background grid lines show through, so the matrix lines are exactly
+        # the workspace grid lines; hit-testing still uses the enlarged shape()
         rect = self.rect()
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setBrush(QBrush(QColor(_BG_PRIMARY)))
-        painter.setPen(QPen(QColor(_BORDER_COLOR), 1.0))
-        painter.drawRect(rect)
-        center = rect.center()
-        # center dot, same rendering as the "Agents" view anchor dots (TSK30)
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QBrush(QColor(_DOT_COLOR)))
-        painter.drawEllipse(center, _DOT_RADIUS, _DOT_RADIUS)
         if self.dimmed:
             painter.setBrush(QBrush(QColor(0, 0, 0, 120)))
             painter.setPen(Qt.PenStyle.NoPen)
             painter.drawRect(rect)
         if self.typ is not None:
             # checkbox: outline + filled gold circle as the check symbol (TSK30)
+            center = rect.center()
             half = _CHECK_SIZE / 2
             box = QRectF(center.x() - half, center.y() - half, _CHECK_SIZE, _CHECK_SIZE)
             painter.setPen(QPen(QColor(_CHECK_COLOR), 2.0))
@@ -198,7 +209,25 @@ class _MatrixGraphicsView(QGraphicsView):
         self.setMinimumSize(0, 0)  # never raise the window minimum size (TSK30 3.3)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
         self.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        # TSK31 (2.5): same scrollbar appearance/behavior as the "Journeys" view
+        self.setStyleSheet(theme.WORKSPACE_STYLESHEET)
+        self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._dragged_card = None
+
+    def drawBackground(self, painter, rect):
+        """TSK31 (2.4): a dot at the center of every cell of the workspace grid
+        over the whole visible area (same rendering as the "Agents" view
+        anchor dots). Painted in the background, under all scene items."""
+        super().drawBackground(painter, rect)
+        painter.save()
+        painter.setPen(Qt.PenStyle.NoPen)
+        painter.setBrush(QBrush(QColor(_DOT_COLOR)))
+        start_x = int(rect.left() - (rect.left() % _CELL_SIZE)) + _CELL_SIZE // 2
+        start_y = int(rect.top() - (rect.top() % _CELL_SIZE)) + _CELL_SIZE // 2
+        for x in range(start_x, int(rect.right()) + _CELL_SIZE, _CELL_SIZE):
+            for y in range(start_y, int(rect.bottom()) + _CELL_SIZE, _CELL_SIZE):
+                painter.drawEllipse(QPointF(x, y), _DOT_RADIUS, _DOT_RADIUS)
+        painter.restore()
 
     def viewportEvent(self, event):
         # Swallow Qt's delayed automatic tooltip (AGENTS.md pattern)
@@ -245,11 +274,13 @@ class _MatrixGraphicsView(QGraphicsView):
         super().mouseReleaseEvent(event)
 
     def contextMenuEvent(self, event):
-        pos = self._scene_pos(event)
+        # TSK31 (2.1): QContextMenuEvent exposes pos()/globalPos() (QPoint),
+        # not position() - avoid AttributeError on right click
+        pos = self.mapToScene(event.pos())
         cell = self._workspace._cell_at(pos)
         if cell is not None:
             self._workspace.context_menu_requested.emit(
-                cell.row, cell.col, self.viewport().mapToGlobal(event.position().toPoint()))
+                cell.row, cell.col, self.viewport().mapToGlobal(event.pos()))
             event.accept()
             return
         super().contextMenuEvent(event)
@@ -294,6 +325,11 @@ class RelationshipsWorkspace(QWidget):
         layout.setContentsMargins(0, 0, 0, 0)
         splitter = QSplitter(Qt.Horizontal, self)
         layout.addWidget(splitter)
+        self._splitter = splitter
+        # TSK31 (3.2): dark splitter (handle + any exposed background)
+        splitter.setStyleSheet(
+            f"QSplitter {{ background-color: {_get_config('bg_surface', theme.BG_SURFACE)}; }}"
+            f"QSplitter::handle {{ background-color: {_BORDER_COLOR}; }}")
 
         self.scene = QGraphicsScene()
         self.view = _MatrixGraphicsView(self)
@@ -306,7 +342,8 @@ class RelationshipsWorkspace(QWidget):
 
         panel = QWidget()
         panel.setFixedWidth(_PANEL_WIDTH)
-        panel.setStyleSheet(f"background-color: {_get_config('bg_surface', theme.BG_SURFACE)};")
+        # TSK31 (3.2): dark-themed panel content (labels, combos, list, scrollbars)
+        panel.setStyleSheet(theme.SIDE_PANEL_STYLESHEET)
         panel_layout = QVBoxLayout(panel)
         panel_layout.addWidget(QLabel("Journey"))
         self.journey_combo = QComboBox()
@@ -316,14 +353,19 @@ class RelationshipsWorkspace(QWidget):
         self.agent_combo = QComboBox()
         self.agent_combo.currentIndexChanged.connect(self._on_agent_combo)
         panel_layout.addWidget(self.agent_combo)
-        # TSK30 (3.8): separator between the filter zone and the block list
+        # TSK30 (3.8) + TSK31 (3.1): separator between the filter zone and the
+        # block list - a thicker filled bar, clearly visible
         separator = QFrame()
-        separator.setFrameShape(QFrame.Shape.HLine)
-        separator.setStyleSheet(f"color: {_BORDER_COLOR};")
+        separator.setFixedHeight(_SEPARATOR_HEIGHT)
+        separator.setStyleSheet(f"background-color: {_GRID_MAJOR_COLOR}; border: none;")
         panel_layout.addWidget(separator)
         panel_layout.addWidget(QLabel("Blocks"))
         self.block_list = QListWidget()
         self.block_list.currentRowChanged.connect(self._on_block_selected)
+        # TSK31 (3.2): the block list scrollbar is always visible, styled like
+        # the "Journeys" view scrollbars - and only in the list zone
+        self.block_list.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.block_list.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         panel_layout.addWidget(self.block_list, stretch=1)
         splitter.addWidget(panel)
         splitter.setStretchFactor(0, 1)
@@ -462,6 +504,10 @@ class RelationshipsWorkspace(QWidget):
 
     def resizeEvent(self, event):
         super().resizeEvent(event)
+        # TSK31 (3.2): pin the panel splitter slot to the panel width - no gray
+        # strip of splitter background on the right of the panel
+        handle = self._splitter.handleWidth()
+        self._splitter.setSizes([max(0, self.width() - _PANEL_WIDTH - handle), _PANEL_WIDTH])
         self._draw_grid()
 
     # ------------------------------------------------------------------
@@ -482,13 +528,16 @@ class RelationshipsWorkspace(QWidget):
         vis_rel = self._visible_relationship_ids()
         filtered_agent = self._agent_filter_agent_id
         for (i, j), cell in self._cells.items():
-            if i == j:
+            ai = self.agent_id_at_row(i)
+            aj = self.agent_id_at_col(j)
+            # TSK31 (2.2): the diagonal is dimmed by agent IDENTITY (same agent
+            # on the row and the column), not by index - with independent
+            # row/column orders (RG070) the self-pair cell follows the cards
+            if ai is not None and ai == aj:
                 cell.set_content(None, None, dimmed=True)
                 cell.clickable = False
                 cell.setEnabled(False)
                 continue
-            ai = self.agent_id_at_row(i)
-            aj = self.agent_id_at_col(j)
             rel = None
             if ai is not None and aj is not None and self._anchor_block_id is not None:
                 rel = RelationshipService.pair_state_at_block(nm, ai, aj, self._anchor_block_id)

@@ -133,3 +133,12 @@ def test_find_first_free_cell_scans_row_major_from_top_left():
     rects = [(200.0, 0.0, 160.0, 100.0), (400.0, 0.0, 160.0, 100.0)]
     assert LayoutService.find_first_free_cell(
         0.0, 0.0, 160.0, 100.0, rects, 200.0, 140.0) == (0.0, 0.0)
+
+
+def test_snap_to_grid_with_offset():
+    """TSK31 (1.1): optional grid origin offset (agents view gutter); default
+    offset 0 keeps the other views unchanged."""
+    assert LayoutService.snap_to_grid(150.0, grid_size=200.0) == 200.0
+    assert LayoutService.snap_to_grid(150.0, grid_size=200.0, offset=40.0) == 240.0
+    assert LayoutService.snap_to_grid(40.0, grid_size=200.0, offset=40.0) == 40.0
+    assert LayoutService.snap_to_grid(90.0, grid_size=140.0, offset=40.0) == 40.0

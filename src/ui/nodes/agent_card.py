@@ -61,10 +61,14 @@ class AgentCardItem(QGraphicsRectItem):
     SELECTION_DASH_PATTERN = _get_config("node_selection_dash_pattern", [4.0, 4.0])
 
     # Invisible cell grid (RG065): on release, the card snaps to the nearest
-    # cell of this grid, anchored on the scene origin; cell = card + gutter
-    # (multiples of the dot spacing, so the dots stay aligned inside cells)
+    # cell of this grid; cell = card + gutter (multiples of the dot spacing,
+    # so the dots stay aligned inside cells). TSK31: the grid is offset by the
+    # inter-card gutter so the first card keeps the same margin to the
+    # top/left edges as between two cards
     CELL_WIDTH = _get_config("agents_view_cell_width", 200.0)
     CELL_HEIGHT = _get_config("agents_view_cell_height", 140.0)
+    GRID_OFFSET_X = CELL_WIDTH - WIDTH
+    GRID_OFFSET_Y = CELL_HEIGHT - HEIGHT
 
     # Colors (dark theme via ui.utils.theme; no hard-coded values)
     DEFAULT_BG_COLOR = theme.color("bg_surface", theme.BG_SURFACE)
@@ -242,8 +246,8 @@ class AgentCardItem(QGraphicsRectItem):
         intersected with the bounding box of the OTHER cards expanded by one
         cell on each side (TSK23: the group can only grow by one cell per
         move); with a single card (no others) the whole scene stays allowed."""
-        x = LayoutService.snap_to_grid(pos.x(), self.CELL_WIDTH)
-        y = LayoutService.snap_to_grid(pos.y(), self.CELL_HEIGHT)
+        x = LayoutService.snap_to_grid(pos.x(), self.CELL_WIDTH, self.GRID_OFFSET_X)
+        y = LayoutService.snap_to_grid(pos.y(), self.CELL_HEIGHT, self.GRID_OFFSET_Y)
         width = self.rect().width()
         height = self.rect().height()
         scene = self.scene()

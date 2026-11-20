@@ -41,3 +41,14 @@
 - **Fixes**: header-card tooltip without the invalid `QWidget` 3rd argument (`QToolTip.showText(pos, text)`, the item is not a widget) + `hideText` on `hoverLeaveEvent`; card/cell hit-testing in item-local coordinates (`mapFromScene` before `shape().contains`) — row/column drags and cell clicks work again.
 - **Side panel**: horizontal separator after the agent filter; the journey combo emits the chosen id (`None` = "All journeys") and the `MainWindow` **activates that journey** (FN026) + enables the filter (FN029), like "Display > Journey"; panel resynced after every journey CRUD.
 - **Outside the matrix**: default active view "Agents" on project creation/open (revises TSK28); "Agents" view: creation on the first free cell from (0, 0) in row-major scan, workspace extensible rightwards/downwards only (scene clamped at 0 on the left/top).
+
+## Revision TSK31 (session 10, 2nd feedback batch)
+
+- **2.1**: `contextMenuEvent` uses `event.pos()`/`globalPos()` (`QContextMenuEvent` has no `position()` in all Qt6 versions) — no more exception on right click.
+- **2.2**: the dimmed diagonal is matched by **agent identity** (`ai == aj`), not by index — with independent orders (RG070), the "same agent" cell follows the dragged card.
+- **2.3**: transparent cells (no own fill/border) → the matrix lines are the background grid lines, identical everywhere.
+- **2.4**: a dot at the center of **every cell of the whole visible workspace**, painted in the view's `drawBackground` (Agents-view anchor-dot rendering).
+- **2.5**: the view applies `theme.WORKSPACE_STYLESHEET` + `WA_StyledBackground` → scrollbars identical to the "Journeys" view (always visible, dark, thin).
+- **3.1**: separator = filled bar 2 px (`relationships_view_separator_height_px`) in `grid_major_color`.
+- **3.2**: splitter slot pinned to the panel width on resize (`setSizes`) → no gray strip on the right of the panel; dark-themed panel (`theme.SIDE_PANEL_STYLESHEET`); block list vertical scrollbar always visible, Journeys-styled, list zone only.
+- Outside the view: "Agents" view — first card margin = inter-card gap (40 px), invisible grid offset accordingly (`snap_to_grid` offset).

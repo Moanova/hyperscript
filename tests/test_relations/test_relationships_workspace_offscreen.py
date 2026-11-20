@@ -43,9 +43,9 @@ import pytest
 pytest.importorskip("PySide6")
 
 try:
-    from PySide6.QtWidgets import QApplication, QFrame, QGraphicsSceneHoverEvent
+    from PySide6.QtWidgets import QApplication, QFrame, QGraphicsSceneHoverEvent, QWidget
     from PySide6.QtCore import Qt, QPoint, QPointF, QSize, QEvent
-    from PySide6.QtGui import QMouseEvent
+    from PySide6.QtGui import QMouseEvent, QContextMenuEvent, QColor
 except Exception as e:  # libGL missing, no display, ...
     pytest.skip(f"Qt not usable in this environment: {e}", allow_module_level=True)
 
@@ -59,8 +59,9 @@ from usecases.view_management import CreateBlockUseCase, CreateTransitionUseCase
 from usecases.relationship_management import CreateRelationshipUseCase
 from ui.views.relationships_workspace import (
     RelationshipsWorkspace, _GridLineItem, _CELL_SIZE, _CELLS_LEFT, _CELLS_TOP,
-    _CARD_OFF_X, _CARD_OFF_Y,
+    _CARD_OFF_X, _CARD_OFF_Y, _PANEL_WIDTH, _SEPARATOR_HEIGHT, _DOT_COLOR,
 )
+from ui.utils import theme
 
 
 @pytest.fixture(scope="module")
@@ -291,12 +292,15 @@ def test_journey_combo_emits_chosen_journey_id(qapp):
     assert received[-1] is None
 
 
-def test_side_panel_has_separator_after_agent_filter(qapp):
-    """TSK30 (3.8): a horizontal separator separates the filter zone from the
-    ordered block list."""
+def test_side_panel_has_thick_separator_after_agent_filter(qapp):
+    """TSK30 (3.8) + TSK31 (3.1): a clearly visible filled separator bar
+    separates the filter zone from the ordered block list."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
-    separators = [f for f in ws.findChildren(QFrame) if f.frameShape() == QFrame.Shape.HLine]
+    separators = [f for f in ws.findChildren(QFrame)
+                  if f.minimumHeight() == f.maximumHeight() == _SEPARATOR_HEIGHT
+                  and "background-color" in f.styleSheet()]
     assert separators
+    assert _SEPARATOR_HEIGHT >= 2  # thicker than the old 1 px HLine
 
 
 def test_matrix_card_hover_tooltip_does_not_raise(qapp):
@@ -308,3 +312,89 @@ def test_matrix_card_hover_tooltip_does_not_raise(qapp):
     ev.setScreenPos(QPoint(100, 100))
     card.hoverEnterEvent(ev)  # must not raise TypeError
     card.hoverLeaveEvent(ev)
+
+
+# ---------------------------------------------------------------------
+# TSK31 (session 10, 2nd feedback batch)
+# ---------------------------------------------------------------------
+
+def test_context_menu_event_on_cell_uses_pos_not_position(qapp):
+    """TSK31 (2.1): right click on a cell - QContextMenuEvent exposes
+    pos()/globalPos(), not position(); the context menu request is emitted."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws.resize(900, 700)
+    received = []
+    ws.context_menu_requested.connect(lambda r, c, g: received.append((r, c)))
+    cell = ws._cells[(0, 1)]
+    view_pos = ws.view.mapFromScene(cell.sceneBoundingRect().center())
+    ev = QContextMenuEvent(QContextMenuEvent.Reason.Mouse, view_pos,
+                           ws.view.viewport().mapToGlobal(view_pos))
+    ws.view.contextMenuEvent(ev)  # must not raise AttributeError
+    assert received == [(0, 1)]
+
+
+def test_diagonal_dimmed_by_agent_identity_not_index(qapp):
+    """TSK31 (2.2): with independent row/column orders, the dimmed "same agent"
+    cell is the (row, col) of the SAME agent id, not the index diagonal."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    # move the COLUMN card of Alpha to column index 2 -> col order [mid, zoo, alpha]
+    ws._on_card_released(ws._col_cards[alpha.id],
+                         QPointF(_CELLS_LEFT + 2 * _CELL_SIZE + _CARD_OFF_X, _CARD_OFF_Y + 10))
+    assert ws._col_order == [mid.id, zoo.id, alpha.id]
+    # row 0 = alpha, col 2 = alpha -> the self-pair cell is (0, 2), dimmed
+    assert ws._cells[(0, 2)].dimmed is True
+    assert ws._cells[(0, 2)].clickable is False
+    # the index diagonal (0, 0) = alpha x mid is NOT a self-pair -> not dimmed
+    assert ws._cells[(0, 0)].dimmed is False
+
+
+def test_dots_painted_over_the_whole_visible_area(qapp):
+    """TSK31 (2.4): a dot at the center of every workspace cell, inside the
+    matrix AND outside it (drawBackground), agents-view rendering."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws.resize(1200, 800)
+    ws.show()
+    qapp.processEvents()
+    img = ws.view.grab().toImage()
+    dot = QColor(_DOT_COLOR).name()
+    for scene_pt in (QPointF(250, 150),   # inside the matrix (cell 1,0)
+                     QPointF(650, 350),   # outside the matrix (cell 5,3)
+                     QPointF(850, 650)):  # far corner of the visible area (outside the matrix)
+        p = ws.view.mapFromScene(scene_pt)
+        assert img.pixelColor(p).name() == dot, f"no dot at scene {scene_pt}"
+    ws.hide()
+
+
+def test_view_scrollbars_styled_like_journeys_view(qapp):
+    """TSK31 (2.5): the matrix view scrollbars use the workspace theme
+    (same appearance as the "Journeys" view) and are always on."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    assert "QScrollBar" in ws.view.styleSheet()
+    assert ws.view.styleSheet() == theme.WORKSPACE_STYLESHEET
+    assert ws.view.horizontalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOn
+    assert ws.view.verticalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOn
+
+
+def test_no_gray_strip_on_the_right_of_the_panel(qapp):
+    """TSK31 (3.2): the panel splitter slot is pinned to the panel width on
+    resize - no exposed (light) splitter background on the right edge."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws.resize(1100, 700)
+    ws.show()
+    qapp.processEvents()
+    sp = ws._splitter
+    sizes = sp.sizes()
+    assert sizes[-1] == _PANEL_WIDTH
+    panel = next(c for c in sp.children()
+                 if c.isWidgetType() and c.__class__ is QWidget)
+    assert panel.x() + panel.width() == sp.width()  # panel flush to the right edge
+    ws.hide()
+
+
+def test_block_list_scrollbar_always_on_and_dark(qapp):
+    """TSK31 (3.2): the block list has an always-visible vertical scrollbar,
+    styled like the Journeys scrollbars; it lives in the list zone only."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    assert ws.block_list.verticalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOn
+    assert ws.block_list.horizontalScrollBarPolicy() == Qt.ScrollBarPolicy.ScrollBarAlwaysOff
+    assert "QScrollBar" in ws.block_list.styleSheet() or "QScrollBar" in theme.SIDE_PANEL_STYLESHEET

@@ -91,8 +91,9 @@ def drag(ws, card, dx, dy, steps=10):
 
 
 def assert_on_cell(card):
-    assert card.pos().x() % AgentCardItem.CELL_WIDTH == 0, f"x={card.pos().x()} not on a cell"
-    assert card.pos().y() % AgentCardItem.CELL_HEIGHT == 0, f"y={card.pos().y()} not on a cell"
+    # TSK31 (1.1): the grid is offset by the inter-card gutter
+    assert (card.pos().x() - AgentCardItem.GRID_OFFSET_X) % AgentCardItem.CELL_WIDTH == 0, f"x={card.pos().x()} not on a cell"
+    assert (card.pos().y() - AgentCardItem.GRID_OFFSET_Y) % AgentCardItem.CELL_HEIGHT == 0, f"y={card.pos().y()} not on a cell"
 
 
 def assert_no_overlap(cards):
@@ -116,16 +117,19 @@ def test_scene_rect_is_set_on_the_scene_not_only_the_view():
 def test_initial_placement_is_on_cells_and_non_overlapping():
     ws = make_workspace(3)
     cards = cards_of(ws)
-    # TSK30 (2.1): first free cells scanned row by row from the top-left
-    # corner (0, 0) -> a growing row on the first grid row
+    # TSK30 (2.1) + TSK31 (1.1): first free cells scanned row by row from the
+    # top-left corner, grid offset by the inter-card gutter (40, 40)
     assert [(c.pos().x(), c.pos().y()) for c in cards] == [
-        (0.0, 0.0), (200.0, 0.0), (400.0, 0.0)]
+        (40.0, 40.0), (240.0, 40.0), (440.0, 40.0)]
     for c in cards:
         assert_on_cell(c)
     assert_no_overlap(cards)
 
 
-def test_new_card_in_empty_workspace_uses_top_left_cell():
+def test_new_card_in_empty_workspace_uses_first_cell_with_margin():
+    """TSK31 (1.1): in an empty workspace the first card is placed on the
+    first cell of the grid offset by the inter-card gutter (40, 40), i.e. with
+    the same margin to the top/left edges as between two cards."""
     service = ProjectService()
     CreateProjectUseCase(service).execute()
     project = service.current_project
@@ -135,7 +139,8 @@ def test_new_card_in_empty_workspace_uses_top_left_cell():
     agent = next(a for a in project.agent if a.lb == "A0")
     card = ws.add_agent_card(agent)
     _app.processEvents()
-    assert card.pos() == QPointF(0.0, 0.0)
+    assert card.pos() == QPointF(AgentCardItem.GRID_OFFSET_X, AgentCardItem.GRID_OFFSET_Y)
+    assert AgentCardItem.GRID_OFFSET_X == 40.0 and AgentCardItem.GRID_OFFSET_Y == 40.0
 
 
 def test_new_card_uses_first_free_cell_from_top_left():
@@ -150,16 +155,16 @@ def test_new_card_uses_first_free_cell_from_top_left():
     ws.resize(1200, 700)
     ws.populate_agents(project, None)
     _app.processEvents()
-    cards = cards_of(ws)  # A0 (0, 0), A1 (200, 0)
-    drag(ws, cards[0], 400, 0)  # free (400, 0) -> cell (400, 0), allowed ring
-    assert cards[0].pos() == QPointF(400.0, 0.0)
+    cards = cards_of(ws)  # A0 (40, 40), A1 (240, 40)
+    drag(ws, cards[0], 400, 0)  # free (440, 40) -> cell (440, 40), allowed ring
+    assert cards[0].pos() == QPointF(440.0, 40.0)
     CreateAgentUseCase(service).execute(lb="A2")
     agent = next(a for a in project.agent if a.lb == "A2")
     new_card = ws.add_agent_card(agent)
     _app.processEvents()
-    # (0, 0) was freed by the drag -> the new card takes it back (row-major
+    # (40, 40) was freed by the drag -> the new card takes it back (row-major
     # scan from the top-left corner)
-    assert new_card.pos() == QPointF(0.0, 0.0)
+    assert new_card.pos() == QPointF(40.0, 40.0)
     assert_on_cell(new_card)
     assert_no_overlap(cards_of(ws))
 
@@ -181,12 +186,12 @@ def test_release_outside_the_group_ring_is_pulled_back():
     """TSK23/RG065: the release cell must lie within the bounding box of the
     other cards expanded by one cell; a far drag is pulled back to the
     nearest free allowed cell."""
-    ws = make_workspace(2)  # A0 (0, 0), A1 (200, 0)
+    ws = make_workspace(2)  # A0 (40, 40), A1 (240, 40)
     a0, a1 = cards_of(ws)
     drag(ws, a1, 3000, 3000)  # far away
-    # others = [A0 (0,0,160,100)] -> allowed x in [0, 360], y in [0, 240]
-    # snapped (3200, 2940) is clamped to (200, 140), which is free
-    assert a1.pos() == QPointF(200.0, 140.0)
+    # others = [A0 (40,40,160,100)] -> allowed x in [0, 400], y in [0, 280]
+    # snapped (3240, 2980) is clamped to (240, 180), which is free
+    assert a1.pos() == QPointF(240.0, 180.0)
     assert_on_cell(a1)
     assert_no_overlap(cards_of(ws))
 
@@ -195,9 +200,9 @@ def test_single_card_can_be_moved_anywhere():
     """TSK23 edge case: with a single card there is no bounding box of other
     cards, so the release stays free anywhere in the scene."""
     ws = make_workspace(1)
-    card = cards_of(ws)[0]  # (0, 0)
-    drag(ws, card, 1000, 840)  # free (1000, 840) -> cell (1000, 840), allowed
-    assert card.pos() == QPointF(1000.0, 840.0)
+    card = cards_of(ws)[0]  # (40, 40)
+    drag(ws, card, 1000, 840)  # far -> snapped to cell (1040, 1020), allowed
+    assert card.pos() == QPointF(1040.0, 1020.0)
 
 
 def test_programmatic_setpos_stays_free_no_snap():
@@ -219,32 +224,32 @@ def test_diagonal_drag_moves_both_axes_then_snaps_on_release():
     card = cards_of(ws)[0]
     card.setPos(0.0, 0.0)  # programmatic: stays exact
     _app.processEvents()
-    drag(ws, card, 150, 90)  # free position (150, 90) -> nearest cell (200, 140)
-    assert card.pos() == QPointF(200.0, 140.0)
-    assert (card.layout.x, card.layout.y) == (200.0, 140.0)
+    drag(ws, card, 150, 90)  # free position (150, 90) -> nearest cell (240, 40)
+    assert card.pos() == QPointF(240.0, 40.0)
+    assert (card.layout.x, card.layout.y) == (240.0, 40.0)
     assert_on_cell(card)
 
 
 def test_release_on_occupied_cell_goes_to_nearest_free_cell():
     ws = make_workspace(2)
-    cards = cards_of(ws)  # A0 at (0, 0), A1 at (200, 0)
+    cards = cards_of(ws)  # A0 at (40, 40), A1 at (240, 40)
     a0, a1 = cards
-    # drag A1 onto A0's cell: release at free (10, 10) -> cell (0, 0)
-    # occupied by A0 -> nearest free cell (0, 140)
+    # drag A1 onto A0's cell: release near (50, 50) -> cell (40, 40)
+    # occupied by A0 -> nearest free cell (40, 180)
     drag(ws, a1, -190, 10)
-    assert a1.pos() == QPointF(0.0, 140.0)
+    assert a1.pos() == QPointF(40.0, 180.0)
     assert_no_overlap(cards)
     # a free target cell is taken as-is
-    drag(ws, a1, 210, 10)  # free (210, 150) -> cell (200, 140), free
-    assert a1.pos() == QPointF(200.0, 140.0)
+    drag(ws, a1, 210, 10)  # free target -> cell (240, 180), free
+    assert a1.pos() == QPointF(240.0, 180.0)
     assert_no_overlap(cards)
 
 
 def test_selected_card_is_raised_above_neighbours():
     ws = make_workspace(3)
     cards = cards_of(ws)
-    drag(ws, cards[0], 200, 200)  # (0, 0) -> free (200, 200) -> cell (200, 140)
-    assert cards[0].pos() == QPointF(200.0, 140.0)
+    drag(ws, cards[0], 200, 200)  # (40, 40) -> free (240, 240) -> cell (240, 180)
+    assert cards[0].pos() == QPointF(240.0, 180.0)
     assert cards[0].zValue() == 1.0
     assert all(c.zValue() == 0.0 for c in cards[1:])
 
@@ -252,7 +257,7 @@ def test_selected_card_is_raised_above_neighbours():
 def test_collect_project_layout_reports_card_positions():
     ws = make_workspace(2)
     cards = cards_of(ws)
-    drag(ws, cards[0], 150, 90)  # (0, 0) -> free (150, 90) -> cell (200, 140)
+    drag(ws, cards[0], 150, 90)  # (40, 40) -> free (190, 130) -> cell (240, 180)
     assert_on_cell(cards[0])
     layout = ws.collect_project_layout()
     card_layout = layout.get_agent_card_layout(cards[0].entity.id)

@@ -41,3 +41,14 @@
 - **Correctifs** : infobulle des cartes d'en-tête sans 3ᵉ argument `QWidget` (`QToolTip.showText(pos, texte)`, l'item n'est pas un widget) + `hideText` au `hoverLeaveEvent` ; hit-testing des cartes/cellules en coordonnées locales (`mapFromScene` avant `shape().contains`) — le drag lignes/colonnes et les clics de cellule refonctionnent.
 - **Panneau latéral** : séparateur horizontal après le filtre agent ; la combo de parcours émet l'id choisi (`None` = « All journeys ») et le `MainWindow` **active ce parcours** (FN026) + filtre (FN029), comme « Display > Journey » ; resync du panneau après chaque CRUD de parcours.
 - **Hors matrice** : vue active par défaut « Agents » à la création/ouverture d'un projet (révise TSK28) ; vue « Agents » : création sur la première cellule libre depuis (0, 0) en balayage ligne par ligne, espace extensible droite/bas uniquement (scène clampée à 0 en gauche/haut).
+
+## Révision TSK31 (séance 10, 2ᵉ salve de retours)
+
+- **2.1** : `contextMenuEvent` utilise `event.pos()`/`globalPos()` (`QContextMenuEvent` n'a pas `position()` dans toutes les versions Qt6) — plus d'exception au clic droit.
+- **2.2** : la diagonale estompée est repérée par **identité d'agent** (`ai == aj`), pas par index — avec les ordres indépendants (RG070), la cellule « même agent » suit la carte déplacée.
+- **2.3** : cellules transparentes (plus de fond/bordure propre) → les lignes de la matrice sont celles de la grille de fond, partout identiques.
+- **2.4** : point au centre de **chaque cellule de tout l'espace visible**, peint dans `drawBackground` de la vue (rendu points d'ancrage vue « Agents »).
+- **2.5** : la vue applique `theme.WORKSPACE_STYLESHEET` + `WA_StyledBackground` → ascenseurs identiques à la vue « Journeys » (toujours visibles, sombres, fins).
+- **3.1** : séparateur = barre pleine 2 px (`relationships_view_separator_height_px`) en `grid_major_color`.
+- **3.2** : fente du splitter calée sur la largeur du panneau au resize (`setSizes`) → plus de bande grise à droite du panneau ; panneau en thème sombre (`theme.SIDE_PANEL_STYLESHEET`) ; ascenseur vertical de la liste des blocs toujours visible et stylé façon Journeys, zone liste uniquement.
+- Hors vue : vue « Agents » — marge de la 1ʳᵉ carte = écart entre deux cartes (40 px), grille invisible décalée d'autant (`snap_to_grid` offset).

@@ -25,10 +25,12 @@ Card positions are persisted at project level (layouts/project.json,
 RG067).
 
 TSK30 (session 10 feedback): a new card is placed on the FIRST free cell of
-the invisible grid scanned row by row from the top-left corner (0, 0), and
+the invisible grid scanned row by row from the top-left corner, and
 the workspace extends rightwards/downwards only - the scene rect never
 grows past its left/top origin (clamped at 0, so card moves are constrained
-to the same area via scene.sceneRect()).
+to the same area via scene.sceneRect()). TSK31 (1.1): the grid origin is
+offset by the inter-card gutter (cell size - card size), so the first card
+keeps the same margin to the top/left edges as between two cards.
 
 The filters (journey/agent, RG048/RG063) do NOT apply to this view.
 
@@ -59,6 +61,10 @@ _CARD_WIDTH = _get_config("agents_view_card_width", 160.0)
 _CARD_HEIGHT = _get_config("agents_view_card_height", 100.0)
 _CELL_WIDTH = _get_config("agents_view_cell_width", 200.0)
 _CELL_HEIGHT = _get_config("agents_view_cell_height", 140.0)
+# TSK31 (1.1): the invisible grid is offset by the inter-card gutter, so the
+# first card keeps the same margin to the top/left edges as between two cards
+_GRID_OFFSET_X = _CELL_WIDTH - _CARD_WIDTH
+_GRID_OFFSET_Y = _CELL_HEIGHT - _CARD_HEIGHT
 
 logger = logging.getLogger(__name__)
 
@@ -263,11 +269,16 @@ class AgentsWorkspace(QGraphicsView, QObject):
                 return item
         return None
 
-    def next_free_card_position(self, x: float = 0.0, y: float = 0.0):
+    def next_free_card_position(self, x: float = None, y: float = None):
         """First free cell of the invisible grid for a new card (RG050
         non-overlapping, RG065 cells), scanned row by row from the top-left
-        corner of the scene (TSK30 2.1); the (x, y) anchor is only a fallback
-        when no free cell is found."""
+        corner (TSK30 2.1); the grid origin carries the inter-card gutter
+        margin (TSK31 1.1); the (x, y) anchor is only a fallback when no
+        free cell is found."""
+        if x is None:
+            x = _GRID_OFFSET_X
+        if y is None:
+            y = _GRID_OFFSET_Y
         existing_rects = []
         for item in self.scene.items():
             if isinstance(item, AgentCardItem):
@@ -276,7 +287,7 @@ class AgentsWorkspace(QGraphicsView, QObject):
                 existing_rects.append((pos.x(), pos.y(), r.width(), r.height()))
         scene_rect = self.scene.sceneRect()
         return LayoutService.find_first_free_cell(
-            scene_rect.left(), scene_rect.top(), _CARD_WIDTH, _CARD_HEIGHT,
+            x, y, _CARD_WIDTH, _CARD_HEIGHT,
             existing_rects, _CELL_WIDTH, _CELL_HEIGHT,
             bounds=(scene_rect.left(), scene_rect.top(), scene_rect.right(), scene_rect.bottom()))
 
@@ -293,9 +304,10 @@ class AgentsWorkspace(QGraphicsView, QObject):
                                      width=_CARD_WIDTH, height=_CARD_HEIGHT)
 
         # RG065: every card position is an origin of the invisible cell grid
-        # (also on load, so legacy free positions snap to the nearest cell)
-        layout.x = LayoutService.snap_to_grid(layout.x, _CELL_WIDTH)
-        layout.y = LayoutService.snap_to_grid(layout.y, _CELL_HEIGHT)
+        # (also on load, so legacy free positions snap to the nearest cell);
+        # TSK31: the grid is offset by the inter-card gutter (TSK31 1.1)
+        layout.x = LayoutService.snap_to_grid(layout.x, _CELL_WIDTH, _GRID_OFFSET_X)
+        layout.y = LayoutService.snap_to_grid(layout.y, _CELL_HEIGHT, _GRID_OFFSET_Y)
 
         if not skip_overlap_check:
             existing_rects = []
