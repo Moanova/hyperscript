@@ -47,7 +47,7 @@
 - **2.1** : `contextMenuEvent` utilise `event.pos()`/`globalPos()` (`QContextMenuEvent` n'a pas `position()` dans toutes les versions Qt6) — plus d'exception au clic droit.
 - **2.2** : la diagonale estompée est repérée par **identité d'agent** (`ai == aj`), pas par index — avec les ordres indépendants (RG070), la cellule « même agent » suit la carte déplacée.
 - **2.3** : cellules transparentes (plus de fond/bordure propre) → les lignes de la matrice sont celles de la grille de fond, partout identiques.
-- **2.4** : point au centre de chaque cellule de tout l'espace visible, peint dans `drawBackground` de la vue (rendu points d'ancrage vue « Agents ») — **révisé séance 11 TSK36** : champ de points sur toute la zone visible à l'espacement `agents_view_dot_spacing_px` (plus de point au centre des cellules).
+- **2.4** : point au centre de chaque cellule de tout l'espace visible, peint dans `drawBackground` de la vue (rendu points d'ancrage vue « Agents ») — **révisé séance 11 TSK36 option 2 (validée TSC)** : plus aucun point en fond (ni au centre des cellules, ni champ façon « Agents » testé puis retiré) ; seules les lignes de la grille restent.
 - **2.5** : la vue applique `theme.WORKSPACE_STYLESHEET` + `WA_StyledBackground` → ascenseurs identiques à la vue « Journeys » (toujours visibles, sombres, fins).
 - **3.1** : séparateur = barre pleine 2 px (`relationships_view_separator_height_px`) en `grid_major_color`.
 - **3.2** : fente du splitter calée sur la largeur du panneau au resize (`setSizes`) → plus de bande grise à droite du panneau ; panneau en thème sombre (`theme.SIDE_PANEL_STYLESHEET`) ; ascenseur vertical de la liste des blocs toujours visible et stylé façon Journeys, zone liste uniquement.

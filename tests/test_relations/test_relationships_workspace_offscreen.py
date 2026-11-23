@@ -64,12 +64,13 @@ from usecases.view_management import CreateBlockUseCase, CreateTransitionUseCase
 from usecases.relationship_management import CreateRelationshipUseCase
 from ui.views.relationships_workspace import (
     RelationshipsWorkspace, _GridLineItem, _CELL_SIZE, _CELLS_LEFT, _CELLS_TOP,
-    _CARD_OFF_X, _CARD_OFF_Y, _PANEL_WIDTH, _SEPARATOR_HEIGHT, _DOT_COLOR, _DOT_SPACING,
+    _CARD_OFF_X, _CARD_OFF_Y, _PANEL_WIDTH, _SEPARATOR_HEIGHT,
 )
 from ui.widgets.filters_side_panel import FiltersSidePanel  # TSK33
 from ui.nodes.matrix_relationship_card import MatrixRelationshipCard  # TSK32
 from ui.nodes.matrix_agent_card import MatrixAgentCard  # TSK36
 from ui.utils import theme
+from config.config_loader import get as _get_config
 
 
 @pytest.fixture(scope="module")
@@ -432,28 +433,28 @@ def test_relationship_card_rendered_with_pivot_border_color(qapp):
     ws.hide()
 
 
-def test_dots_painted_with_agents_view_spacing_over_the_whole_visible_area(qapp):
-    """TSK36 (option 1): background dot field over the whole visible area with
-    the SAME spacing as the "Agents" view anchor dots (agents_view_dot_spacing_px),
-    inside the matrix AND outside it (drawBackground); the former per-cell center
-    dot (TSK31 2.4) is gone."""
+def test_no_dots_in_background_only_grid_lines(qapp):
+    """TSK36 (option 2, validated by TSC session 11): NO dots in the background
+    of the "Relationships" view - the per-cell center dot (TSK31 2.4) and the
+    agents-view dot field (TSK36 option 1, tested then rejected) are both gone;
+    only the cell grid lines remain over the bg_primary background."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
     ws.resize(1200, 800)
     ws.show()
     qapp.processEvents()
     img = ws.view.grab().toImage()
-    dot = QColor(_DOT_COLOR).name()
-    s = _DOT_SPACING
-    assert s == 20  # config agents_view_dot_spacing_px
-    for scene_pt in (QPointF(12 * s, 8 * s),    # inside the matrix area
-                     QPointF(32 * s, 18 * s),    # outside the matrix (cell 5,3 area)
-                     QPointF(42 * s, 32 * s)):   # far corner of the visible area
-        assert scene_pt.x() % s == 0 and scene_pt.y() % s == 0
+    bg = QColor(theme.BG_PRIMARY).name()
+    dot = QColor(_get_config("agents_view_dot_color", "#4A4A4A")).name()
+    # sample points off the grid lines (x and y not multiples of the 100 px cell),
+    # outside the matrix (matrix cells area: x,y in 100..400) to avoid cards
+    for scene_pt in (QPointF(450, 150), QPointF(640, 360), QPointF(840, 640), QPointF(520, 540)):
+        assert scene_pt.x() % _CELL_SIZE != 0 and scene_pt.y() % _CELL_SIZE != 0
         p = ws.view.mapFromScene(scene_pt)
-        assert img.pixelColor(p).name() == dot, f"no dot at scene {scene_pt}"
-    # former cell center (250, 150) is NOT a multiple of the spacing: no dot there
-    p = ws.view.mapFromScene(QPointF(250, 150))
-    assert img.pixelColor(p).name() != dot, "per-cell center dot should be gone"
+        assert img.pixelColor(p).name() == bg, f"unexpected pixel at {scene_pt}: {img.pixelColor(p).name()}"
+        assert img.pixelColor(p).name() != dot
+    # a cell grid line is still painted (x=200 is a vertical line: not bg)
+    p = ws.view.mapFromScene(QPointF(200, 140))
+    assert img.pixelColor(p).name() != bg, "grid line missing"
     ws.hide()
 
 

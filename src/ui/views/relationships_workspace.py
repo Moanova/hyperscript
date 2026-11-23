@@ -54,10 +54,9 @@ TSK31 (session 10, 2nd feedback batch): contextMenuEvent uses QContextMenuEvent
 pos()/globalPos() (no position() attribute); the diagonal is dimmed by agent
 IDENTITY (ai == aj), not by index, so it follows the dragged header card with
 independent row/column orders; cells are transparent (no fill/border) so the
-matrix lines are the background grid lines themselves; a dot field is painted
-over the whole visible area (drawBackground, agents-view spacing/rendering -
-revised TSK36 session 11: agents_view_dot_spacing_px instead of the per-cell
-center dot); the view gets theme.WORKSPACE_STYLESHEET
+matrix lines are the background grid lines themselves; no dots in the
+background (TSK36 session 11, option 2: per-cell center dot of TSK31 2.4 and
+agents-view dot field both removed); the view gets theme.WORKSPACE_STYLESHEET
 so its scrollbars look/behave like the "Journeys" view; the side panel
 separator is a thicker filled bar; the splitter slot of the panel is pinned
 to the panel width on resize (no gray strip on the right), the panel content
@@ -125,11 +124,6 @@ _CELL_HIT_WIDTH = _get_config("journeys_view_hit_area_width_px", 12.0)
 _CELL_MARGIN = 2.0
 # TSK30: scene anchored on the top-left corner, growing rightwards/downwards only
 _SCENE_MIN_SIZE = 4000
-# TSK36: background dot field over the whole visible area, SAME spacing and
-# rendering as the "Agents" view anchor dots (agents_view_dot_spacing_px)
-_DOT_SPACING = int(_get_config("agents_view_dot_spacing_px", 20))
-_DOT_RADIUS = _get_config("agents_view_dot_radius_px", 1.5)
-_DOT_COLOR = _get_config("agents_view_dot_color", "#4A4A4A")
 # TSK32: the Relationship card materialized inside an active (upper-triangle) cell
 _REL_CARD_W = MatrixRelationshipCard.WIDTH
 _REL_CARD_H = MatrixRelationshipCard.HEIGHT
@@ -243,22 +237,11 @@ class _MatrixGraphicsView(QGraphicsView):
         self.setAttribute(Qt.WidgetAttribute.WA_StyledBackground, True)
         self._dragged_card = None
 
-    def drawBackground(self, painter, rect):
-        """TSK36: background dot field over the whole visible area, with the
-        SAME spacing as the "Agents" view anchor dots (agents_view_dot_spacing_px)
-        and the same rendering (agents_view_dot_radius_px/color) - replaces the
-        per-cell center dot of TSK31 (2.4). Painted in the background, under all
-        scene items."""
-        super().drawBackground(painter, rect)
-        painter.save()
-        painter.setPen(Qt.PenStyle.NoPen)
-        painter.setBrush(QBrush(QColor(_DOT_COLOR)))
-        start_x = int(rect.left() - (rect.left() % _DOT_SPACING))
-        start_y = int(rect.top() - (rect.top() % _DOT_SPACING))
-        for x in range(start_x, int(rect.right()) + _DOT_SPACING, _DOT_SPACING):
-            for y in range(start_y, int(rect.bottom()) + _DOT_SPACING, _DOT_SPACING):
-                painter.drawEllipse(QPointF(x, y), _DOT_RADIUS, _DOT_RADIUS)
-        painter.restore()
+    # TSK36 (session 11, option 2 validated by TSC): NO dots in the background -
+    # the per-cell center dot (TSK31 2.4) and the agents-view dot field (TSK36
+    # option 1, tested then rejected) are both removed; the default
+    # drawBackground fills the background brush (bg_primary) and the cell grid
+    # lines (_GridLineItem) remain.
 
     def viewportEvent(self, event):
         # Swallow Qt's delayed automatic tooltip (AGENTS.md pattern)

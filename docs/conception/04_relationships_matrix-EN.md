@@ -47,7 +47,7 @@
 - **2.1**: `contextMenuEvent` uses `event.pos()`/`globalPos()` (`QContextMenuEvent` has no `position()` in all Qt6 versions) — no more exception on right click.
 - **2.2**: the dimmed diagonal is matched by **agent identity** (`ai == aj`), not by index — with independent orders (RG070), the "same agent" cell follows the dragged card.
 - **2.3**: transparent cells (no own fill/border) → the matrix lines are the background grid lines, identical everywhere.
-- **2.4**: a dot at the center of **every cell of the whole visible workspace**, painted in the view's `drawBackground` (Agents-view anchor-dot rendering) — **revised session 11 TSK36**: dot field over the whole visible area at `agents_view_dot_spacing_px` spacing (no more per-cell center dot).
+- **2.4**: a dot at the center of **every cell of the whole visible workspace**, painted in the view's `drawBackground` (Agents-view anchor-dot rendering) — **revised session 11 TSK36 option 2 (validated by TSC)**: no dots in the background at all (neither the per-cell center dot nor the tested Agents-view dot field); only the grid lines remain.
 - **2.5**: the view applies `theme.WORKSPACE_STYLESHEET` + `WA_StyledBackground` → scrollbars identical to the "Journeys" view (always visible, dark, thin).
 - **3.1**: separator = filled bar 2 px (`relationships_view_separator_height_px`) in `grid_major_color`.
 - **3.2**: splitter slot pinned to the panel width on resize (`setSizes`) → no gray strip on the right of the panel; dark-themed panel (`theme.SIDE_PANEL_STYLESHEET`); block list vertical scrollbar always visible, Journeys-styled, list zone only.
