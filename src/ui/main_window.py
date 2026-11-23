@@ -37,7 +37,7 @@ from PySide6.QtGui import QCloseEvent
 from ui.widgets.info_bar import InfoBar
 from ui.widgets.tab_bar import TabBar
 from ui.widgets.filters_side_panel import FiltersSidePanel, SidePanelSplitter, PANEL_WIDTH_PX  # TSK33/TSK35
-from ui.views import JourneysWorkspace, AgentsWorkspace, RelationshipsWorkspace
+from ui.views import JourneysWorkspace, AgentsWorkspace, RelationshipsWorkspace, PreviewWorkspace  # TSK38
 from ui.nodes.block_node import BlockNode
 from ui.nodes.connection import Connection
 from ui.nodes.agent_card import AgentCardItem
@@ -106,6 +106,7 @@ class MainWindow(QMainWindow):
         self.project_service = ProjectService()
         # Model modification hook (core stays Qt-free); re-emitted as a Qt signal
         self.project_service.on_modified = lambda: self.map_modified.emit()
+        self.map_modified.connect(self._on_map_modified)  # TSK38: refresh the "Preview" view on model change when active
         self.create_project_usecase = CreateProjectUseCase(self.project_service)
         self.load_project_usecase = LoadProjectUseCase(self.project_service)
         self.save_project_usecase = SaveProjectUseCase(self.project_service)
@@ -157,7 +158,7 @@ class MainWindow(QMainWindow):
         self._create_menu_bar()
 
         # Tab bar, visible only when a project is open (04_interface section 3)
-        self.tab_bar = TabBar(["Agents", "Journeys", "Relationships", "Export"])  # TSK28: Agents first; TSK30: Agents is the default active tab
+        self.tab_bar = TabBar(["Agents", "Journeys", "Relationships", "Preview"])  # TSK28: Agents first; TSK30: default active tab; TSK38: "Preview" renamed from "Export"
         self.tab_bar.hide()
         main_layout.addWidget(self.tab_bar)
         self.tab_bar.currentChanged.connect(self._on_tab_changed)
@@ -184,7 +185,7 @@ class MainWindow(QMainWindow):
         QVBoxLayout(self.relationships_page).setContentsMargins(0, 0, 0, 0)
         self.pages.addWidget(self.relationships_page)
         self.view_pages["Relationships"] = self.relationships_page
-        for name in ("Export",):
+        for name in ("Preview",):  # TSK38: renamed from "Export"; workspace added in _init_workspace
             page = QWidget()
             page_layout = QVBoxLayout(page)
             label = QLabel(f"{name} view — handled by a later task.")
@@ -193,6 +194,7 @@ class MainWindow(QMainWindow):
             page_layout.addWidget(label)
             self.pages.addWidget(page)
             self.view_pages[name] = page
+        self.preview_page = self.view_pages["Preview"]  # TSK38
 
         self.info_bar = InfoBar()
         main_layout.addWidget(self.info_bar)
@@ -204,6 +206,9 @@ class MainWindow(QMainWindow):
         self._syncing_panel_width = False  # TSK35: recursion guard for the panel width sync
         self.agents_workspace = None
         self.relationships_workspace = None  # TSK27
+        self.preview_workspace = None   # TSK38: "Preview" view (reading preview)
+        self.preview_splitter = None    # TSK38: page-level splitter hosting the preview + filters side panel
+        self.preview_panel = None       # TSK38: FiltersSidePanel of the "Preview" view (no block list)
         self._last_journeys_block_id = None  # TSK27/FN032: block selected in "Journeys"
         self.journey_filter_active = False  # RG047/RG048: off by default, not persisted
         self.agent_filter_agent_id = None  # RG047/RG063: agent filter off by default, not persisted
@@ -260,7 +265,7 @@ class MainWindow(QMainWindow):
         self.menu_actions['view_journeys'] = view_menu.addAction("Journeys", lambda: None)
         self.menu_actions['view_agents'] = view_menu.addAction("Agents", lambda: None)
         self.menu_actions['view_relationships'] = view_menu.addAction("Relationships", lambda: None)
-        self.menu_actions['view_export'] = view_menu.addAction("Export", lambda: None)
+        self.menu_actions['view_preview'] = view_menu.addAction("Preview", lambda: None)  # TSK38: renamed from "Export"; stub, activated via the tab bar
         agents_menu = project_menu.addMenu("Agents")
         self.menu_actions['agents_new'] = agents_menu.addAction("New...", lambda: self._new_agent())
         self.menu_actions['agents_edit'] = agents_menu.addAction("Edit...", lambda: self._edit_agent())
@@ -307,7 +312,7 @@ class MainWindow(QMainWindow):
     # Entries enabled only when a project is open (RG007/RG008)
     PROJECT_DEPENDENT = {
         'close', 'save', 'save_as', 'journey', 'agent_filter',
-        'view_journeys', 'view_agents', 'view_relationships', 'view_export',
+        'view_journeys', 'view_agents', 'view_relationships', 'view_preview',  # TSK38: view_export renamed view_preview
         'agents_new',
         'blocks_new', 'blocks_edit', 'blocks_copy', 'blocks_delete',
         'transitions_new', 'transitions_edit', 'transitions_delete',
@@ -647,11 +652,24 @@ class MainWindow(QMainWindow):
         self.relationships_workspace = relationships_workspace
         relationships_workspace.populate(project, nm, saved_project_layout)
 
+        # TSK38: the "Preview" page - reading preview (PreviewWorkspace) + the
+        # same filters side panel as "Journeys" (show_block_list=False); the
+        # splitter lives at page level
+        preview_panel = FiltersSidePanel(project=project, narrative_map=nm, show_block_list=False)
+        preview_panel.journey_filter_requested.connect(self._on_journey_filter_requested)  # shared with the other panels
+        preview_panel.agent_filter_requested.connect(self._set_agent_filter)
+        preview_workspace = PreviewWorkspace()
+        preview_splitter = SidePanelSplitter(preview_workspace, preview_panel, parent=self.preview_page)
+        self.preview_page.layout().addWidget(preview_splitter)
+        self.preview_workspace = preview_workspace
+        self.preview_splitter = preview_splitter
+        self.preview_panel = preview_panel
+
         # TSK35: side panel width - resizable/collapsible handle; the width is
-        # shared by both map views during the session but NOT persisted
+        # shared by the map views during the session but NOT persisted
         # (decision session 11): every project creation/open starts at the
         # standard width (PANEL_WIDTH_PX), whatever user_state.json holds
-        for sp in (self.journeys_splitter, relationships_workspace._splitter):
+        for sp in (self.journeys_splitter, relationships_workspace._splitter, self.preview_splitter):
             sp.panel_width_changed.connect(lambda w, src=sp: self._on_side_panel_width_changed(w, src))
             sp.set_panel_width(PANEL_WIDTH_PX)
 
@@ -666,8 +684,11 @@ class MainWindow(QMainWindow):
             self.relationships_workspace.set_agent_filter(None)
         if self.journeys_panel is not None:  # TSK33: build the "Journeys" panel combos (filters off, RG047)
             self.journeys_panel.refresh()
+        if self.preview_panel is not None:  # TSK38: build the "Preview" panel combos (filters off, RG047)
+            self.preview_panel.refresh()
         self._rebuild_journey_menu()
         self._rebuild_agent_menu()
+        self._refresh_preview()  # TSK38: initial reading preview
         self.tab_bar.show()
         self.tab_bar.forceCurrentTab("Agents")  # TSK30 (1.1): default active tab is "Agents"
 
@@ -689,6 +710,12 @@ class MainWindow(QMainWindow):
             self.relationships_workspace.setParent(None)
             self.relationships_workspace.deleteLater()
             self.relationships_workspace = None
+        if self.preview_splitter is not None:  # TSK38: also destroys the preview + side panel
+            self.preview_splitter.setParent(None)
+            self.preview_splitter.deleteLater()
+            self.preview_splitter = None
+            self.preview_workspace = None
+            self.preview_panel = None
         self._last_journeys_block_id = None
         self.journey_filter_active = False
         self.agent_filter_agent_id = None
@@ -698,6 +725,9 @@ class MainWindow(QMainWindow):
         page = self.view_pages.get(tab_name)
         if page is not None:
             self.pages.setCurrentWidget(page)
+        if tab_name == "Preview" and self.preview_workspace is not None:
+            # TSK38: regenerate the reading preview on each switch to the view
+            self._refresh_preview()
         if tab_name == "Relationships" and self.relationships_workspace is not None:
             # FN032/RG069 (TSK27): forward the block selected in "Journeys" if
             # it belongs to the active filters, otherwise the Start block
@@ -772,6 +802,26 @@ class MainWindow(QMainWindow):
         """FN017: moving a block marks the project as modified."""
         self.project_service.set_modified(True)
         self._update_menu_state()
+
+    def _on_map_modified(self):
+        """TSK38: regenerate the reading preview on model change when the
+        "Preview" view is active (never in the background; viewing the preview
+        does not mark anything as modified)."""
+        if self.preview_workspace is not None and self.tab_bar.currentTab() == "Preview":
+            self._refresh_preview()
+
+    def _refresh_preview(self):
+        """TSK38: regenerate the reading preview from the model and the active
+        filters (RG047/RG048/RG063/RG064). Read-only: never marks the map nor
+        the project as modified."""
+        if self.preview_workspace is None:
+            return
+        project = self.project_service.current_project
+        nm = self._current_narrative_map()
+        if project is None or nm is None:
+            return
+        journey = nm.get_active_journey() if self.journey_filter_active else None
+        self.preview_workspace.refresh_preview(project, nm, journey, self.agent_filter_agent_id)
 
     def _get_selected_item(self):
         if self.journeys_workspace is None:
@@ -858,6 +908,8 @@ class MainWindow(QMainWindow):
             self.relationships_workspace.refresh()
         if self.journeys_panel is not None:
             self.journeys_panel.refresh()
+        if self.preview_panel is not None:  # TSK38: resync the "Preview" side panel
+            self.preview_panel.refresh()
 
     def _new_journey(self):
         """FN023: create a journey (not activated; the active journey is unchanged)."""
@@ -941,6 +993,10 @@ class MainWindow(QMainWindow):
             self.relationships_workspace.set_journey_filter_active(active)
         if self.journeys_panel is not None:  # TSK33: resync the "Journeys" side panel
             self.journeys_panel.set_journey_filter_active(active)
+        if self.preview_panel is not None:  # TSK38: resync the "Preview" side panel
+            self.preview_panel.set_journey_filter_active(active)
+        if self.tab_bar.currentTab() == "Preview":  # TSK38: the preview is dynamic under the filters
+            self._refresh_preview()
         self._rebuild_journey_menu()
 
     def _rebuild_agent_menu(self):
@@ -972,6 +1028,10 @@ class MainWindow(QMainWindow):
             self.relationships_workspace.set_agent_filter(agent_id)
         if self.journeys_panel is not None:  # TSK33: resync the "Journeys" side panel
             self.journeys_panel.set_agent_filter(agent_id)
+        if self.preview_panel is not None:  # TSK38: resync the "Preview" side panel
+            self.preview_panel.set_agent_filter(agent_id)
+        if self.tab_bar.currentTab() == "Preview":  # TSK38: the preview is dynamic under the filters
+            self._refresh_preview()
         self._rebuild_journey_menu()
         self._rebuild_agent_menu()
 

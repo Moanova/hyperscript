@@ -1,6 +1,6 @@
 # Hyperscript ::: Tableau kanban du projet
 
-- **Date de dernière modification** : 23-11-2026 (TSK01–TSK36 Done ; TSK37 en Review : conception de la vue « Preview » rédigée) ; To do vide, Doing vide)
+- **Date de dernière modification** : 23-11-2026 (TSK01–TSK36 Done ; TSK37 conception vue Preview et TSK38 implémentation vue Preview en Review) ; To do et Doing vides)
 - **Description** : Suivi de l'avancement des tâches du projet.
   - Les chantiers majeurs sont des **épics** (EPCnn) découpés en **tâches** (TSKnn).
   - Le détail de chaque tâche (analyse, décisions, journal des travaux) est consigné dans un fichier markdown dédié du sous-dossier `tasks/`, nommé d'après le code de la tâche.
@@ -68,6 +68,9 @@
 
 - 23-11-2026 (séance 11) : **TSK37 conception rédigée et passée en Review** — SU010/FN033 réécrits (vue « Preview », sections a)–g), `04_interface` §3/§7, `05_menu` FR/EN (View › Preview ; coexistence « Export Map » notée), RG048 + règle export fichier FR/EN, matrice implementation FR/EN, note de conception `docs/conception/05_preview-FR/EN.md` ; état des relations = dans le point e) (validé TSC) ; YAML menus revalidé — à valider TSC, pas de commit/push (non demandé).
 
+- 23-11-2026 (séance 11) : **TSK38 créée et passée en Doing** (→ #TSK37, #TSK33) — implémentation de la vue « Preview » selon la conception actée TSK37 (`docs/conception/05_preview-FR/EN.md`) : plan établi dans la fiche `tasks/TSK38_preview_view_implementation.md` (service Qt-free + QTextBrowser read-only + onglet + panneau latéral + renommage view_export→view_preview + régénération double déclencheur + filtres partagés + tests) ; implémentation sur feu vert TSC. Commit TSK37 poussé (`f065e67`).
+- 23-11-2026 (séance 11, feu vert TSC) : **TSK38 implémentée et passée en Review** — service Qt-free `core/services/preview_service.py` (sections a)–g), ordre RG044, orphelins, branches non jointes au Start marquées, relations sous leur bloc d'ancrage, filtres RG063/RG064, échappement HTML, jamais de set_modified) ; `ui/views/preview_workspace.py` `PreviewWorkspace(QTextBrowser)` read-only (ancres passives, notes en infobulle, thème sombre, `link_color` config) ; `main_window.py` : onglet « Preview » + page `SidePanelSplitter(PreviewWorkspace, FiltersSidePanel(show_block_list=False))`, renommage `view_export` → `view_preview` (View › Preview activé, `export_map` toujours gris) , régénération à la bascule + sur `map_modified` si vue active, filtres partagés avec les autres panneaux ; 18 tests `tests/test_preview/` (service + offscreen) ; py_compile OK, **170 tests passed + 4 pré-existants hors scope** (reproductibles arbre propre) ; matrices implementation SU010/FN033 → implemented ; commit+push sur `dev` demandés.
+
 ---
 
 ## Tableau du kanban
@@ -78,11 +81,11 @@
 ### Doing
 
 
-
 ### Review
 
 - [ ] TSK37 — Conception de la vue « Preview » (ex-« Export », SU010/FN033) : mise à jour de SU010, FN033, `04_interface` §3/§7, `05_menu` (View › Export → Preview), RG048, matrice d'implémentation ; **SU007/FN013 (export fichier) hors périmètre**. Points actés TSC séance 11 : (1) renommage Export → Preview partout (vue, menu, objets code, nommage des scripts) ; (2) aperçu lecture seule à liens hypertexte internes, régénéré à chaque bascule sur la vue ; (3) rendu dynamique selon les filtres Journey/Agent actifs + panneau latéral de filtres dans la vue (même version que Journeys) ; (4) aperçu/filtres ne marquent ni carte ni projet modifiés ; (5) sections : a) projet (lb), b) liste des agents (liens), c) carte (lb), d) liste des parcours (liens), e) parcours courant (blocs Start→End : lb/typ/content, note en infobulle ; relations ancrées sous leur bloc : agents 1&2, typ/content, note), f) orphelins du parcours courant, g) agents du projet (lb/typ/content, note) → #TSK33 — **créée en Doing 23-11-2026, conception rédigée et passée en Review 23-11-2026 (SU010/FN033/04_interface/05_menu/RG048/matrice + note conception 05_preview FR/EN)** (séance 11), fiche `tasks/TSK37_preview_view_conception.md`
 
+- [ ] TSK38 — Implémentation de la vue « Preview » (SU010/FN033, conception actée TSK37) : service Qt-free `core/services/preview_service.py` (`build_preview_html(project, map, journey, agent_id)` : sections a)–g), ordre RG044, orphelins = aucune transition entrante/sortante, branches non jointes au Start marquées, relations sous leur bloc d'ancrage, filtres RG063/RG064, échappement HTML, jamais de set_modified) ; `ui/views/preview_workspace.py` (`PreviewWorkspace(QTextBrowser)` read-only, ancres passives, notes en infobulle, thème sombre) ; `main_window.py` : onglet « Preview » + page `SidePanelSplitter(preview, FiltersSidePanel(show_block_list=False))`, renommage `view_export` → `view_preview` (menu View › Preview activé), régénération à la bascule + sur modification si vue active, filtres partagés MainWindow (RG047/048) ; `tab_bar.py` onglet Preview ; tests unitaires service + offscreen (onglet, panneau, régénération, lecture seule, renommage) ; matrice implementation → implemented → #TSK37, #TSK33 — **implémentée et passée en Review 23-11-2026** (feu vert TSC ; py_compile OK, 170 tests passed + 4 pré-existants hors scope ; commit+push demandés), fiche `tasks/TSK38_preview_view_implementation.md`
 
 
 ### Done

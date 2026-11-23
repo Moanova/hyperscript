@@ -194,7 +194,7 @@
 | FN030 | Associate agents with a block | implemented | Associate agents... (block context menu, Journeys view, TSK19b); Associate with Block... (Project > Agents) | usecases/participation_management/ (associate/dissociate); core/services/participation_service.py; ui/dialogs/agent_association_dialog.py; ui/main_window.py (_open_association_dialog, _show_workspace_context_menu) | — | — | tests/test_agents/test_participation_usecases.py |
 | FN031 | Manage the project's agents | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Associate with Block...) | usecases/agent_management/ (create/update/duplicate/delete); ui/dialogs/agent_dialog.py, agent_selection_dialog.py; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
 | FN032 | Cross-view navigation | not-started | — | — | — | — | — |
-| FN033 | Reading preview ("Preview" view) | not-started | — | docs/conception/05_preview-EN.md (TSK37) | — | — | design adopted session 11 (TSK37), code to come |
+| FN033 | Reading preview ("Preview" view) | implemented | View › Preview ("Preview" tab) | core/services/preview_service.py ; ui/views/preview_workspace.py ; ui/main_window.py (tab + side panel + view_preview) ; ui/widgets/tab_bar.py ; config.json (link_color) | — | — | tests/test_preview/ (18 tests: service + offscreen) ; design docs/conception/05_preview-EN.md (TSK37), implemented TSK38 session 11 |
 
 ### Relationships between agents
 
@@ -304,6 +304,6 @@
 | SU007 | Export the Narrative Map | FN013, FN033 | not-started |
 | SU008 | Manage agent-block Participations | FN030, FN031 | implemented |
 | SU009 | Manage the agents view — re-designed session 04 (anchor dots + agent cards, TSK19b) | FN031, FN032 | implemented |
-| SU010 | View the reading preview ("Preview" view) | FN033 | not-started |
+| SU010 | View the reading preview ("Preview" view) | FN033 | implemented |
 | SU011 | Manage a Relationship Between Agents | FN034, FN037 | implemented |
 | SU012 | Manage the "Relationships" view — mockup adopted session 06 (matrix + side panel, `04_interface` §6) | FN032, FN036 | implemented |

@@ -9,7 +9,7 @@
 """Tab bar for switching between workspaces (TSK11, 04_interface section 3).
 
 Displays one tab button per workspace ('Agents', 'Journeys', 'Relationships',
-'Export' - named in English, the application is unilingual for now) and emits
+'Preview' - named in English, the application is unilingual for now) and emits
 currentChanged(name) when the user activates a tab. Single instance placed
 above the stacked workspace area (single source of truth for the active tab).
 """
