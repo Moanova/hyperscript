@@ -1,6 +1,6 @@
 # Hyperscript ::: Tableau kanban du projet
 
-- **Date de dernière modification** : 20-11-2026 (TSK27–TSK34 validées Done ; TSK35 en Review : panneau latéral redimensionnable + repliable)
+- **Date de dernière modification** : 23-11-2026 (TSK27–TSK34 validées Done ; TSK35 en Review : panneau latéral redimensionnable + repliable, retours séance 11 traités)
 - **Description** : Suivi de l'avancement des tâches du projet.
   - Les chantiers majeurs sont des **épics** (EPCnn) découpés en **tâches** (TSKnn).
   - Le détail de chaque tâche (analyse, décisions, journal des travaux) est consigné dans un fichier markdown dédié du sous-dossier `tasks/`, nommé d'après le code de la tâche.
@@ -48,6 +48,10 @@
 - 20-11-2026 (séance 10) : **TSK30 implémentée et passée en Review** — `main_window.py` (vue par défaut « Agents », activation du parcours choisi depuis le panneau, création « Undefined » au clic gauche, resync panneau après CRUD parcours), `relationships_workspace.py` (ancrage haut gauche, scène ≥4000, ascenseurs toujours visibles, grille pleine zone visible `_GridLineItem`, `mapFromScene` hit-testing, point central + case à cocher cercle or + type en infobulle, séparateur, combo journey par id), `matrix_agent_card.py` (correctif `QToolTip.showText` + `hideText`), `agents_workspace.py` + `layout_service.py` (`find_first_free_cell` scan row-major depuis (0,0), clamp scène à 0), config `relationships_view_checkbox_*`/`relationships_view_check_color`, tests (8 nouveaux offscreen TSK30 + smoke + `find_first_free_cell`), specs `04_interface` §3/§5/§6 FR/EN + conception 04 FR/EN. py_compile OK, pyflakes clean (aucun nouveau warning), **125 tests passed** (Qt offscreen exécuté dans le sandbox via libs apt téléchargées localement ; 3 échecs pré-existants `test_block_drag_offscreen.py` hors scope, reproductibles sur l'arbre propre) ; rendu vérifié par capture d'image (matrice haut gauche, grille pleine zone, cercles or symétriques, points centraux). Commit + push `dev`.
 
 
+- 23-11-2026 (séance 11, retours TSC sur TSK35) : **TSK35 repassée en Doing** — 3 anomalies analysées et confirmées par sonde Qt offscreen : (a) largeur du panneau persistée en app-level (`user_state.json` `side_panel_width_px`) et réappliquée à tout projet, même non sauvegardé → décision TSC : supprimer la persistance, largeur standard (config `side_panel_width_px` = 260) à chaque création/ouverture de projet ; (b) drag du handle au-delà du minimum → collapse à 0 (`childrenCollapsible` par défaut dans QSplitter) → plancher réel via `setChildrenCollapsible(False)` ; (c) clic sur le chevron → `panel.hide()` dans `SidePanelSplitter.collapse()` → Qt cache aussi le handle → panneau perdu pour la session → repli par `setSizes([w, 0])` seul, handle/chevron conservé. Fiche `tasks/TSK35_side_panel_resize_collapse.md` ; implémentation lancée (feu vert TSC).
+
+- 23-11-2026 (séance 11) : **TSK35 correctifs implémentés et repassée en Review** — suppression de la persistance app-level de la largeur du panneau (`user_state.json` ; chaque création/ouverture de projet repart à la largeur standard `side_panel_width_px`), plancher dur au drag (`setChildrenCollapsible(False)`, min 180 jamais 0), repli par clic chevron en conservant le handle (`setSizes([w, 0])` sans `hide()`) ; tests offscreen remaniés/ajoutés, specs `04_interface` §4/§6 FR/EN, fiche TSK35 ; py_compile OK, 151 tests passed + 4 pré-existants hors scope (reproductibles arbre propre), sonde Qt offscreen OK — pas de commit/push (non demandé).
+
 ---
 
 ## Tableau du kanban
@@ -57,9 +61,11 @@
 
 ### Doing
 
+
 ### Review
 
-- [ ] TSK35 — Panneau latéral redimensionnable + repliable par icône (étude séance 10, point 1 reporté de TSK34) : handle de splitter personnalisé avec chevron (`createHandle` → `SidePanelHandle` : clic = repli/dépli, drag = redimensionnement), `setFixedWidth` → `setMinimumWidth` (`side_panel_min_width_px` = 180), suppression du pin fixe au resize, largeur persistée en app-level (`user_state.json` `side_panel_width_px` via `user_state_loader`), synchro des deux vues (Journeys/Relationships) via `panel_width_changed`, état replié de session uniquement (RG047) → #TSK33, #TSK34 — **passée en Doing 20-11-2026, implémentée et passée en Review 20-11-2026** (py_compile OK, pyflakes clean, 150 tests passed + 3 pré-existants hors scope, rendu vérifié), fiche `tasks/TSK35_side_panel_resize_collapse.md`
+- [ ] TSK35 — Panneau latéral redimensionnable + repliable par icône (étude séance 10, point 1 reporté de TSK34) : handle de splitter personnalisé avec chevron (`createHandle` → `SidePanelHandle` : clic = repli/dépli, drag = redimensionnement), `setFixedWidth` → `setMinimumWidth` (`side_panel_min_width_px` = 180), suppression du pin fixe au resize, largeur persistée en app-level (`user_state.json` `side_panel_width_px` via `user_state_loader`), synchro des deux vues (Journeys/Relationships) via `panel_width_changed`, état replié de session uniquement (RG047) → #TSK33, #TSK34 — implémentée 20-11-2026 ; **repassée en Doing 23-11-2026 (retours TSC séance 11), correctifs implémentés et repassée en Review 23-11-2026** (py_compile OK, 151 tests passed + 4 pré-existants hors scope, sonde offscreen OK) (py_compile OK, pyflakes clean, 150 tests passed + 3 pré-existants hors scope, rendu vérifié), fiche `tasks/TSK35_side_panel_resize_collapse.md`
+
 
 ### Done
 

@@ -286,9 +286,16 @@ class SidePanelSplitter(QSplitter):
     TSK35: the panel is RESIZABLE (drag the handle) and COLLAPSIBLE (click the
     chevron handle) - the fixed-width pin of TSK31 3.2 is removed (a splitter's
     sizes always fill its width, so no exposed background strip remains; only
-    the dark stylesheet is kept). The panel width is emitted through
-    panel_width_changed (drag / set_panel_width) so the MainWindow can persist
-    it at app level and sync the other map view.
+    the dark stylesheet is kept). Children are NOT collapsible by dragging
+    (session 11): the configured minimum width is a hard floor, a drag past
+    it clamps at PANEL_MIN_WIDTH_PX instead of collapsing the panel to 0. The
+    chevron click still collapses to 0 - via setSizes only, NEVER via
+    QWidget.hide(), because hiding a splitter child also hides its handle
+    (the panel and its expand chevron would be lost for the session). The
+    panel width is emitted through panel_width_changed (drag /
+    set_panel_width) so the MainWindow can sync the other map view; the width
+    itself is NOT persisted (session 11): every project creation/open starts
+    at the standard width PANEL_WIDTH_PX.
     """
 
     panel_width_changed = Signal(int)
@@ -305,6 +312,9 @@ class SidePanelSplitter(QSplitter):
         self.addWidget(view)
         self.addWidget(panel)
         self.setStretchFactor(0, 1)
+        # session 11: dragging the handle must never collapse the panel to 0
+        # (the minimum width is a hard floor); only the chevron click collapses
+        self.setChildrenCollapsible(False)
         self.splitterMoved.connect(self._on_splitter_moved)
 
     def createHandle(self):
@@ -343,18 +353,24 @@ class SidePanelSplitter(QSplitter):
             self.collapse()
 
     def collapse(self):
-        """Hide the panel; the handle with its chevron stays visible."""
+        """Collapse the panel to width 0 WITHOUT hiding it: hiding a splitter
+        child also hides its handle in Qt, and the panel + chevron would be
+        lost for the session. setSizes needs collapsibility enabled to reach
+        0 (the floor from setChildrenCollapsible(False) would clamp it), so
+        toggle it around the call; the handle stays visible."""
         if self.collapsed:
             return
         self.collapsed = True
-        self._panel.hide()
+        self.setChildrenCollapsible(True)
         self.setSizes([self.width(), 0])
+        self.setChildrenCollapsible(False)
 
     def expand(self):
-        """Show the panel back at its last width."""
+        """Show the panel back at its last width (handle stays visible)."""
         if not self.collapsed:
             return
         self.collapsed = False
-        self._panel.show()
         handle = self.handleWidth()
+        self.setChildrenCollapsible(True)
         self.setSizes([max(0, self.width() - self._expanded_width - handle), self._expanded_width])
+        self.setChildrenCollapsible(False)

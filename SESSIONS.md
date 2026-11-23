@@ -9,6 +9,25 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 
 ---
 
+## Séance n°11 (2026-11-23)
+
+### Travaux
+- **Analyse des anomalies du panneau latéral des vues Journeys/Relationships (TSK35, retours TSC)** — causes racines confirmées par sonde Qt 6.12 offscreen contre le code dev : (a) largeur persistée en app-level dans `src/config/user_state.json` (`side_panel_width_px`, écrite à chaque drag via `user_state_loader.set` qui persiste immédiatement) et réappliquée à chaque `_init_workspace` (création/ouverture de projet, même non sauvegardé) ; (b) drag du handle au-delà du minimum → collapse à 0 (`childrenCollapsible` par défaut dans `QSplitter` : le minimum n'est pas un plancher au drag) ; (c) clic sur le chevron → `SidePanelSplitter.collapse()` faisait `panel.hide()` → Qt masque aussi `handle(1)` → panneau + symbole perdus pour la session (les tests ne vérifiaient que `collapsed`/`sizes()`, jamais `handle(1).isVisible()`).
+- **Correctifs TSK35 implémentés** (feu vert TSC) : `setChildrenCollapsible(False)` (plancher dur `side_panel_min_width_px` = 180 au drag) ; repli par `setSizes([w, 0])` seul, jamais `hide()` (`setChildrenCollapsible` réactivé ponctuellement autour du `setSizes` pour atteindre 0 ; handle/chevron conservé) ; **suppression de la persistance app-level** — chaque création/ouverture de projet repart à la largeur standard `side_panel_width_px` (260), une valeur périmée dans `user_state.json` est ignorée ; synchro Journeys/Relationships en session conservée. Fichiers : `src/ui/widgets/filters_side_panel.py`, `src/ui/main_window.py`, tests offscreen (3 tests TSK35 remaniés/ajoutés), specs `04_interface` §4/§6 FR/EN, kanban + fiche `tasks/TSK35_side_panel_resize_collapse.md`.
+
+### Choix actés
+- La largeur du panneau latéral n'est **plus persistée** : largeur standard à chaque ouverture/création de projet (la persistance app-level était une validation incorrecte).
+- Repli par clic chevron = `setSizes([w, 0])` sans `hide()` (handle conservé) ; drag plafonné au min, jamais 0 ; état replié toujours de session (RG047).
+
+### Problèmes rencontrés
+- Bac à sable réinitialisé deux fois en séance (paquets pip et /tmp perdus) → réinstallation PySide6 + réextraction des .deb + stub libGL recompilés (`/tmp/setup_qt.sh`).
+- 4 échecs de tests pré-existants dans ce sandbox (3 `test_block_drag_offscreen.py` + 1 rendu couleur `test_relationship_card_rendered_with_pivot_border_color`), reproductibles sur l'arbre propre (`git stash`) — hors scope.
+
+### État en fin de séance
+- TSK35 repassée en **Review** (kanban) : py_compile OK, **151 tests passed + 4 failed pré-existants**, sonde offscreen sur le vrai `SidePanelSplitter` OK (drag plafonné à 180, clic → `[w, 0]` avec handle visible, resize conservé, 2ᵉ clic → restauration de la dernière largeur). Pas de commit/push (non demandé).
+
+---
+
 ## Séance n°10 (2026-11-20)
 
 ### Travaux

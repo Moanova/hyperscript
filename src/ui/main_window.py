@@ -648,11 +648,12 @@ class MainWindow(QMainWindow):
         relationships_workspace.populate(project, nm, saved_project_layout)
 
         # TSK35: side panel width - resizable/collapsible handle; the width is
-        # shared by both map views and persisted at app level (user_state.json)
-        panel_width = int(_get_user_state("side_panel_width_px", PANEL_WIDTH_PX))
+        # shared by both map views during the session but NOT persisted
+        # (decision session 11): every project creation/open starts at the
+        # standard width (PANEL_WIDTH_PX), whatever user_state.json holds
         for sp in (self.journeys_splitter, relationships_workspace._splitter):
             sp.panel_width_changed.connect(lambda w, src=sp: self._on_side_panel_width_changed(w, src))
-            sp.set_panel_width(panel_width)
+            sp.set_panel_width(PANEL_WIDTH_PX)
 
         # RG047/RG048/RG063: the filters are disabled by default, not persisted
         # (map views only — never applied to the "Agents" view)
@@ -832,8 +833,10 @@ class MainWindow(QMainWindow):
     # Journeys actions (FN023/FN025/FN027) + Display > Journey (FN026/FN029)
     # ---------------------------------------------------------------------
     def _on_side_panel_width_changed(self, width, source):
-        """TSK35: keep the side panels of both map views at the same width and
-        persist the width at app level (user_state.json, like last_project_dir)."""
+        """TSK35: keep the side panels of both map views at the same width.
+        The width is session-only (decision session 11): it is NOT persisted
+        to user_state.json - each project creation/open restarts at the
+        standard width PANEL_WIDTH_PX."""
         if self._syncing_panel_width:
             return
         self._syncing_panel_width = True
@@ -844,7 +847,6 @@ class MainWindow(QMainWindow):
             for sp in splitters:
                 if sp is not None and sp is not source:
                     sp.set_panel_width(width)
-            _set_user_state("side_panel_width_px", int(width))
         finally:
             self._syncing_panel_width = False
 

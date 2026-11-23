@@ -238,10 +238,11 @@ def test_journeys_grid_covers_visible_area_on_tab_show(qapp):
 # TSK35 (session 10): resizable + collapsible side panel
 # ---------------------------------------------------------------------
 
-def test_panel_resizable_width_persisted_and_synced_between_views(qapp):
-    """TSK35: the side panel is resizable via the splitter; the width is
-    emitted (panel_width_changed), clamped to the min, persisted at app level
-    (user_state.json) and synced to the other map view."""
+def test_panel_resizable_width_synced_between_views_not_persisted(qapp):
+    """TSK35 (session 11 revision): the side panel is resizable via the
+    splitter; the width is emitted (panel_width_changed), clamped to the min
+    and synced to the other map view - but NOT persisted at app level anymore
+    (decision session 11: standard width at every project creation/open)."""
     mw = make_main_window()
     try:
         mw.resize(1280, 800)
@@ -257,8 +258,8 @@ def test_panel_resizable_width_persisted_and_synced_between_views(qapp):
         assert sp_j.sizes()[-1] == 320
         assert mw.journeys_panel.width() == 320
         assert 320 in received
-        # persisted at app level (user_state.json, redirected to tmp by the fixture)
-        assert get_user_state("side_panel_width_px") == 320
+        # NOT persisted at app level anymore (session 11)
+        assert get_user_state("side_panel_width_px") is None
         # synced to the "Relationships" view splitter (hidden: size clamped to
         # the splitter width, but the expanded width is synced...)
         assert sp_r._expanded_width == 320
@@ -276,10 +277,73 @@ def test_panel_resizable_width_persisted_and_synced_between_views(qapp):
         close_main_window(mw)
 
 
+def test_panel_width_standard_on_project_open_ignoring_stale_user_state(qapp):
+    """TSK35 (session 11): even if user_state.json holds a stale
+    side_panel_width_px (written by an older build), a new project starts at
+    the standard width PANEL_WIDTH_PX."""
+    import config.user_state_loader as usl
+    usl._state["side_panel_width_px"] = 999  # stale value from an older build
+    mw = make_main_window()
+    try:
+        mw.resize(1280, 800)
+        mw.show()
+        qapp.processEvents()
+        mw._on_tab_changed("Journeys")
+        qapp.processEvents()
+        assert mw.journeys_splitter.sizes()[-1] == PANEL_WIDTH_PX
+        assert mw.journeys_panel.width() == PANEL_WIDTH_PX
+        assert mw.relationships_workspace._splitter._expanded_width == PANEL_WIDTH_PX
+        mw.hide()
+    finally:
+        close_main_window(mw)
+
+
+def test_handle_drag_never_collapses_below_min_width(qapp):
+    """TSK35 (session 11): children are not collapsible - dragging the handle
+    past the minimum clamps at PANEL_MIN_WIDTH_PX, the panel never reaches 0
+    by dragging (only the chevron click collapses)."""
+    mw = make_main_window()
+    try:
+        mw.resize(1280, 800)
+        mw.show()
+        qapp.processEvents()
+        mw._on_tab_changed("Journeys")
+        qapp.processEvents()
+        sp = mw.journeys_splitter
+        sp.set_panel_width(260)
+        assert sp.childrenCollapsible() is False
+        handle = sp.handle(1)
+        center = handle.rect().center()
+        g0 = handle.mapToGlobal(center)
+        press = QMouseEvent(QEvent.Type.MouseButtonPress, QPointF(center),
+                            QPointF(g0), Qt.MouseButton.LeftButton,
+                            Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+        handle.mousePressEvent(press)
+        # drag far past the right edge (global x way beyond the splitter)
+        gx = g0.x() + sp.width() + 500
+        move = QMouseEvent(QEvent.Type.MouseMove, QPointF(center.x() + sp.width() + 500, center.y()),
+                           QPointF(gx, g0.y()), Qt.MouseButton.LeftButton,
+                           Qt.MouseButton.LeftButton, Qt.KeyboardModifier.NoModifier)
+        handle.mouseMoveEvent(move)
+        release = QMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(center.x() + sp.width() + 500, center.y()),
+                              QPointF(gx, g0.y()), Qt.MouseButton.LeftButton,
+                              Qt.MouseButton.NoButton, Qt.KeyboardModifier.NoModifier)
+        handle.mouseReleaseEvent(release)
+        qapp.processEvents()
+        assert sp.sizes()[-1] == PANEL_MIN_WIDTH_PX
+        assert sp.collapsed is False
+        assert handle.isVisible()
+        mw.hide()
+    finally:
+        close_main_window(mw)
+
+
 def test_handle_click_collapses_and_expands_panel(qapp):
-    """TSK35: the splitter handle is a custom chevron handle; a click without
-    drag collapses the panel (slot 0, panel hidden), another click expands it
-    back at the last width."""
+    """TSK35 (session 11 revision): the splitter handle is a custom chevron
+    handle; a click without drag collapses the panel to width 0 WITHOUT
+    hiding it (hiding a splitter child also hides its handle in Qt - the
+    chevron must stay visible), another click expands it back at the last
+    width."""
     mw = make_main_window()
     try:
         mw.resize(1280, 800)
@@ -298,15 +362,18 @@ def test_handle_click_collapses_and_expands_panel(qapp):
         release = QMouseEvent(QEvent.Type.MouseButtonRelease, QPointF(2, 100), QPointF(2, 100),
                               Qt.MouseButton.LeftButton, Qt.MouseButton.NoButton,
                               Qt.KeyboardModifier.NoModifier)
-        # click without drag -> collapse
+        # click without drag -> collapse (size 0, panel NOT hidden, handle visible)
         handle.mousePressEvent(press)
         handle.mouseReleaseEvent(release)
+        qapp.processEvents()
         assert sp.collapsed is True
         assert sp.sizes()[-1] == 0
-        assert not mw.journeys_panel.isVisible()
+        assert mw.journeys_panel.isVisible()  # not hidden: the handle must stay visible
+        assert handle.isVisible()
         # second click -> expand back at the last width
         handle.mousePressEvent(press)
         handle.mouseReleaseEvent(release)
+        qapp.processEvents()
         assert sp.collapsed is False
         assert sp.sizes()[-1] == 260
         assert mw.journeys_panel.isVisible()
