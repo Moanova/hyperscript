@@ -52,9 +52,9 @@
   - **Agents** — espace dédié aux agents, points d'ancrage + cartes (voir section 5, re-conçu séance 04), **actif par défaut** (ordre d'affichage inversé séance 09 TSK28 : Agents avant Journeys ; vue active par défaut passée à « Agents » séance 10, TSK30) ;
   - **Journeys** — vue principale, graphe des blocs et transitions ;
   - **Relationships** — vue matrice des relations agent-agent (voir section 6) ;
-  - **Export** — aperçu de lecture in-app (voir section 7).
+  - **Preview** — aperçu de lecture in-app (voir section 7 ; renommée depuis « Export », TSK37 séance 11).
 - La barre n'est visible que si un projet est ouvert. Les vues sont activées par la barre d'onglets ; les entrées « Project › View » du menu sont des stubs.
-- **Périmètre MVP** : au minimum les onglets « Journeys » et « Export » ; « Agents » et « Relationships » selon le périmètre des vues à acter. *À valider.*
+- **Périmètre MVP** : au minimum les onglets « Journeys » et « Preview » ; « Agents » et « Relationships » selon le périmètre des vues à acter. *À valider.*
 - Style des onglets : survol `#e0e0e0`-sombre équivalent (thème), onglet sélectionné en gras avec bordure inférieure visible de 2 px en `block_scene_color` (sable `#E5C07B`).
 
 ### 4. Espace de travail — vue « Journeys »
@@ -88,13 +88,14 @@
 - **Sélection et menus** : sélection unique (RG049) ; le **clic droit** sur une case active ou une carte d'agent ouvre le menu contextuel aligné sur le menu applicatif (`Project › Relationships` : New.../Edit.../Delete..., RG055 — aucune action au clic gauche sur les cases, TSK32) ; « Voir dans la vue Journeys » bascule vers « Journeys » avec le focus sur le bloc d'ancrage (FN032, état visuel temporaire RG056) ; carte Relationship : type en libellé, infobulle au survol (type + paire + ancre + note, RG054).
 - **Périmètre MVP** : la vue « Relationships » (matrice + panneau latéral) fait partie du MVP.
 
-### 7. Vue « Export » (aperçu in-app)
-- Espace de travail « Export » : aperçu de lecture de la carte narrative courante, **en lecture seule** (liens inertes, aucune interaction sur le contenu).
-- Régénéré à chaque bascule sur l'onglet « Export », et après chaque modification du modèle lorsque l'onglet est déjà actif ; jamais en arrière-plan.
-- Dynamique selon le filtre de parcours (filtre actif → parcours actif seul ; « Tous les parcours » → tous les parcours).
-- Contenu restitué : blocs depuis le bloc Début dans l'ordre de la séquence de lecture, transitions rendues en ligne, conditions rendues sur leur branche, relations entre agents listées sous leur bloc d'ancrage, section finale « état des relations » ; libellé en titre, contenu en corps de texte (libellé seul si vide), note en infobulle au survol.
-- Fait partie du **MVP minimal** ; pourra être renommée ultérieurement. *Détail à finaliser après la phase de conception* (SU010).
-- La visualisation de l'aperçu ne marque ni la carte ni le projet comme modifiés.
+### 7. Vue « Preview » (aperçu de lecture in-app)
+- Espace de travail « Preview » (renommée depuis « Export », TSK37 séance 11) : aperçu de lecture de la carte narrative courante, **en lecture seule** — liens hypertexte internes au document = ancres à scroll passif uniquement, aucune interaction sur le contenu.
+- Régénéré à chaque bascule sur l'onglet « Preview », **et** après chaque modification du modèle lorsque la vue est déjà active ; jamais en arrière-plan.
+- La vue héberge le **panneau latéral de filtres** (même widget `FiltersSidePanel` que la vue « Journeys », sans liste de blocs), miroirs du menu « Display » et des autres vues.
+- Rendu **dynamique selon les filtres actifs** (Journey et/ou Agent — RG048/RG063/RG064 ; RG047 inchangé : désactivés à l'ouverture, de session, non persistés, ne marquent rien modifié) : filtre de parcours actif → parcours actif seul (« Tous les parcours » → tous les parcours) ; filtre agent → blocs auxquels l'agent participe, transitions dont les deux blocs sont visibles, relations dont le bloc d'ancrage est visible ; les éléments hors filtre sont **omis du rendu**.
+- Sections restituées (ancres internes b→g, d→e) : a) projet (`lb`) ; b) liste des agents (liens vers g) ; c) carte (`lb`) ; d) liste des parcours (liens vers e) ; e) parcours : séquence des blocs depuis Start dans l'ordre de la séquence de lecture (RG044), chaque bloc avec `lb`, `typ`, `content` (note en infobulle au survol), transitions rendues en ligne, conditions rendues sur leur branche, puis **les relations ancrées sous ce bloc** (lb agents 1 et 2, `typ`, `content`, note en infobulle) — l'« état des relations » est restitué sous chaque bloc d'ancrage, sans section finale séparée ; les branches non jointes au Start sont restituées marquées après le flux ; f) orphelins : blocs sans aucune transition entrante ni sortante ; g) agents du projet (`lb`, `typ`, `content`, note en infobulle). Libellé en titre, contenu en corps de texte (libellé seul si vide).
+- Fait partie du **MVP minimal**. Conception : `docs/conception/05_preview-FR.md` (TSK37, séance 11).
+- La visualisation de l'aperçu et l'application des filtres ne marquent ni la carte ni le projet comme modifiés.
 
 ### 8. Barre d'informations (bas)
 - Pleine largeur, hauteur 30 px, style sombre (arrière-plan de surface, bordure supérieure).
@@ -120,4 +121,4 @@
 4. Contenu de la vue « Agents » (re-conception).
 5. Barres latérales (intégration ou non).
 6. Zoom (post-MVP).
-7. Périmètre MVP des vues au-delà du minimum « Journeys » + « Export ».
+7. Périmètre MVP des vues au-delà du minimum « Journeys » + « Preview ».

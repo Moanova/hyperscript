@@ -122,7 +122,7 @@
     - Moving the scroll bars does not mark the map as modified.
 - **MVP scope**:
     - No toolbars.
-    - View scope not decided beyond the minimum: "Journeys" view and "Export" view (SU010).
+    - View scope not decided beyond the minimum: "Journeys" view and "Preview" view (SU010).
     - The application exclusively targets Windows PCs.
     - Zoom is to be defined during the design phase.
 
@@ -177,10 +177,17 @@
     - Card positions are persisted at project level in the graphics metadata, with no business value (RG067).
 
 
-## SU010: Preview the export — initialized, to be finalized after the design phase
-- **Description**: As an author, I can visualize in the application a reading preview of my narrative map, as it will be rendered by the export (the "Export" workspace), in order to validate my story before sharing it.
-- **Status**: initialized scenario — to be finalized after the design phase. The "Export" view is part of the minimal MVP scope and may be renamed later.
-- **Elements to specify during design**: read-only with inert links, dynamic according to the journey filter, reading order (reading sequence), rendering of relationships under their anchor block and of the "state of relationships" section, possible orphan components.
+## SU010: View the reading preview (the "Preview" view)
+- **Description**: As an author, I can visualize in the application a reading preview of my narrative map (the "Preview" view), in order to validate my story before sharing it.
+- **Status**: design adopted (TSK37, session 11) — see `docs/conception/05_preview-EN.md`.
+- **Behavior**:
+    - The "Preview" view (renamed from "Export": view, View menu, code objects and script names) is part of the minimal MVP scope.
+    - Read-only preview; internal hypertext links within the document (anchors with passive scroll only, no effect on the application state); regenerated on each switch to the view **and** after each model change when the view is already active; never in the background.
+    - Rendering is dynamic according to the active filters (Journey and/or Agent — RG048/RG063/RG064; RG047 unchanged: disabled on open, not persisted, marks nothing modified); the filter side panel is part of the view (same version as the "Journeys" view).
+    - Rendered sections: a) project (`lb`); b) agent list, links to g); c) map (`lb`); d) journey list, links to e); e) journey: sequence of blocks from Start (RG044 order), each block with `lb`, `typ`, `content`, note as a tooltip on hover, then under each block the relationships anchored on it (labels of agents 1 and 2, `typ`, `content`, note as a tooltip) — the "state of relationships" is thus rendered under each anchor block, with no separate final section; f) orphans: blocks with no incoming nor outgoing transition; g) project agents (`lb`, `typ`, `content`, note as a tooltip).
+    - Incomplete journeys: after the flow from Start, the branches not connected to Start are rendered, marked (no block of the journey is omitted — RG044 fallback).
+    - Viewing the preview and applying filters mark neither the map nor the project as modified.
+    - File export (SU007/FN013, "Files > Export Map...") remains out of the MVP and greyed out; the coexistence "Preview" (in-app view) / "Export Map" (file, post-MVP) is assumed.
 
 
 ## SU011: Manage a Relationship Between Agents

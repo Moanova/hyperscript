@@ -1,6 +1,6 @@
 # TSK36 — Vue « Relationships » : champ de points façon « Agents » + carte Relationship à la taille des cartes Agent
 
-- **Statut** : Review (23-11-2026, séance 11) — option 1 carte **validée TSC** (80×40 conservé), option 2 points implémentée ; dépend de #TSK32 (Done), #TSK35 (Review).
+- **Statut** : **Validée TSC et passée en Done 23-11-2026** (option 1 carte validée, option 2 points retenue) ; dépend de #TSK32 (Done), #TSK35 (Done).
 - **Origine** : retours TSC séance 11 après test de TSK35 — deux points de la vue « Relationships » à revalider : (1) le point au centre de chaque cellule (TSK31 2.4) donne « un effet bizarre » à l'usage ; (2) la carte Relationship (84×72) est carrée alors que les cartes Agent de la matrice sont rectangulaires (80×40).
 
 ## Options proposées par TSC (séance 11)

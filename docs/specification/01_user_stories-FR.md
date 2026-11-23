@@ -123,7 +123,7 @@
     - Les déplacements de barres de défilement ne marquent pas la carte comme modifiée.
 - **Périmètre MVP** :
     - Pas de barres d'outils.
-    - Périmètre des vues non acté au-delà du minimum : vue « Parcours » et vue « Export » (SU010).
+    - Périmètre des vues non acté au-delà du minimum : vue « Parcours » et vue « Preview » (SU010).
     - L'application cible exclusivement les PC sous Windows.
     - Le zoom est à définir en phase de conception.
 
@@ -178,10 +178,17 @@
     - Les positions des cartes sont persistées au niveau projet dans les métadonnées graphiques, sans valeur métier (RG067).
 
 
-## SU010 : Visualiser l'aperçu d'export — initialisé, à finaliser après la phase de conception
-- **Description** : En tant qu'auteur, je peux visualiser dans l'application un aperçu de lecture de ma carte narrative, tel qu'il sera restitué à l'export (espace de travail « Export »), afin de valider mon récit avant de le partager.
-- **Statut** : scenario initialisé — à finaliser après la phase de conception. La vue « Export » fait partie du périmètre MVP minimal et pourra être renommée ultérieurement.
-- **Éléments à préciser en conception** : lecture seule et liens inertes, dynamisme selon le filtre de parcours, ordre de restitution (séquence de lecture), restitution des relations sous leur bloc d'ancrage et de la section « état des relations », composants orphelins éventuels.
+## SU010 : Visualiser l'aperçu de lecture (vue « Preview »)
+- **Description** : En tant qu'auteur, je peux visualiser dans l'application un aperçu de lecture de ma carte narrative (vue « Preview »), afin de valider mon récit avant de le partager.
+- **Statut** : conception actée (TSK37, séance 11) — voir `docs/conception/05_preview-FR.md`.
+- **Comportement** :
+    - La vue « Preview » (renommée depuis « Export » : vue, menu View, objets et scripts du code) fait partie du périmètre MVP minimal.
+    - Aperçu en lecture seule ; liens hypertexte internes au document (ancres à scroll passif uniquement, aucun effet sur l'état de l'application) ; régénéré à chaque bascule sur la vue **et** après chaque modification du modèle si la vue est déjà active ; jamais en arrière-plan.
+    - Rendu dynamique selon les filtres actifs (Journey et/ou Agent — RG048/RG063/RG064 ; RG047 inchangé : désactivés à l'ouverture, non persistés, ne marquent rien modifié) ; le panneau latéral de filtres fait partie de la vue (même version que la vue « Journeys »).
+    - Sections restituées : a) projet (`lb`) ; b) liste des agents, liens vers g) ; c) carte (`lb`) ; d) liste des parcours, liens vers e) ; e) parcours : séquence des blocs depuis Start (ordre RG044), chaque bloc avec `lb`, `typ`, `content`, note en infobulle, puis sous chaque bloc les relations qui y sont ancrées (lb agents 1 et 2, `typ`, `content`, note en infobulle) — l'« état des relations » est ainsi restitué sous chaque bloc d'ancrage, sans section finale séparée ; f) orphelins : blocs sans aucune transition entrante ni sortante ; g) agents du projet (`lb`, `typ`, `content`, note en infobulle).
+    - Parcours incomplets : après le flux depuis Start, les branches non jointes au Start sont restituées marquées (aucun bloc du parcours n'est omis — repli RG044).
+    - La visualisation de l'aperçu et l'application des filtres ne marquent ni la carte ni le projet comme modifiés.
+    - L'export sur fichier (SU007/FN013, « Files › Export Map... ») reste hors MVP et grisé ; la coexistence « Preview » (vue in-app) / « Export Map » (fichier, post-MVP) est assumée.
 
 
 ## SU011 : Gérer une relation entre agents

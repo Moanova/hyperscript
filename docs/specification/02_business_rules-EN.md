@@ -75,7 +75,7 @@
 - **Classification** : 1. Project management and lifecycle
 
 ## RG017
-- **Description** : File export is out of the MVP scope (only the in-app preview, "Export" view, is available in the MVP). When available, the reading export generates a standalone folder named after the map (index file + linked pages), in the journey's sequence order independently of the graphical positions, and marks neither the map nor the project as modified; the technical export remains to be defined during the design phase.
+- **Description** : File export is out of the MVP scope (only the in-app preview, "Preview" view, is available in the MVP). When available, the reading export generates a standalone folder named after the map (index file + linked pages), in the journey's sequence order independently of the graphical positions, and marks neither the map nor the project as modified; the technical export remains to be defined during the design phase.
 - **Classification** : 1. Project management and lifecycle
 
 ## 2. Narrative map structure
@@ -211,7 +211,7 @@
 - **Classification** : 4. Visualization and interaction
 
 ## RG048
-- **Description** : The journey filter displays either all journeys or a single one, in the views bearing on the narrative map ("Journeys", "Relationships" views, "Export" preview) — it does not apply to the "Agents" view (project-level agents, view decoupled from block participations); it is disabled by default when a project is opened; with the filter active, only the blocks of the journey, the transitions whose two blocks belong to it and the participations/relationships whose anchor block belongs to it remain fully visible — the other elements are dimmed (opacity level set in the configuration) and non-interactive.
+- **Description** : The journey filter displays either all journeys or a single one, in the views bearing on the narrative map ("Journeys", "Relationships" views, "Preview" preview) — it does not apply to the "Agents" view (project-level agents, view decoupled from block participations); it is disabled by default when a project is opened; with the filter active, only the blocks of the journey, the transitions whose two blocks belong to it and the participations/relationships whose anchor block belongs to it remain fully visible — the other elements are dimmed (opacity level set in the configuration) and non-interactive.
 - **Classification** : 4. Visualization and interaction
 
 ## RG049

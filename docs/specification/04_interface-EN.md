@@ -52,9 +52,9 @@
   - **Agents** — dedicated agents workspace, anchor dots + cards (see section 5, re-designed session 04), **default active** (display order swapped session 09 TSK28: Agents before Journeys; the default active tab changed to "Agents" session 10, TSK30);
   - **Journeys** — main view, graph of blocks and transitions;
   - **Relationships** — agent-relationship matrix view (see section 6);
-  - **Export** — in-app reading preview (see section 7).
+  - **Preview** — in-app reading preview (see section 7; renamed from "Export", TSK37 session 11).
 - The bar is visible only when a project is open. Views are activated via the tab bar; the "Project › View" menu entries are stubs.
-- **MVP scope**: at minimum the "Journeys" and "Export" tabs; "Agents" and "Relationships" according to the view scope to be decided. *To be validated.*
+- **MVP scope**: at minimum the "Journeys" and "Preview" tabs; "Agents" and "Relationships" according to the view scope to be decided. *To be validated.*
 - Tab style: dark theme hover, selected tab bold with a visible 2 px bottom border in `block_scene_color` (sand `#E5C07B`).
 
 ### 4. Workspace — "Journeys" view
@@ -88,13 +88,14 @@
 - **Selection and menus**: single selection (RG049); **right click** on an active cell or an agent header card opens the context menu aligned with the application menu (`Project › Relationships`: New.../Edit.../Delete..., RG055 - no left-click action on cells, TSK32); "View in Journeys view" switches to "Journeys" with the focus on the anchor block (FN032, temporary visual state RG056); Relationship card: type as label, tooltip on hover (type + pair + anchor + note, RG054).
 - **MVP scope**: the "Relationships" view (matrix + side panel) is part of the MVP.
 
-### 7. "Export" view (in-app preview)
-- "Export" workspace: read-only reading preview of the current narrative map (inert links, no interaction on the content).
-- Regenerated on each switch to the "Export" tab, and after each model change when the tab is already active; never in the background.
-- Dynamic according to the journey filter (active filter → active journey only; "All journeys" → all journeys).
-- Rendered content: blocks from the Start block in reading sequence order, transitions rendered inline, conditions rendered on their branch, agent relationships listed under their anchor block, final "state of relationships" section; label as title, content as body text (label only if empty), note in a tooltip on hover.
-- Part of the **minimal MVP**; may be renamed later. *Details to be finalized after the design phase* (SU010).
-- Viewing the preview marks neither the map nor the project as modified.
+### 7. "Preview" view (in-app reading preview)
+- "Preview" workspace (renamed from "Export", TSK37 session 11): read-only reading preview of the current narrative map — internal hypertext links are anchors with passive scroll only, no interaction on the content.
+- Regenerated on each switch to the "Preview" tab, **and** after each model change when the view is already active; never in the background.
+- The view hosts the **filter side panel** (same `FiltersSidePanel` widget as the "Journeys" view, without the block list), mirrors of the "Display" menu and of the other views.
+- Rendering is **dynamic according to the active filters** (Journey and/or Agent — RG048/RG063/RG064; RG047 unchanged: disabled on open, session-only, not persisted, marks nothing modified): active journey filter → active journey only ("All journeys" → all journeys); agent filter → the blocks the agent participates in, transitions whose both blocks are visible, relationships whose anchor block is visible; elements outside the filters are **omitted from the rendering**.
+- Rendered sections (internal anchors b→g, d→e): a) project (`lb`); b) agent list (links to g); c) map (`lb`); d) journey list (links to e); e) journey: sequence of blocks from Start in reading-sequence order (RG044), each block with `lb`, `typ`, `content` (note in a tooltip on hover), transitions rendered inline, conditions rendered on their branch, then **the relationships anchored on that block** (labels of agents 1 and 2, `typ`, `content`, note in a tooltip) — the "state of relationships" is thus rendered under each anchor block, with no separate final section; branches not connected to Start are rendered marked after the flow; f) orphans: blocks with no incoming nor outgoing transition; g) project agents (`lb`, `typ`, `content`, note in a tooltip). Label as title, content as body text (label only if empty).
+- Part of the **minimal MVP**. Design: `docs/conception/05_preview-EN.md` (TSK37, session 11).
+- Viewing the preview and applying filters mark neither the map nor the project as modified.
 
 ### 8. Information bar (bottom)
 - Full width, height 30 px, dark theme (surface background, top border).
@@ -120,4 +121,4 @@
 4. Content of the "Agents" view (re-design).
 5. Sidebars (whether to integrate them or not).
 6. Zoom (post-MVP).
-7. MVP scope of the views beyond the minimum "Journeys" + "Export".
+7. MVP scope of the views beyond the minimum "Journeys" + "Preview".

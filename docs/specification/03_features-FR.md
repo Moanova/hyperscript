@@ -12,7 +12,7 @@
 - Un projet ne contient qu'une seule carte narrative (le modèle de données prévoit plusieurs cartes).
 - Seuls le renommage de la carte par défaut, la modification de son contenu et son export de lecture sont fonctionnels.
 - Les barres d'outils ne sont pas implémentées : les actions correspondantes sont exclusivement accessibles par le menu.
-- Le périmètre des vues n'est pas acté au-delà du minimum : vue « Parcours » et vue « Export ».
+- Le périmètre des vues n'est pas acté au-delà du minimum : vue « Parcours » et vue « Preview ».
 - L'application n'analyse pas la cohérence des parcours (fonctionnalité hors MVP).
 - L'application cible exclusivement les PC sous Windows.
 - Le zoom et les fonctions d'édition (annuler/rétablir) sont à définir en phase de conception.
@@ -323,13 +323,13 @@
     - Le zoom est à définir en phase de conception.
 
 ## FN029 : Filtrer l'affichage par parcours
-- **Description** : Afficher soit tous les blocs et transitions de la carte, soit seulement ceux du parcours actif — dans les vues portant sur la carte narrative (vues « Journeys », « Relationships », aperçu « Export »), pas dans la vue « Agents ».
+- **Description** : Afficher soit tous les blocs et transitions de la carte, soit seulement ceux du parcours actif — dans les vues portant sur la carte narrative (vues « Journeys », « Relationships », aperçu « Preview »), pas dans la vue « Agents ».
 - **Références** : SU006.
 - **Comportement attendu** :
     - Le filtre permet de basculer entre « tout afficher » et « parcours actif ».
     - Point d'entrée : case cochable « All journeys » en tête de « Display › Journey » (cochée = filtre désactivé) ; cocher un parcours active ce parcours et le filtre.
     - **Le filtre est désactivé par défaut à l'ouverture d'un projet** et son état n'est pas persisté entre les sessions.
-    - **Le filtre s'applique aux vues portant sur la carte narrative** (vue « Journeys », vue « Relationships », aperçu « Export » — **pas à la vue « Agents »**, les agents étant de niveau projet) : ne restent pleinement visibles que les blocs du parcours actif, les transitions dont les deux blocs y appartiennent, et les participations et relations dont le bloc d'ancrage y appartient ; les autres éléments sont estompés (opacité réduite) et non interactifs tant que le filtre est activé.
+    - **Le filtre s'applique aux vues portant sur la carte narrative** (vue « Journeys », vue « Relationships », aperçu « Preview » — **pas à la vue « Agents »**, les agents étant de niveau projet) : ne restent pleinement visibles que les blocs du parcours actif, les transitions dont les deux blocs y appartiennent, et les participations et relations dont le bloc d'ancrage y appartient ; les autres éléments sont estompés (opacité réduite) et non interactifs tant que le filtre est activé.
     - La bascule d'un parcours à l'autre met à jour instantanément l'affichage des vues concernées.
     - Le filtrage ne marque pas la carte comme modifiée.
 
@@ -368,18 +368,18 @@
     - Le focus est un état visuel temporaire : un clic dans le vide ou la touche Échap le relâche.
     - La navigation ne marque ni la carte ni le projet comme modifiés.
 
-## FN033 : Aperçu d'export (espace de travail « Export »)
-- **Description** : Afficher dans l'espace de travail « Export » un aperçu de lecture de la carte narrative courante, en lecture seule.
-- **Références** : SU010, SU007 ; onglet « Export » de la barre d'onglets ; filtre de parcours FN029.
+## FN033 : Aperçu de lecture (vue « Preview »)
+- **Description** : Afficher dans la vue « Preview » un aperçu de lecture de la carte narrative courante, en lecture seule.
+- **Références** : SU010, SU007 (export fichier, hors MVP) ; onglet « Preview » de la barre d'onglets ; filtres Journey/Agent (FN029, FN039, RG048/RG063/RG064) ; conception `docs/conception/05_preview-FR.md` (TSK37).
 - **Comportement attendu** :
-    - L'onglet « Export » est présent dans la barre d'onglets à côté de la vue « Parcours » et de la vue « Agents ».
-    - L'aperçu est en lecture seule : aucune interaction sur le contenu ; les liens affichés sont inertes.
-    - L'aperçu est régénéré à chaque bascule sur l'onglet « Export », et après chaque modification du modèle lorsque l'onglet est déjà actif ; jamais en arrière-plan.
-    - L'aperçu est dynamique selon le filtre de parcours (FN029) : filtre actif → parcours actif seul ; « All journeys » → tous les parcours.
-    - Restitution : blocs depuis le bloc Début, dans l'ordre de la séquence de lecture ; transitions rendues en ligne ; conditions rendues sur leur branche ; relations entre agents listées sous leur bloc d'ancrage ; section finale « état des relations » ; libellé en titre, contenu en corps de texte (libellé seul si vide), note en infobulle au survol.
-    - Sommaire des parcours en tête ; section détaillant les agents ; composants orphelins éventuels listés.
-    - La visualisation de l'aperçu ne marque ni la carte ni le projet comme modifiés.
-- **Note** : le scenario SU010 est initialisé et sera finalisé après la phase de conception ; la vue « Export » fait partie du périmètre MVP minimal et pourra être renommée ultérieurement.
+    - L'onglet « Preview » est présent dans la barre d'onglets à côté des vues « Agents », « Journeys », « Relationships » ; entrée « View › Preview » (stub renommé depuis « Export »).
+    - La vue héberge le panneau latéral de filtres (même `FiltersSidePanel` que la vue « Journeys », sans liste de blocs), miroirs du menu « Display » et des autres vues.
+    - L'aperçu est en lecture seule : aucune interaction sur le contenu ; les liens hypertexte internes sont des ancres à scroll passif uniquement.
+    - L'aperçu est régénéré à chaque bascule sur l'onglet « Preview », **et** après chaque modification du modèle lorsque la vue est déjà active ; jamais en arrière-plan.
+    - Rendu dynamique selon les filtres actifs (RG048/RG063/RG064) : filtre de parcours actif → parcours actif seul (« Tous les parcours » → tous les parcours) ; filtre agent → blocs auxquels l'agent participe, transitions dont les deux blocs sont visibles, relations dont le bloc d'ancrage est visible ; les éléments hors filtre sont **omis du rendu**.
+    - Sections restituées : a) projet (`lb`) ; b) liste des agents (liens vers g) ; c) carte (`lb`) ; d) liste des parcours (liens vers e) ; e) parcours : séquence des blocs depuis Start dans l'ordre de la séquence de lecture (RG044), chaque bloc avec `lb`, `typ`, `content` (note en infobulle au survol), transitions rendues en ligne, conditions rendues sur leur branche, puis **les relations ancrées sous ce bloc** (lb agents 1 et 2, `typ`, `content`, note en infobulle) — l'« état des relations » est restitué sous chaque bloc d'ancrage, sans section finale séparée ; les branches non jointes au Start sont restituées marquées après le flux ; f) orphelins : blocs sans aucune transition entrante ni sortante ; g) agents du projet (`lb`, `typ`, `content`, note en infobulle). Libellé en titre, contenu en corps de texte (libellé seul si vide).
+    - La visualisation de l'aperçu et l'application des filtres ne marquent ni la carte ni le projet comme modifiés.
+- **Note** : vue renommée « Preview » (TSK37, séance 11) ; l'export sur fichier « Files › Export Map... » (FN013/SU007) reste post-MVP et grisé — coexistence « Preview » (vue in-app) / « Export Map » (fichier) assumée.
 
 
 ---
@@ -460,4 +460,4 @@
 - Contrôle de cohérence des parcours (impasses, branches non terminées, Pivot à une seule branche, Fin non atteinte) — fonctionnalité hors MVP.
 - Enrichissement par l'auteur de la liste des types de relations (FN037) — hors MVP.
 - Relations à plus de deux agents — hors MVP.
-- Finalisation des scenarii et fonctionnalités des vues « Agents », « Relations » et de l'aperçu « Export » — après la phase de conception.
+- Finalisation des scenarii et fonctionnalités des vues « Agents », « Relations » et de l'aperçu « Preview » — après la phase de conception.

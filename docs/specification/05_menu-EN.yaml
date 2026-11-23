@@ -26,7 +26,7 @@ menu:
         - type: separator
         - name: Export Map...
           references: "FN013, SU007"
-          note: "Greyed out in the MVP - file export is post-MVP"
+          note: "Greyed out in the MVP - file export is post-MVP (coexists with the in-app \"Preview\" view, TSK37)"
         - name: Import Map...
           references: "SU002"
           note: "Greyed out in the MVP - imports a narrative map previously exported into the current project"
@@ -67,7 +67,7 @@ menu:
           dynamic: true
           description: "Checkable list: an 'All journeys' entry on top (checked = filter disabled, default when a project is opened) plus one entry per journey of the narrative map; checking a journey activates it and the journey filter"
           references: "FN026, FN029, SU006"
-          note: "The filter applies to the views bearing on the narrative map (Journeys, Relationships, Export), not to the Agents view; not persisted between sessions"
+          note: "The filter applies to the views bearing on the narrative map (Journeys, Relationships, Preview), not to the Agents view; not persisted between sessions"
         - name: Agent
           dynamic: true
           description: "Checkable list: an 'All agents' entry on top (checked = filter disabled, default when a project is opened) plus one entry per agent of the project; checking an agent activates the agent filter"
@@ -95,8 +95,8 @@ menu:
               note: "Stub - the view is activated via the tab bar; main view, default active (unchanged, TSK28)"
             - name: Relationships
               note: "Stub - view activated via the tab bar; mockup to be defined during the design phase (FN036, SU012)"
-            - name: Export
-              note: "Stub - view activated via the tab bar; part of the minimal MVP; may be renamed later"
+            - name: Preview
+              note: "Stub - view activated via the tab bar; part of the minimal MVP (TSK37 session 11: renamed from \"Export\")"
         - name: Agents
           items:
             - name: New...
@@ -170,5 +170,5 @@ menu:
     description: |
       Elements marked 'dynamic: true' are dynamically generated from application data.
       Entries greyed out in the MVP are marked in the notes.
-      Workspaces (views) are referenced by name, without numbering: Journeys, Agents, Relationships, Export.
+      Workspaces (views) are referenced by name, without numbering: Journeys, Agents, Relationships, Preview.
       Ellipsis rule: any entry opening a window that requires an additional action from the user (input, choice or confirmation dialog) is suffixed with "..."; a purely informational window (e.g. "About Hyperscript") has none. Exception: "New Project..." keeps "..." by usual convention (creation is direct in memory; only a conditional save confirmation may appear).

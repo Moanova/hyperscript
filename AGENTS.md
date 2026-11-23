@@ -10,7 +10,7 @@ Hyperscript est un éditeur visuel de cartes narratives :
 - avec sauvegarde JSON,
 - et layout visuel persistant.
 MVP :
-- trois espaces de travail, vues Events et Agents, et aperçu d'export,
+- espaces de travail « Agents », « Journeys », « Relationships » (faits) et « Preview » (aperçu de lecture in-app, en conception TSK37 — renommée depuis « Export ») ; l'export sur fichier (SU007/FN013, « Files › Export Map... ») reste post-MVP et grisé,
 - une seule carte narrative par projet,
 - sélection unique (pas de rubber band multi-sélection).
 

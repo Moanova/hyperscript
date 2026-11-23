@@ -1,6 +1,6 @@
 # TSK35 — Panneau latéral redimensionnable + repliable par icône de contrôle
 
-- **Statut** : Doing (23-11-2026, retours TSC séance 11) ; dépend de #TSK33 (Done), #TSK34 (Done). C'est le point 1 reporté de la 3ᵉ salve TSK34.
+- **Statut** : **Validée TSC et passée en Done 23-11-2026** ; dépend de #TSK33 (Done), #TSK34 (Done). C'est le point 1 reporté de la 3ᵉ salve TSK34.
 - **Origine** : étude demandée par TSC séance 10 (« la possibilité de redimensionner le panneau latéral, et aussi de le replier ou déplier à partir d'un icône de contrôle — faisable ? comment ? »). Réponse : oui — conception ci-dessous, actée par « ok, crée et implémente ».
 
 ## Conception actée (séance 10)

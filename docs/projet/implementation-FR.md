@@ -194,7 +194,7 @@
 | FN030 | Associer des agents à un bloc | implemented | Associate agents... (menu contextuel du bloc, vue « Journeys », TSK19b) ; Associate with Block... (Projet › Agents) | usecases/participation_management/ (associate/dissociate) ; core/services/participation_service.py ; ui/dialogs/agent_association_dialog.py ; ui/main_window.py (_open_association_dialog, _show_workspace_context_menu) | — | — | tests/test_agents/test_participation_usecases.py |
 | FN031 | Gérer les agents du projet | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Associate with Block...) | usecases/agent_management/ (create/update/duplicate/delete) ; ui/dialogs/agent_dialog.py, agent_selection_dialog.py ; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
 | FN032 | Naviguer entre les vues (navigation croisée) | not-started | — | — | — | — | — |
-| FN033 | Aperçu d'export (espace de travail « Export ») | not-started | — | — | — | — | — |
+| FN033 | Aperçu de lecture (vue « Preview ») | not-started | — | docs/conception/05_preview-FR.md (TSK37) | — | — | conception actée séance 11 (TSK37), code à venir |
 
 ### Relations entre agents
 
@@ -304,6 +304,6 @@
 | SU007 | Exporter la carte narrative | FN013, FN033 | not-started |
 | SU008 | Gérer les participations agent-bloc | FN030, FN031 | implemented |
 | SU009 | Gérer la vue agents — re-conçue séance 04 (points d'ancrage + cartes agent, TSK19b) | FN031, FN032 | implemented |
-| SU010 | Visualiser l'aperçu d'export — initialisé, à finaliser après la phase de conception | FN033 | not-started |
+| SU010 | Visualiser l'aperçu de lecture (vue « Preview ») | FN033 | not-started |
 | SU011 | Gérer une relation entre agents | FN034, FN037 | implemented |
 | SU012 | Gérer la vue « Relationships » — maquette actée séance 06 (matrice + panneau latéral, `04_interface` §6) | FN032, FN036 | implemented |

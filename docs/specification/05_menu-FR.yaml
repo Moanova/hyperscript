@@ -26,7 +26,7 @@ menu:
         - type: separator
         - name: Exporter la carte...
           references: "FN013, SU007"
-          note: "Grisée en MVP - l'export sur fichier est post-MVP"
+          note: "Grisée en MVP - l'export sur fichier est post-MVP (coexiste avec la vue « Preview » in-app, TSK37)"
         - name: Importer une carte...
           references: "SU002"
           note: "Grisée en MVP - importe une carte narrative préalablement exportée dans le projet courant"
@@ -67,7 +67,7 @@ menu:
           dynamic: true
           description: "Liste cochable : une entrée « Tous les parcours » en tête (cochée = filtre désactivé, état par défaut à l'ouverture d'un projet) plus une entrée par parcours de la carte ; cocher un parcours l'active et active le filtre de parcours"
           references: "FN026, FN029, SU006"
-          note: "Le filtre s'applique aux vues portant sur la carte narrative (Parcours, Relations, aperçu Export), pas à la vue « Agents » ; non persisté entre les sessions"
+          note: "Le filtre s'applique aux vues portant sur la carte narrative (Parcours, Relations, aperçu Preview), pas à la vue « Agents » ; non persisté entre les sessions"
         - name: Agent
           dynamic: true
           description: "Liste cochable : une entrée « All agents » en tête (cochée = filtre désactivé, état par défaut à l'ouverture d'un projet) plus une entrée par agent du projet ; cocher un agent active le filtre agent"
@@ -95,8 +95,8 @@ menu:
               note: "Stub - la vue est activée via la barre d'onglets ; vue principale, active par défaut (inchangé, TSK28)"
             - name: Relations
               note: "Stub - vue activée via la barre d'onglets ; maquette à définir en phase de conception (FN036, SU012)"
-            - name: Export
-              note: "Stub - vue activée via la barre d'onglets ; fait partie du MVP minimal ; pourra être renommée ultérieurement"
+            - name: Preview
+              note: "Stub - vue activée via la barre d'onglets ; fait partie du MVP minimal (TSK37 séance 11 : renommée depuis « Export »)"
         - name: Agents
           items:
             - name: Nouveau...
@@ -170,5 +170,5 @@ menu:
     description: |
       Les éléments marqués 'dynamic: true' sont générés dynamiquement depuis les données de l'application.
       Les entrées grisées en MVP sont signalées dans les notes.
-      Les espaces de travail (vues) sont référencés par leur nom, sans numérotation : Parcours, Agents, Relations, Export.
+      Les espaces de travail (vues) sont référencés par leur nom, sans numérotation : Parcours, Agents, Relations, Preview.
       Règle des points de suspension : toute entrée ouvrant une fenêtre nécessitant une action complémentaire de l'utilisateur (dialogue de saisie, de choix ou de confirmation) est suffixée de « ... » ; une fenêtre purement informative (ex. « À propos d'Hyperscript ») n'en porte pas. Exception : « Nouveau projet... » conserve « ... » par convention usuelle (création directe en mémoire ; seule une confirmation de sauvegarde conditionnelle peut s'afficher).

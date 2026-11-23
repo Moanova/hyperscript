@@ -75,7 +75,7 @@
 - **Classification** : 1. Gestion du projet et cycle de vie
 
 ## RG017
-- **Description** : L'export sur fichier est hors périmètre MVP (seul l'aperçu in-app, vue « Export », est disponible en MVP). Lorsqu'il sera disponible, l'export de lecture génère un dossier autonome nommé d'après la carte (fichier d'index + pages liées), dans l'ordre de la séquence du parcours indépendamment des positions graphiques, et ne marque ni la carte ni le projet comme modifiés ; l'export technique reste à définir en phase de conception.
+- **Description** : L'export sur fichier est hors périmètre MVP (seul l'aperçu in-app, vue « Preview », est disponible en MVP). Lorsqu'il sera disponible, l'export de lecture génère un dossier autonome nommé d'après la carte (fichier d'index + pages liées), dans l'ordre de la séquence du parcours indépendamment des positions graphiques, et ne marque ni la carte ni le projet comme modifiés ; l'export technique reste à définir en phase de conception.
 - **Classification** : 1. Gestion du projet et cycle de vie
 
 ## 2. Structure de la carte narrative
@@ -211,7 +211,7 @@
 - **Classification** : 4. Visualisation et interaction
 
 ## RG048
-- **Description** : Le filtre de parcours affiche soit tous les parcours, soit un seul, dans les vues portant sur la carte narrative (vues « Journeys », « Relationships », aperçu « Export ») — il ne s'applique pas à la vue « Agents » (agents de niveau projet, vue décorrélée des participations aux blocs) ; il est désactivé par défaut à l'ouverture d'un projet ; sous filtre actif, seuls les blocs du parcours, les transitions dont les deux blocs y appartiennent et les participations/relations dont le bloc d'ancrage y appartient restent pleinement visibles — les autres éléments sont estompés (degré d'opacité défini en configuration) et non interactifs.
+- **Description** : Le filtre de parcours affiche soit tous les parcours, soit un seul, dans les vues portant sur la carte narrative (vues « Journeys », « Relationships », aperçu « Preview ») — il ne s'applique pas à la vue « Agents » (agents de niveau projet, vue décorrélée des participations aux blocs) ; il est désactivé par défaut à l'ouverture d'un projet ; sous filtre actif, seuls les blocs du parcours, les transitions dont les deux blocs y appartiennent et les participations/relations dont le bloc d'ancrage y appartient restent pleinement visibles — les autres éléments sont estompés (degré d'opacité défini en configuration) et non interactifs.
 - **Classification** : 4. Visualisation et interaction
 
 ## RG049

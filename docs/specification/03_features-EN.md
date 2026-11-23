@@ -11,7 +11,7 @@
 - A project contains a single narrative map (the data model supports several maps).
 - Only renaming the default map, editing its content and its reading export are functional.
 - Toolbars are not implemented: the corresponding actions are exclusively accessible from the menu.
-- The view scope is not decided beyond the minimum: "Journeys" view and "Export" view.
+- The view scope is not decided beyond the minimum: "Journeys" view and "Preview" view.
 - The application does not analyze journey consistency (post-MVP feature).
 - The application exclusively targets Windows PCs.
 - Zoom and editing functions (undo/redo) are to be defined during the design phase.
@@ -322,13 +322,13 @@
     - Zoom is to be defined during the design phase.
 
 ## FN029: Filter the display by journey
-- **Description**: Display either all blocks and transitions of the map, or only those of the active journey — in the views bearing on the narrative map ("Journeys", "Relationships" views, "Export" preview), not in the "Agents" view.
+- **Description**: Display either all blocks and transitions of the map, or only those of the active journey — in the views bearing on the narrative map ("Journeys", "Relationships" views, "Preview" preview), not in the "Agents" view.
 - **References**: SU006.
 - **Expected behavior**:
     - The filter switches between "show all" and "active journey".
     - Entry point: checkable "All journeys" item at the top of "Display › Journey" (checked = filter disabled); checking a journey activates that journey and the filter.
     - **The filter is disabled by default when a project is opened** and its state is not persisted between sessions.
-    - **The filter applies to the views bearing on the narrative map** ("Journeys" view, "Relationships" view, "Export" preview — **not to the "Agents" view**, agents being project-level): only the blocks of the active journey, the transitions whose two blocks belong to it, and the participations and relationships whose anchor block belongs to it remain fully visible; other elements are dimmed (reduced opacity) and non-interactive while the filter is active.
+    - **The filter applies to the views bearing on the narrative map** ("Journeys" view, "Relationships" view, "Preview" preview — **not to the "Agents" view**, agents being project-level): only the blocks of the active journey, the transitions whose two blocks belong to it, and the participations and relationships whose anchor block belongs to it remain fully visible; other elements are dimmed (reduced opacity) and non-interactive while the filter is active.
     - Switching from one journey to another instantly updates the display of the views concerned.
     - Filtering does not mark the map as modified.
 
@@ -367,18 +367,18 @@
     - The focus is a temporary visual state: a click in the empty area or the Escape key releases it.
     - Navigation marks neither the map nor the project as modified.
 
-## FN033: Export preview (workspace "Export")
-- **Description**: Display in the "Export" workspace a read-only reading preview of the current narrative map.
-- **References**: SU010, SU007 ; "Export" tab of the tab bar ; journey filter FN029.
+## FN033: Reading preview (the "Preview" view)
+- **Description**: Display in the "Preview" view a read-only reading preview of the current narrative map.
+- **References**: SU010, SU007 (file export, out of MVP) ; "Preview" tab of the tab bar ; Journey/Agent filters (FN029, FN039, RG048/RG063/RG064) ; design `docs/conception/05_preview-EN.md` (TSK37).
 - **Expected behavior**:
-    - The "Export" tab is present in the tab bar next to the "Journeys" and "Agents" views.
-    - The preview is read-only: no interaction on the content; displayed links are inert.
-    - The preview is regenerated on each switch to the "Export" tab, and after each model change when the tab is already active; never in the background.
-    - The preview is dynamic according to the journey filter (FN029): active filter → active journey only; "All journeys" → all journeys.
-    - Rendering: blocks from the Start block, in reading sequence order; transitions rendered inline; conditions rendered on their branch; agent relationships listed under their anchor block; final "state of relationships" section; label as title, content as body text (label only if empty), note in a tooltip on hover.
-    - Journey index at the top; section detailing the agents; possible orphan components listed.
-    - Viewing the preview marks neither the map nor the project as modified.
-- **Note**: scenario SU010 is initialized and will be finalized after the design phase; the "Export" view is part of the minimal MVP scope and may be renamed later.
+    - The "Preview" tab is present in the tab bar next to the "Agents", "Journeys" and "Relationships" views; menu entry "View > Preview" (stub renamed from "Export").
+    - The view hosts the filter side panel (same `FiltersSidePanel` as the "Journeys" view, without the block list), mirrors of the "Display" menu and of the other views.
+    - The preview is read-only: no interaction on the content; internal hypertext links are anchors with passive scroll only.
+    - The preview is regenerated on each switch to the "Preview" tab, **and** after each model change when the view is already active; never in the background.
+    - Rendering is dynamic according to the active filters (RG048/RG063/RG064): active journey filter → active journey only ("All journeys" → all journeys); agent filter → the blocks the agent participates in, transitions whose both blocks are visible, relationships whose anchor block is visible; elements outside the filters are **omitted from the rendering**.
+    - Rendered sections: a) project (`lb`); b) agent list (links to g); c) map (`lb`); d) journey list (links to e); e) journey: sequence of blocks from Start in reading-sequence order (RG044), each block with `lb`, `typ`, `content` (note as a tooltip on hover), transitions rendered inline, conditions rendered on their branch, then **the relationships anchored on that block** (labels of agents 1 and 2, `typ`, `content`, note as a tooltip) — the "state of relationships" is thus rendered under each anchor block, with no separate final section; branches not connected to Start are rendered marked after the flow; f) orphans: blocks with no incoming nor outgoing transition; g) project agents (`lb`, `typ`, `content`, note as a tooltip). Label as title, content as body text (label only if empty).
+    - Viewing the preview and applying filters mark neither the map nor the project as modified.
+- **Note**: view renamed "Preview" (TSK37, session 11); the file export "Files > Export Map..." (FN013/SU007) remains post-MVP and greyed out — the coexistence "Preview" (in-app view) / "Export Map" (file) is assumed.
 
 
 ---
@@ -459,4 +459,4 @@
 - Journey consistency check (dead ends, unfinished branches, single-branch Pivot, unreachable End) — post-MVP feature.
 - Author enrichment of the relationship type list (FN037) — post-MVP.
 - Relationships involving more than two agents — post-MVP.
-- Finalization of the scenarios and features of the "Agents" and "Relationships" views and of the "Export" preview — after the design phase.
+- Finalization of the scenarios and features of the "Agents" and "Relationships" views and of the "Preview" preview — after the design phase.
