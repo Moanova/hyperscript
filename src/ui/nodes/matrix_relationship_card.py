@@ -33,8 +33,9 @@ from ui.utils import theme
 class MatrixRelationshipCard(QGraphicsRectItem):
     """Relationship card of one matrix cell (upper triangle, TSK32)."""
 
-    WIDTH = _get_config("relationships_view_card_width_px", 84.0)
-    HEIGHT = _get_config("relationships_view_card_height_px", 72.0)
+    # TSK36 (option 1, session 11): same size as the matrix Agent cards
+    WIDTH = _get_config("node_default_width", 80.0)
+    HEIGHT = _get_config("node_default_height", 40.0)
     CORNER_RADIUS = _get_config("node_corner_radius_px", 6.0)
     HIT_AREA_WIDTH = _get_config("journeys_view_hit_area_width_px", 12.0)
     BORDER_COLOR = _get_config("relationships_view_card_border_color", "#E06666")

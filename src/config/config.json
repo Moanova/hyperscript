@@ -57,8 +57,6 @@
   "side_panel_min_width_px": 180,
   "relationships_view_panel_width_px": 260,
   "relationships_view_cell_size_px": 100,
-  "relationships_view_card_width_px": 84,
-  "relationships_view_card_height_px": 72,
   "relationships_view_card_border_color": "#E06666",
   "relationships_view_separator_height_px": 2,
   "log_level": "WARNING",

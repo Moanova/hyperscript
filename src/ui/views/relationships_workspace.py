@@ -54,9 +54,10 @@ TSK31 (session 10, 2nd feedback batch): contextMenuEvent uses QContextMenuEvent
 pos()/globalPos() (no position() attribute); the diagonal is dimmed by agent
 IDENTITY (ai == aj), not by index, so it follows the dragged header card with
 independent row/column orders; cells are transparent (no fill/border) so the
-matrix lines are the background grid lines themselves; a dot is painted at
-the center of every cell of the workspace over the whole visible area
-(drawBackground, agents-view style); the view gets theme.WORKSPACE_STYLESHEET
+matrix lines are the background grid lines themselves; a dot field is painted
+over the whole visible area (drawBackground, agents-view spacing/rendering -
+revised TSK36 session 11: agents_view_dot_spacing_px instead of the per-cell
+center dot); the view gets theme.WORKSPACE_STYLESHEET
 so its scrollbars look/behave like the "Journeys" view; the side panel
 separator is a thicker filled bar; the splitter slot of the panel is pinned
 to the panel width on resize (no gray strip on the right), the panel content
@@ -124,7 +125,9 @@ _CELL_HIT_WIDTH = _get_config("journeys_view_hit_area_width_px", 12.0)
 _CELL_MARGIN = 2.0
 # TSK30: scene anchored on the top-left corner, growing rightwards/downwards only
 _SCENE_MIN_SIZE = 4000
-# TSK30: center dot of each cell, same rendering as the "Agents" view anchor dots
+# TSK36: background dot field over the whole visible area, SAME spacing and
+# rendering as the "Agents" view anchor dots (agents_view_dot_spacing_px)
+_DOT_SPACING = int(_get_config("agents_view_dot_spacing_px", 20))
 _DOT_RADIUS = _get_config("agents_view_dot_radius_px", 1.5)
 _DOT_COLOR = _get_config("agents_view_dot_color", "#4A4A4A")
 # TSK32: the Relationship card materialized inside an active (upper-triangle) cell
@@ -241,17 +244,19 @@ class _MatrixGraphicsView(QGraphicsView):
         self._dragged_card = None
 
     def drawBackground(self, painter, rect):
-        """TSK31 (2.4): a dot at the center of every cell of the workspace grid
-        over the whole visible area (same rendering as the "Agents" view
-        anchor dots). Painted in the background, under all scene items."""
+        """TSK36: background dot field over the whole visible area, with the
+        SAME spacing as the "Agents" view anchor dots (agents_view_dot_spacing_px)
+        and the same rendering (agents_view_dot_radius_px/color) - replaces the
+        per-cell center dot of TSK31 (2.4). Painted in the background, under all
+        scene items."""
         super().drawBackground(painter, rect)
         painter.save()
         painter.setPen(Qt.PenStyle.NoPen)
         painter.setBrush(QBrush(QColor(_DOT_COLOR)))
-        start_x = int(rect.left() - (rect.left() % _CELL_SIZE)) + _CELL_SIZE // 2
-        start_y = int(rect.top() - (rect.top() % _CELL_SIZE)) + _CELL_SIZE // 2
-        for x in range(start_x, int(rect.right()) + _CELL_SIZE, _CELL_SIZE):
-            for y in range(start_y, int(rect.bottom()) + _CELL_SIZE, _CELL_SIZE):
+        start_x = int(rect.left() - (rect.left() % _DOT_SPACING))
+        start_y = int(rect.top() - (rect.top() % _DOT_SPACING))
+        for x in range(start_x, int(rect.right()) + _DOT_SPACING, _DOT_SPACING):
+            for y in range(start_y, int(rect.bottom()) + _DOT_SPACING, _DOT_SPACING):
                 painter.drawEllipse(QPointF(x, y), _DOT_RADIUS, _DOT_RADIUS)
         painter.restore()
 

@@ -1,6 +1,6 @@
 # Hyperscript ::: Tableau kanban du projet
 
-- **Date de dernière modification** : 23-11-2026 (TSK27–TSK34 validées Done ; TSK35 en Review : panneau latéral redimensionnable + repliable, retours séance 11 traités)
+- **Date de dernière modification** : 23-11-2026 (TSK27–TSK34 validées Done ; TSK35 et TSK36 en Review : panneau latéral + retours séance 11 vue « Relationships »)
 - **Description** : Suivi de l'avancement des tâches du projet.
   - Les chantiers majeurs sont des **épics** (EPCnn) découpés en **tâches** (TSKnn).
   - Le détail de chaque tâche (analyse, décisions, journal des travaux) est consigné dans un fichier markdown dédié du sous-dossier `tasks/`, nommé d'après le code de la tâche.
@@ -52,6 +52,9 @@
 
 - 23-11-2026 (séance 11) : **TSK35 correctifs implémentés et repassée en Review** — suppression de la persistance app-level de la largeur du panneau (`user_state.json` ; chaque création/ouverture de projet repart à la largeur standard `side_panel_width_px`), plancher dur au drag (`setChildrenCollapsible(False)`, min 180 jamais 0), repli par clic chevron en conservant le handle (`setSizes([w, 0])` sans `hide()`) ; tests offscreen remaniés/ajoutés, specs `04_interface` §4/§6 FR/EN, fiche TSK35 ; py_compile OK, 151 tests passed + 4 pré-existants hors scope (reproductibles arbre propre), sonde Qt offscreen OK — pas de commit/push (non demandé).
 
+- 23-11-2026 (séance 11) : **TSK36 créée et passée en Doing** (→ #TSK32, #TSK35) — retours TSC sur la vue « Relationships » après test de TSK35, option 1 des deux chantiers (feu vert) : (1) champ de points en fond à l'écartement `agents_view_dot_spacing_px` façon vue « Agents », à la place du point au centre de chaque cellule (TSK31 2.4) ; (2) cartes Relationship à la taille des cartes Agent de la matrice (`node_default_*` 80×40 au lieu de 84×72). Fiche `tasks/TSK36_relationships_dots_card_size.md` ; implémentation lancée.
+- 23-11-2026 (séance 11) : **TSK36 implémentée et passée en Review** — `drawBackground` champ de points à l'espacement Agents, `MatrixRelationshipCard` 80×40 centrée, clés config obsolètes supprimées, +2 tests offscreen (points espacement 20 px / carte taille Agent), specs `04_interface` §6 + conception 04 FR/EN ; py_compile OK, **152 tests passed + 4 pré-existants hors scope** (reproductibles arbre propre), nouveaux tests OK — pas de commit/push (non demandé).
+
 ---
 
 ## Tableau du kanban
@@ -65,6 +68,7 @@
 ### Review
 
 - [ ] TSK35 — Panneau latéral redimensionnable + repliable par icône (étude séance 10, point 1 reporté de TSK34) : handle de splitter personnalisé avec chevron (`createHandle` → `SidePanelHandle` : clic = repli/dépli, drag = redimensionnement), `setFixedWidth` → `setMinimumWidth` (`side_panel_min_width_px` = 180), suppression du pin fixe au resize, largeur persistée en app-level (`user_state.json` `side_panel_width_px` via `user_state_loader`), synchro des deux vues (Journeys/Relationships) via `panel_width_changed`, état replié de session uniquement (RG047) → #TSK33, #TSK34 — implémentée 20-11-2026 ; **repassée en Doing 23-11-2026 (retours TSC séance 11), correctifs implémentés et repassée en Review 23-11-2026** (py_compile OK, 151 tests passed + 4 pré-existants hors scope, sonde offscreen OK) (py_compile OK, pyflakes clean, 150 tests passed + 3 pré-existants hors scope, rendu vérifié), fiche `tasks/TSK35_side_panel_resize_collapse.md`
+- [ ] TSK36 — Vue « Relationships » : retours TSC séance 11 (option 1 des deux chantiers, à valider à l'usage, option 2 en repli) : (1) **champ de points en fond** sur toute la zone visible à l'écartement `agents_view_dot_spacing_px` (même rendu que la vue « Agents »), remplace le point au centre de chaque cellule (TSK31 2.4) ; (2) **carte Relationship à la taille des cartes Agent** de la matrice (`node_default_width/height` 80×40, centrée dans la cellule ; clés `relationships_view_card_width/height_px` supprimées) → #TSK32, #TSK35 — **créée et passée en Doing 23-11-2026, implémentée et passée en Review 23-11-2026** (py_compile OK, 152 tests passed + 4 pré-existants hors scope, +2 tests offscreen), fiche `tasks/TSK36_relationships_dots_card_size.md`
 
 
 ### Done

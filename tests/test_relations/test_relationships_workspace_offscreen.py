@@ -64,10 +64,11 @@ from usecases.view_management import CreateBlockUseCase, CreateTransitionUseCase
 from usecases.relationship_management import CreateRelationshipUseCase
 from ui.views.relationships_workspace import (
     RelationshipsWorkspace, _GridLineItem, _CELL_SIZE, _CELLS_LEFT, _CELLS_TOP,
-    _CARD_OFF_X, _CARD_OFF_Y, _PANEL_WIDTH, _SEPARATOR_HEIGHT, _DOT_COLOR,
+    _CARD_OFF_X, _CARD_OFF_Y, _PANEL_WIDTH, _SEPARATOR_HEIGHT, _DOT_COLOR, _DOT_SPACING,
 )
 from ui.widgets.filters_side_panel import FiltersSidePanel  # TSK33
 from ui.nodes.matrix_relationship_card import MatrixRelationshipCard  # TSK32
+from ui.nodes.matrix_agent_card import MatrixAgentCard  # TSK36
 from ui.utils import theme
 
 
@@ -431,21 +432,46 @@ def test_relationship_card_rendered_with_pivot_border_color(qapp):
     ws.hide()
 
 
-def test_dots_painted_over_the_whole_visible_area(qapp):
-    """TSK31 (2.4): a dot at the center of every workspace cell, inside the
-    matrix AND outside it (drawBackground), agents-view rendering."""
+def test_dots_painted_with_agents_view_spacing_over_the_whole_visible_area(qapp):
+    """TSK36 (option 1): background dot field over the whole visible area with
+    the SAME spacing as the "Agents" view anchor dots (agents_view_dot_spacing_px),
+    inside the matrix AND outside it (drawBackground); the former per-cell center
+    dot (TSK31 2.4) is gone."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
     ws.resize(1200, 800)
     ws.show()
     qapp.processEvents()
     img = ws.view.grab().toImage()
     dot = QColor(_DOT_COLOR).name()
-    for scene_pt in (QPointF(250, 150),   # inside the matrix (cell 1,0)
-                     QPointF(650, 350),   # outside the matrix (cell 5,3)
-                     QPointF(850, 650)):  # far corner of the visible area (outside the matrix)
+    s = _DOT_SPACING
+    assert s == 20  # config agents_view_dot_spacing_px
+    for scene_pt in (QPointF(12 * s, 8 * s),    # inside the matrix area
+                     QPointF(32 * s, 18 * s),    # outside the matrix (cell 5,3 area)
+                     QPointF(42 * s, 32 * s)):   # far corner of the visible area
+        assert scene_pt.x() % s == 0 and scene_pt.y() % s == 0
         p = ws.view.mapFromScene(scene_pt)
         assert img.pixelColor(p).name() == dot, f"no dot at scene {scene_pt}"
+    # former cell center (250, 150) is NOT a multiple of the spacing: no dot there
+    p = ws.view.mapFromScene(QPointF(250, 150))
+    assert img.pixelColor(p).name() != dot, "per-cell center dot should be gone"
     ws.hide()
+
+
+def test_relationship_card_same_size_as_matrix_agent_card(qapp):
+    """TSK36 (option 1): the Relationship card has the SAME size as the matrix
+    Agent header cards (node_default_width/height) and stays centered in its
+    cell."""
+    ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
+    ws.set_anchor_block(s1.id)  # Alpha x Zoo = "friend" at S1 -> card in cell (0, 2)
+    cell = ws._cells[(0, 2)]
+    card = cell.card
+    assert card is not None
+    assert MatrixRelationshipCard.WIDTH == MatrixAgentCard.WIDTH
+    assert MatrixRelationshipCard.HEIGHT == MatrixAgentCard.HEIGHT
+    assert card.rect().width() == MatrixAgentCard.WIDTH
+    assert card.rect().height() == MatrixAgentCard.HEIGHT
+    assert card.pos().x() == (cell.rect().width() - MatrixRelationshipCard.WIDTH) / 2
+    assert card.pos().y() == (cell.rect().height() - MatrixRelationshipCard.HEIGHT) / 2
 
 
 def test_view_scrollbars_styled_like_journeys_view(qapp):
