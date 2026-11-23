@@ -22,8 +22,8 @@ import pytest
 pytest.importorskip("PySide6")
 
 try:
-    from PySide6.QtWidgets import QApplication
-    from PySide6.QtCore import QUrl
+    from PySide6.QtWidgets import QApplication, QLabel
+    from PySide6.QtCore import QUrl, Qt
 except Exception as e:  # libGL missing, no display, ...
     pytest.skip(f"Qt not usable in this environment: {e}", allow_module_level=True)
 
@@ -99,6 +99,12 @@ def test_preview_page_hosts_readonly_workspace_and_filters_panel(qapp):
         assert mw.preview_panel.block_list is None
         assert mw.preview_workspace.parentWidget() is mw.preview_splitter
         assert mw.preview_panel.parentWidget() is mw.preview_splitter
+        # no leftover placeholder label (ex-"Export" stub): the page layout
+        # holds only the splitter, the whole view is the preview itself
+        layout = mw.preview_page.layout()
+        assert layout.count() == 1
+        assert layout.itemAt(0).widget() is mw.preview_splitter
+        assert mw.preview_page.findChildren(QLabel, options=Qt.FindDirectChildrenOnly) == []
         assert mw.preview_workspace.isReadOnly()
         assert not mw.preview_workspace.openLinks()
         assert not mw.preview_workspace.openExternalLinks()

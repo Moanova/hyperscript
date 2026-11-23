@@ -185,16 +185,10 @@ class MainWindow(QMainWindow):
         QVBoxLayout(self.relationships_page).setContentsMargins(0, 0, 0, 0)
         self.pages.addWidget(self.relationships_page)
         self.view_pages["Relationships"] = self.relationships_page
-        for name in ("Preview",):  # TSK38: renamed from "Export"; workspace added in _init_workspace
-            page = QWidget()
-            page_layout = QVBoxLayout(page)
-            label = QLabel(f"{name} view — handled by a later task.")
-            label.setAlignment(Qt.AlignmentFlag.AlignCenter)
-            label.setStyleSheet(f"color: {theme.TEXT_SECONDARY};")
-            page_layout.addWidget(label)
-            self.pages.addWidget(page)
-            self.view_pages[name] = page
-        self.preview_page = self.view_pages["Preview"]  # TSK38
+        self.preview_page = QWidget()  # TSK38: "Preview" (ex-"Export") page; workspace added in _init_workspace
+        QVBoxLayout(self.preview_page).setContentsMargins(0, 0, 0, 0)
+        self.pages.addWidget(self.preview_page)
+        self.view_pages["Preview"] = self.preview_page
 
         self.info_bar = InfoBar()
         main_layout.addWidget(self.info_bar)
