@@ -1,3 +1,4 @@
+from ui.dialogs.base_dialog import FormDialog, SelectionDialog
 from ui.dialogs.about_dialog import AboutDialog
 from ui.dialogs.change_log_dialog import ChangeLogDialog
 from ui.dialogs.block_dialog import BlockDialog
@@ -11,6 +12,8 @@ from ui.dialogs.relationship_dialog import RelationshipDialog
 from ui.dialogs.relationship_selection_dialog import RelationshipSelectionDialog
 
 __all__ = [
+    "FormDialog",
+    "SelectionDialog",
     "AboutDialog",
     "ChangeLogDialog",
     "BlockDialog",

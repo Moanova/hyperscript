@@ -17,61 +17,21 @@ Use get_selected_journey() after exec() == Accepted.
 """
 from typing import List, Optional
 
-from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QListWidget, QPushButton, QHBoxLayout
-)
-
 from core.models.data_model import Journey
-from ui.utils import theme
+from ui.dialogs.base_dialog import SelectionDialog
 
 
-class JourneySelectionDialog(QDialog):
+class JourneySelectionDialog(SelectionDialog):
     """Single-choice journey selection dialog."""
 
     def __init__(self, journeys: List[Journey], parent=None, title: str = "Select Journey"):
-        super().__init__(parent)
-        self._journeys = list(journeys)
-        self._setup_ui(title)
-        self._refresh_list()
+        super().__init__(journeys, parent=parent, title=title)
         # A journey is always selected at opening
         self.list_widget.setCurrentRow(0)  # fires _selection_changed
 
-    def _setup_ui(self, title: str):
-        self.setWindowTitle(title)
-        self.setModal(True)
-        self.setMinimumSize(400, 400)
-        self.layout = QVBoxLayout(self)
-        self.setStyleSheet(theme.DIALOG_STYLESHEET)
-
-        self.list_widget = QListWidget()
-        self.list_widget.currentRowChanged.connect(self._selection_changed)
-        self.layout.addWidget(self.list_widget, stretch=1)
-
-        button_layout = QHBoxLayout()
-        button_layout.addStretch()
-        self.ok_button = QPushButton("Ok")
-        self.ok_button.clicked.connect(self.accept)
-        self.ok_button.setFixedWidth(100)
-        self.ok_button.setEnabled(False)
-        cancel_button = QPushButton("Cancel")
-        cancel_button.clicked.connect(self.reject)
-        cancel_button.setFixedWidth(100)
-        button_layout.addWidget(self.ok_button)
-        button_layout.addWidget(cancel_button)
-        self.layout.addLayout(button_layout)
-
-    def _refresh_list(self):
-        self.list_widget.clear()
-        for journey in self._journeys:
-            self.list_widget.addItem(journey.lb)
-
-    def _selection_changed(self, current_row):
-        has_selection = 0 <= current_row < len(self._journeys)
-        self.ok_button.setEnabled(has_selection)
+    def _item_text(self, journey: Journey) -> str:
+        return journey.lb
 
     def get_selected_journey(self) -> Optional[Journey]:
         """Return the selected Journey, or None if there is no selection."""
-        row = self.list_widget.currentRow()
-        if 0 <= row < len(self._journeys):
-            return self._journeys[row]
-        return None
+        return self.get_selected()

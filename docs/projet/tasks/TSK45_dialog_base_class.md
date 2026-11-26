@@ -1,6 +1,6 @@
 # TSK45 — Factorisation des dialogues (plan TSK43, point 2)
 
-- **Statut** : To do (26-11-2026).
+- **Statut** : Review (26-11-2026) ; implémentée et pushée sur `dev` sur feu vert TSC séance 12.
 - **Origine** : demande TSC séance 12 — plan de refactorisation TSK43, point 2 (fiche `TSK43_code_review_technical_debt.md`).
 - **Dépendances** : → #TSK44 (ne pas factoriser du code mort).
 
@@ -20,3 +20,5 @@
 ## Journal
 
 - 2026-11-26 : créée en To do (plan TSK43 point 2, demande TSC séance 12).
+- 2026-11-26 : **passée en Doing** (feu vert TSC séance 12) — implémentation lancée : base `ui/dialogs/base_dialog.py`.
+- 2026-11-26 : **implémentée et passée en Review** — `base_dialog.py` créé : `FormDialog` (`_setup_ui(title, w, h)`, `_add_buttons` avec Ok → `_validate` (défaut `accept`), `_add_error_label`, `_add_note_field`, `_add_content_field`, constantes `NOTE_MAX_HEIGHT_PX`/`CONTENT_MIN_HEIGHT_PX`) et `SelectionDialog` (`_setup_ui(title)` 400×400, liste + Ok désactivé, `_refresh_list` via `_item_text`, `_selection_changed`, `get_selected`). Héritage : `AgentDialog`/`BlockDialog`/`JourneyDialog`/`RelationshipDialog`/`TransitionDialog` (FormDialog) et `AgentSelectionDialog`/`JourneySelectionDialog`/`RelationshipSelectionDialog` (SelectionDialog, accesseurs publics `get_selected_*` conservés en wrappers). `TransitionDialog` garde son champ note spécifique (policy Expanding/Expanding). Signatures de constructeurs et attributs publics (`layout`, `form`, `list_widget`, `ok_button`, `error_label`, `note_edit`, `content_edit`, `agents_list`, `journeys_list`) inchangés. Exports ajoutés dans `ui/dialogs/__init__.py`. Vérifications : py_compile OK, **pyflakes 0 warning sur `src/`**, scan AST : **0 groupe de corps dupliqué restant** dans `ui/dialogs/`, suite **200 passed + 3 pré-existants hors scope** (identiques à `59f6698`). Diff : 9 fichiers, +64/−377 (base incluse). Commit+push `dev` effectués (feu vert TSC).

@@ -21,41 +21,21 @@ AgentDialog with AGENT_TYPES from the hyperscript data model.
 """
 from typing import Optional
 
-from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox,
-    QTextEdit, QPushButton, QHBoxLayout, QLabel, QSizePolicy
-)
-from PySide6.QtCore import Qt
+from PySide6.QtWidgets import QLineEdit, QComboBox
 
 from core.models.data_model import AGENT_TYPES, Agent
-from config.config_loader import get as _get_config
-from ui.utils import theme
+from ui.dialogs.base_dialog import FormDialog
 
 
-class AgentDialog(QDialog):
+class AgentDialog(FormDialog):
     """Agent data edition dialog (creation when entity is None)."""
-
-    NOTE_MAX_HEIGHT_PX = _get_config("dialog_note_max_height_px", 60)
-    CONTENT_MIN_HEIGHT_PX = _get_config("dialog_content_min_height_px", 160)
 
     def __init__(self, entity: Optional[Agent] = None, parent=None, default_label: Optional[str] = None):
         super().__init__(parent)
         self.entity = entity
         self.default_label = default_label
-        self._setup_ui()
+        self._setup_ui("Edit Agent" if self.entity else "New Agent", 525, 420)
         self._setup_content()
-
-    def _setup_ui(self):
-        self.setWindowTitle("Edit Agent" if self.entity else "New Agent")
-        self.setModal(True)
-        self.setMinimumSize(525, 420)
-        self.layout = QVBoxLayout(self)
-        self.setStyleSheet(theme.DIALOG_STYLESHEET)
-        self.form = QFormLayout()
-        self.form.setFieldGrowthPolicy(QFormLayout.AllNonFixedFieldsGrow)
-        self.layout.addLayout(self.form, stretch=1)
-        self.layout.setAlignment(self.form, Qt.AlignTop)
-        self._add_buttons()
 
     def _setup_content(self):
         # Label field
@@ -76,36 +56,13 @@ class AgentDialog(QDialog):
         self.form.addRow("Type:", self.typ_combo)
 
         # Note field (compact area, summary notes)
-        self.note_edit = QTextEdit()
-        self.note_edit.setPlainText(getattr(self.entity, 'note', None) or "" if self.entity else "")
-        self.note_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Preferred)
-        self.note_edit.setMaximumHeight(self.NOTE_MAX_HEIGHT_PX)
-        self.form.addRow("Note:", self.note_edit)
+        self._add_note_field(getattr(self.entity, 'note', None) or "" if self.entity else "")
 
         # Content field (larger area, narrative content)
-        self.content_edit = QTextEdit()
-        self.content_edit.setPlainText(getattr(self.entity, 'content', None) or "" if self.entity else "")
-        self.content_edit.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
-        self.content_edit.setMinimumHeight(self.CONTENT_MIN_HEIGHT_PX)
-        self.form.addRow("Content:", self.content_edit)
+        self._add_content_field(getattr(self.entity, 'content', None) or "" if self.entity else "")
 
         # Inline validation message (hidden by default)
-        self.error_label = QLabel("")
-        self.error_label.setStyleSheet(f"color: {theme.ERROR_COLOR};")
-        self.layout.addWidget(self.error_label)
-
-    def _add_buttons(self):
-        button_layout = QHBoxLayout()
-        button_layout.addStretch()
-        ok_button = QPushButton("Ok")
-        ok_button.clicked.connect(self._validate)
-        ok_button.setFixedWidth(100)
-        cancel_button = QPushButton("Cancel")
-        cancel_button.clicked.connect(self.reject)
-        cancel_button.setFixedWidth(100)
-        button_layout.addWidget(ok_button)
-        button_layout.addWidget(cancel_button)
-        self.layout.addLayout(button_layout)
+        self._add_error_label()
 
     def _validate(self):
         if not self.get_values()['lb']:
