@@ -24,12 +24,15 @@ menu:
           shortcut: "Ctrl+Shift+S"
           references: "FN009, SU001"
         - type: separator
+        - name: Exporter le projet...
+          references: "FN013, SU007"
+          note: "Active séance 12 (TSK42) : exporte le projet en document HTML autonome (dossier nommé d'après le projet : index.html + une page par parcours + agents.html + style.css) ; « Exporter la carte... » et « Importer une carte... » restent grisées (post-MVP)"
         - name: Exporter la carte...
           references: "FN013, SU007"
-          note: "Grisée en MVP - l'export sur fichier est post-MVP (coexiste avec la vue « Preview » in-app, TSK37)"
+          note: "Reste grisée jusqu'à nouvel ordre (TSK42 séance 12) - l'export de lecture se fait via « Exporter le projet... » ; l'échange de carte entre projets (JSON) est post-MVP"
         - name: Importer une carte...
           references: "SU002"
-          note: "Grisée en MVP - importe une carte narrative préalablement exportée dans le projet courant"
+          note: "Reste grisée jusqu'à nouvel ordre (TSK42 séance 12) - post-MVP (échange de carte entre projets)"
         - type: separator
         - name: Projets récents
           dynamic: true

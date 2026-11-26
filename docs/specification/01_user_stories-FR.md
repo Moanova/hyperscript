@@ -39,7 +39,7 @@
     - L'utilisateur peut renommer la carte en éditant directement son libellé ou via une boîte de dialogue.
     - Toute modification met à jour la date de dernière modification de la carte et celle du projet.
 - **Périmètre MVP** :
-    - Une seule carte narrative par projet : la création, la duplication, la suppression, la navigation entre cartes et l'import/export de carte ne sont pas disponibles. Seuls le renommage et la modification du contenu sont fonctionnels en MVP (l'export sur fichier, SU007, est hors MVP — entrée « Files › Export Map... » grisée ; l'aperçu in-app, vue « Export » (SU010), fait partie du MVP minimal).
+    - Une seule carte narrative par projet : la création, la duplication, la suppression, la navigation entre cartes et l'import/échange de carte entre projets ne sont pas disponibles. Seuls le renommage et la modification du contenu sont fonctionnels (l'import « Files › Import Map... » reste grisée, post-MVP ; l'export de lecture HTML se fait via « Files › Export Project... », TSK42 séance 12 ; l'aperçu in-app, vue « Preview » (SU010), fait partie du MVP minimal).
 
 
 ## SU003 : Gérer un bloc narratif
@@ -132,19 +132,18 @@
 - **Description** : En tant qu'auteur, je peux exporter ma carte narrative sous la forme d'un document autonome en HTML, lisible dans un navigateur standard, afin de valider mon récit et de le partager avec mon équipe.
 - **Complément** :
     - L'export de lecture est un document autonome : aucun serveur, aucune connexion Internet, aucune dépendance externe.
-    - Il génère un dossier nommé d'après la carte narrative, contenant un fichier d'index et l'ensemble des pages nécessaires à la navigation hypertexte.
+    - Il génère un dossier nommé d'après le projet, contenant `index.html` (liens hypertexte vers chaque page de parcours et vers la page des agents) et l'ensemble des pages nécessaires à la navigation hypertexte : une page par parcours (`journey-<id>.html`), une page des agents (`agents.html`) et une feuille de style partagée (`style.css`, référencée en relatif — document autonome hors-ligne) (révisé séance 12, TSK42).
     - L'ordre de déroulement est la séquence de lecture du parcours (calculée depuis le bloc Début), indépendant des positions graphiques.
-    - Restitution par bloc : libellé en titre de paragraphe et contenu en corps de texte (libellé seul si le contenu est vide) ; les transitions sont rendues en ligne ; les conditions sont rendues sur leur branche ; les relations entre agents sont listées sous leur bloc d'ancrage ; une section finale récapitule l'état des relations (dernier type connu par paire d'agents dans le parcours).
+    - Restitution par bloc : libellé en titre de paragraphe et contenu en corps de texte (libellé seul si le contenu est vide) ; les transitions sont rendues en ligne ; **les agents participants sous le contenu, ligne préfixée « Participations: »** ; **les relations entre agents listées sous leur bloc d'ancrage, chaque ligne préfixée « Relationships: »** (TSK39 4.1/4.2, libellés TSK41 séance 12).
     - Chaque page de déroulement propose un lien de retour vers le sommaire.
     - L'opération d'export ne marque ni la carte ni le projet comme modifiés.
 - **Critères d'acceptation** :
-    - L'utilisateur peut lancer l'export depuis le menu « Files ».
+    - L'utilisateur peut lancer l'export depuis le menu « Files » (« Files › Export Project... », TSK42 séance 12).
     - Le document généré s'affiche correctement dans les navigateurs standards (Chrome, Firefox, Edge) sans connexion Internet.
     - Une page intermédiaire liste les parcours de la carte ; le clic sur un parcours affiche le déroulement linéaire complet de sa séquence.
 - **Périmètre MVP** :
-    - L'export sur fichier est **hors périmètre MVP** (entrée « Files › Export Map... » grisée) ; dans le MVP, seul l'aperçu in-app (vue « Export », SU010/FN033) est disponible.
-    - Le périmètre exact de l'export de lecture (pages, modes de lecture) sera précisé ultérieurement pour la version post-MVP.
-    - L'export technique pour réimport et la lecture « par événements » sont à définir durant la phase de conception.
+    - L'export de lecture HTML est réalisé via l'entrée « Files › Export Project... » (TSK42, séance 12) ; les entrées « Files › Export Map... » et « Files › Import Map... » restent grisées jusqu'à nouvel ordre.
+    - L'import de carte (SU002) et l'échange JSON de cartes/agents entre projets restent **hors périmètre (post-MVP)**.
 
 
 ## SU008 : Gérer les participations agent-bloc

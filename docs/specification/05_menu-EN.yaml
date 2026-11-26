@@ -24,12 +24,15 @@ menu:
           shortcut: "Ctrl+Shift+S"
           references: "FN009, SU001"
         - type: separator
+        - name: Export Project...
+          references: "FN013, SU007"
+          note: "Active session 12 (TSK42): exports the project as a standalone HTML document (folder named after the project: index.html + one page per journey + agents.html + style.css); \"Export Map...\" and \"Import Map...\" stay greyed out (post-MVP)"
         - name: Export Map...
           references: "FN013, SU007"
-          note: "Greyed out in the MVP - file export is post-MVP (coexists with the in-app \"Preview\" view, TSK37)"
+          note: "Stays greyed out until further notice (TSK42 session 12) - the reading export is done via \"Export Project...\"; map exchange between projects (JSON) is post-MVP"
         - name: Import Map...
           references: "SU002"
-          note: "Greyed out in the MVP - imports a narrative map previously exported into the current project"
+          note: "Stays greyed out until further notice (TSK42 session 12) - post-MVP (map exchange between projects)"
         - type: separator
         - name: Recent Projects
           dynamic: true

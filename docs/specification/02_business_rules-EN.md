@@ -35,7 +35,7 @@
 - **Classification** : 1. Project management and lifecycle
 
 ## RG007
-- **Description** : When no project is open, the entries of the Files (Close, Save, Save as...), Edit, Display and Project menus are greyed out. In the MVP, "Export Map...", "Import Map...", "Recent Projects", the whole Edit menu and the Zoom submenu remain greyed out even with a project open.
+- **Description** : When no project is open, the entries of the Files (Close, Save, Save as...), Edit, Display and Project menus are greyed out. "Export Project..." is enabled as soon as a project is open (TSK42, session 12). "Export Map...", "Import Map...", "Recent Projects", the whole Edit menu and the Zoom submenu remain greyed out even with a project open (post-MVP, TSK42).
 - **Classification** : 1. Project management and lifecycle
 
 ## RG008

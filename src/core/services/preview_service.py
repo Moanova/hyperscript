@@ -47,6 +47,27 @@ from core.services.agent_filter_service import AgentFilterService
 from core.services.journey_filter_service import JourneyFilterService
 from core.services.participation_service import ParticipationService
 from core.services.relationship_service import RelationshipService
+from config.config_loader import get as _get_config
+
+# TSK42: shared stylesheet of the exported HTML document (dark theme, same
+# colors as the in-app "Preview" view); the file is referenced relatively, so
+# the export stays a standalone offline document (SU007)
+_EXPORT_BG = _get_config("bg_primary", "#1E1E1E")
+_EXPORT_SURFACE = _get_config("bg_surface", "#2D2D2D")
+_EXPORT_TEXT = _get_config("text_primary", "#FFFFFF")
+_EXPORT_LINK = _get_config("link_color", "#E5C07B")
+_EXPORT_FONT = _get_config("node_font_family", "Segoe UI")
+EXPORT_CSS = (
+    "html, body { margin: 0; padding: 0; }\n"
+    f"body {{ background-color: {_EXPORT_BG}; color: {_EXPORT_TEXT}; "
+    f"font-family: '{_EXPORT_FONT}', sans-serif; margin: 2em; line-height: 1.5; }}\n"
+    f"h1, h2, h3 {{ color: {_EXPORT_TEXT}; font-weight: 600; }}\n"
+    f"h3 {{ background-color: {_EXPORT_SURFACE}; padding: 0.2em 0.5em; "
+    "border-radius: 4px; margin: 1em 0 0.2em 0; }}\n"
+    f"a {{ color: {_EXPORT_LINK}; }}\n"
+    "p { margin: 0.4em 0; }\n"
+    "ul { margin: 0.4em 0; }\n"
+)
 
 
 def _esc(text) -> str:
@@ -60,10 +81,14 @@ def _body(content) -> str:
     return f"<p>{_esc(content).replace(chr(10), '<br>')}</p>"
 
 
-def _label_anchor(kind: str, entity, label: str) -> str:
+def _label_anchor(kind: str, entity, label: str, notes_as_title: bool = False) -> str:
     """Label; when the entity carries a note, wrap it in an inert note anchor
-    (hover tooltip resolved by the workspace through build_note_index)."""
+    (hover tooltip resolved by the workspace through build_note_index).
+    TSK42: in the exported HTML files, notes become title attributes (browser
+    tooltip) instead of in-page anchors."""
     if getattr(entity, "note", None):
+        if notes_as_title:
+            return f'<span title="{_esc(entity.note)}">{_esc(label)}</span>'
         return f'<a href="#note-{kind}-{entity.id}">{_esc(label)}</a>'
     return _esc(label)
 
@@ -144,7 +169,7 @@ class PreviewService:
     @staticmethod
     def _journey_section_html(nm: 'NarrativeMap', journey: 'Journey',
                               blocks_by_id: Dict[int, 'Block'], agents: List['Agent'],
-                              visible: Set[int]) -> str:
+                              visible: Set[int], notes_as_title: bool = False) -> str:
         attached = {jn.block_id for jn in nm.journey_node if jn.journey_id == journey.id}
         order = {jn.block_id: jn.sequence_order
                  for jn in nm.journey_node if jn.journey_id == journey.id}
@@ -171,14 +196,15 @@ class PreviewService:
 
         parts = [f'<h2 id="journey-{journey.id}">{_esc(journey.lb)}</h2>']
         for bid in flow:
-            parts.append(PreviewService._block_html(nm, blocks_by_id, agents, bid, attached, visible))
+            parts.append(PreviewService._block_html(nm, blocks_by_id, agents, bid, attached, visible, notes_as_title))
         if rest:
             parts.append(PreviewService._unreachable_chains_html(
-                nm, blocks_by_id, agents, rest, attached, visible))
+                nm, blocks_by_id, agents, rest, attached, visible, notes_as_title))
         return "\n".join(parts)
 
     @staticmethod
-    def _unreachable_chains_html(nm, blocks_by_id, agents, rest, attached, visible) -> str:
+    def _unreachable_chains_html(nm, blocks_by_id, agents, rest, attached, visible,
+                                 notes_as_title: bool = False) -> str:
         """Branches of the journey not connected to the Start block: rendered
         after the main flow, grouped by chain (root = no incoming transition
         within the journey), with a visible marker. Nothing is omitted."""
@@ -200,19 +226,19 @@ class PreviewService:
                     if t.from_block_id == bid and t.to_block_id in remaining:
                         stack.append(t.to_block_id)
             for bid in chain:
-                parts.append(PreviewService._block_html(nm, blocks_by_id, agents, bid, attached, visible))
+                parts.append(PreviewService._block_html(nm, blocks_by_id, agents, bid, attached, visible, notes_as_title))
         for bid in sorted(remaining):  # cycles among unreachable blocks
-            parts.append(PreviewService._block_html(nm, blocks_by_id, agents, bid, attached, visible))
+            parts.append(PreviewService._block_html(nm, blocks_by_id, agents, bid, attached, visible, notes_as_title))
         return "\n".join(parts)
 
     @staticmethod
     def _block_html(nm: 'NarrativeMap', blocks_by_id: Dict[int, 'Block'],
                     agents: List['Agent'], block_id: int, attached: Set[int],
-                    visible: Set[int]) -> str:
+                    visible: Set[int], notes_as_title: bool = False) -> str:
         b = blocks_by_id[block_id]
         agent_by_id = {a.id: a for a in agents}
         parts = [f'<h3 id="block-{block_id}">'
-                 f'{_label_anchor("block", b, f"{b.lb} ({b.typ})")}</h3>']
+                 f'{_label_anchor("block", b, f"{b.lb} ({b.typ})", notes_as_title)}</h3>']
         parts.append(_body(b.content))
         # TSK39 (4.1): the participating agents, under the block content
         # (TSK39 4.3: the structured condition fields were removed in session 12)
@@ -229,7 +255,10 @@ class PreviewService:
                 target = blocks_by_id[t.to_block_id]
                 label = f"&rarr; {_esc(target.lb)}"
                 if t.note:
-                    label = f'<a href="#note-transition-{t.id}">{label}</a>'
+                    if notes_as_title:
+                        label = f'<span title="{_esc(t.note)}">{label}</span>'
+                    else:
+                        label = f'<a href="#note-transition-{t.id}">{label}</a>'
                 parts.append(f"<p>{label}</p>")
         # relationships anchored on this block (state of relationships, section e)
         # TSK41 (session 12): each relationship line is prefixed "Relationships:"
@@ -239,7 +268,10 @@ class PreviewService:
             pair = f"{_esc(a1.lb if a1 else '?')} — {_esc(a2.lb if a2 else '?')}"
             label = f"{pair} : {_esc(r.typ)}"
             if r.note:
-                label = f'<a href="#note-relationship-{r.id}">{label}</a>'
+                if notes_as_title:
+                    label = f'<span title="{_esc(r.note)}">{label}</span>'
+                else:
+                    label = f'<a href="#note-relationship-{r.id}">{label}</a>'
             parts.append(f"<p>Relationships: {label}</p>")
             parts.append(_body(r.content))
         return "\n".join(parts)
@@ -271,3 +303,76 @@ class PreviewService:
                 parts.append(f"<li>{label}{_body(b.content)}</li>")
             parts.append("</ul>")
         return "\n".join(parts)
+
+    # ------------------------------------------------------------------
+    # HTML file export (TSK42: "Files > Export Project...")
+    # ------------------------------------------------------------------
+    @staticmethod
+    def _export_page(title: str, body: str) -> str:
+        """Full standalone HTML5 page referencing the shared style.css
+        (relative link: the exported folder is an offline document, SU007)."""
+        return (
+            "<!DOCTYPE html>\n<html lang=\"en\">\n<head>\n<meta charset=\"utf-8\"/>\n"
+            f"<title>{_esc(title)}</title>\n"
+            "<link rel=\"stylesheet\" href=\"style.css\"/>\n"
+            "</head>\n<body>\n" + body + "\n</body>\n</html>\n"
+        )
+
+    @staticmethod
+    def build_export_index_html(project: 'Project', narrative_map: 'NarrativeMap') -> str:
+        """index.html: project + map labels, hypertext links to every journey
+        page and to the agents page, orphan blocks (TSK42, SU007 revised)."""
+        parts = [f"<h1>{_esc(project.lb)}</h1>", f"<h2>{_esc(narrative_map.lb)}</h2>"]
+        parts.append("<h2>Journeys</h2>")
+        parts.append("<ul>")
+        for j in narrative_map.journey:
+            parts.append(f'<li><a href="journey-{j.id}.html">{_esc(j.lb)}</a></li>')
+        parts.append("</ul>")
+        parts.append('<p><a href="agents.html">Agents</a></p>')
+        # orphan blocks (no incoming nor outgoing transition), as in the
+        # unfiltered preview section f)
+        touched = ({t.from_block_id for t in narrative_map.transition}
+                   | {t.to_block_id for t in narrative_map.transition})
+        orphans = sorted((b for b in narrative_map.block if b.id not in touched),
+                         key=lambda b: (b.lb, b.id))
+        parts.append("<h2>Orphan blocks</h2>")
+        if orphans:
+            parts.append("<ul>")
+            for b in orphans:
+                parts.append(f"<li>{_esc(b.lb)} ({_esc(b.typ)})</li>")
+            parts.append("</ul>")
+        else:
+            parts.append("<p><em>None</em></p>")
+        return PreviewService._export_page(f"{project.lb} - {narrative_map.lb}", "\n".join(parts))
+
+    @staticmethod
+    def build_export_journey_html(project: 'Project', narrative_map: 'NarrativeMap',
+                                  journey: 'Journey') -> str:
+        """One page per journey: linear sequence from the Start block (RG044),
+        each block with label/type, content, "Participations:", "Relationships:"
+        and inline transitions; unreachable branches marked after the flow;
+        back link to the index (TSK42, SU007 revised)."""
+        blocks_by_id = {b.id: b for b in narrative_map.block}
+        agents = sorted(project.agent, key=lambda a: (a.lb, a.id))
+        visible = set(blocks_by_id)
+        back = '<p><a href="index.html">Back to index</a></p>'
+        body = "\n".join([
+            back,
+            PreviewService._journey_section_html(
+                narrative_map, journey, blocks_by_id, agents, visible, notes_as_title=True),
+            back,
+        ])
+        return PreviewService._export_page(journey.lb, body)
+
+    @staticmethod
+    def build_export_agents_html(project: 'Project') -> str:
+        """agents.html: all project agents "label (type)", content, note as a
+        title attribute (browser tooltip); back link to the index (TSK42)."""
+        back = '<p><a href="index.html">Back to index</a></p>'
+        parts = ["<h1>Agents</h1>", back]
+        for a in sorted(project.agent, key=lambda a: (a.lb, a.id)):
+            title = f' title="{_esc(a.note)}"' if a.note else ""
+            parts.append(f"<h3{title}>{_esc(a.lb)} ({_esc(a.typ)})</h3>")
+            parts.append(_body(a.content))
+        parts.append(back)
+        return PreviewService._export_page("Agents", "\n".join(parts))

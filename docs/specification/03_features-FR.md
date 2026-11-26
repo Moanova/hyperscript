@@ -130,18 +130,18 @@
 
 ## FN013 : Exporter la carte narrative en document de lecture
 - **Description** : Exporter la carte narrative courante en document autonome de lecture (HTML), consultable dans un navigateur standard.
-- **Références** : SU002 (export de carte), SU007 ; menu « Files › Export Map... ».
+- **Références** : SU002 (échange de carte, post-MVP), SU007 ; menu « Files › Export Project... » (TSK42, séance 12) ; « Files › Export Map... » reste grisée.
 - **Comportement attendu** :
     - L'export est lancé depuis le menu « Files » (pas de barre d'outils en MVP).
-    - L'export génère un dossier nommé d'après la carte, contenant un fichier index et toutes les pages nécessaires à la navigation hypertexte.
+    - L'export génère un dossier nommé d'après le projet, dans le dossier parent choisi par l'utilisateur, contenant `index.html` (liens vers chaque page de parcours et vers la page des agents) et toutes les pages nécessaires à la navigation hypertexte : une page par parcours (`journey-<id>.html`), une page des agents (`agents.html`), une feuille de style partagée (`style.css`, référencée en relatif) (TSK42, séance 12).
     - Le document est autonome : aucun serveur, aucune connexion Internet, aucune dépendance externe ; il s'affiche correctement dans Chrome, Firefox et Edge.
     - La page d'accueil propose le choix du mode de lecture ; seul le mode « par parcours » est disponible en MVP.
     - En mode « par parcours » : une page intermédiaire liste les parcours de la carte ; le choix d'un parcours affiche la séquence linéaire complète de ses blocs.
-    - Chaque bloc est rendu par son libellé (titre de paragraphe) et son contenu (corps du texte) ; si le contenu est vide, seul le libellé est affiché. Les transitions sont rendues en ligne ; les conditions sont rendues sur leur branche ; les relations entre agents sont listées sous leur bloc d'ancrage ; une section finale récapitule l'état des relations (dernier type connu par paire d'agents dans le parcours).
+    - Chaque bloc est rendu par son libellé (titre de paragraphe) et son contenu (corps du texte) ; si le contenu est vide, seul le libellé est affiché. Les transitions sont rendues en ligne ; **les agents participants sous le contenu, ligne préfixée « Participations: »** ; **les relations entre agents listées sous leur bloc d'ancrage, chaque ligne préfixée « Relationships: »** (TSK39 4.1/4.2, libellés TSK41).
     - L'ordre de lecture est la séquence de lecture du parcours (calculée depuis le bloc Début), indépendamment des positions graphiques.
     - Chaque page de lecture offre un lien de retour vers le sommaire.
     - L'export ne marque ni la carte ni le projet comme modifiés.
-- **Note** : entrée « Files › Export Map... » **grisée en MVP** (export sur fichier hors MVP ; seul l'aperçu in-app, FN033, est disponible dans le MVP). Le périmètre exact de l'export de lecture (pages, modes) sera précisé ultérieurement ; l'export technique destiné à la réimportation est à définir en phase de conception.
+- **Note** : export réalisé via l'entrée « Files › Export Project... » (TSK42, séance 12) ; « Files › Export Map... » et « Files › Import Map... » restent grisées jusqu'à nouvel ordre (échange de carte/agents entre projets en JSON = post-MVP).
 
 
 ---
@@ -368,7 +368,7 @@
 
 ## FN033 : Aperçu de lecture (vue « Preview »)
 - **Description** : Afficher dans la vue « Preview » un aperçu de lecture de la carte narrative courante, en lecture seule.
-- **Références** : SU010, SU007 (export fichier, hors MVP) ; onglet « Preview » de la barre d'onglets ; filtres Journey/Agent (FN029, FN039, RG048/RG063/RG064) ; conception `docs/conception/05_preview-FR.md` (TSK37).
+- **Références** : SU010, SU007 (export de lecture HTML via « Files › Export Project... », TSK42 séance 12) ; onglet « Preview » de la barre d'onglets ; filtres Journey/Agent (FN029, FN039, RG048/RG063/RG064) ; conception `docs/conception/05_preview-FR.md` (TSK37).
 - **Comportement attendu** :
     - L'onglet « Preview » est présent dans la barre d'onglets à côté des vues « Agents », « Journeys », « Relationships » ; entrée « View › Preview » active (bascule vers la vue, TSK39 séance 12 1.1 ; renommée depuis « Export », TSK37).
     - La vue héberge le panneau latéral de filtres (même `FiltersSidePanel` que la vue « Journeys », sans liste de blocs), miroirs du menu « Display » et des autres vues.
@@ -377,7 +377,7 @@
     - Rendu dynamique selon les filtres actifs (RG048/RG063/RG064) : filtre de parcours actif → parcours actif seul (« Tous les parcours » → tous les parcours) ; filtre agent → blocs auxquels l'agent participe, transitions dont les deux blocs sont visibles, relations dont le bloc d'ancrage est visible ; les éléments hors filtre sont **omis du rendu**.
     - Sections restituées : a) projet (`lb`) ; b) liste des agents `lb (typ)` (liens vers g) ; c) carte (`lb`) ; d) liste des parcours (liens vers e) ; e) parcours : séquence des blocs depuis Start dans l'ordre de la séquence de lecture (RG044), chaque bloc avec `lb`, `typ`, `content` (note en infobulle au survol), **les agents participants sous le contenu, ligne préfixée « Participations: »** (TSK39 4.1, libellé TSK41 séance 12), transitions rendues en ligne, puis **les relations ancrées sous la liste des agents, chaque ligne préfixée « Relationships: »** (lb agents 1 et 2, `typ`, `content`, note en infobulle — TSK39 4.2, libellé TSK41 séance 12) — l'« état des relations » est restitué sous chaque bloc d'ancrage, sans section finale séparée ; les branches non jointes au Start sont restituées marquées après le flux ; f) orphelins : blocs sans aucune transition entrante ni sortante ; g) agents du projet `lb (typ)` (TSK39 4.4), `content`, note en infobulle. Plus de champs de condition (retirés du modèle, TSK39 3.2/4.3). Libellé en titre, contenu en corps de texte (libellé seul si vide).
     - La visualisation de l'aperçu et l'application des filtres ne marquent ni la carte ni le projet comme modifiés.
-- **Note** : vue renommée « Preview » (TSK37, séance 11) ; l'export sur fichier « Files › Export Map... » (FN013/SU007) reste post-MVP et grisé — coexistence « Preview » (vue in-app) / « Export Map » (fichier) assumée.
+- **Note** : vue renommée « Preview » (TSK37, séance 11) ; l'export de lecture se fait via « Files › Export Project... » (FN013/SU007, TSK42 séance 12) ; « Export Map... » reste grisée (échange entre projets, post-MVP) — coexistence « Preview » (vue in-app) / « Export Project... » (fichier) assumée.
 
 
 ---

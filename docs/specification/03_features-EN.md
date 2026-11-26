@@ -129,18 +129,18 @@
 
 ## FN013: Export the narrative map as a reading document
 - **Description**: Export the current narrative map as a standalone reading document (HTML), viewable in a standard browser.
-- **References**: SU002 (map export), SU007 ; menu "Files › Export Map...".
+- **References**: SU002 (map exchange, post-MVP), SU007 ; menu "Files › Export Project..." (TSK42, session 12) ; "Files › Export Map..." stays greyed out.
 - **Expected behavior**:
     - The export is launched from the "Files" menu (no toolbar in the MVP).
-    - The export generates a folder named after the map, containing an index file and all the pages needed for hypertext navigation.
+    - The export generates a folder named after the project, inside the parent folder chosen by the user, containing `index.html` (links to every journey page and to the agents page) and all the pages needed for hypertext navigation: one page per journey (`journey-<id>.html`), an agents page (`agents.html`), and a shared stylesheet (`style.css`, referenced relatively) (TSK42, session 12).
     - The document is standalone: no server, no Internet connection, no external dependency; it displays correctly in Chrome, Firefox and Edge.
     - The home page offers the choice of the reading mode; only the "by journey" mode is available in the MVP.
     - In "by journey" mode: an intermediate page lists the map's journeys; choosing a journey displays the complete linear sequence of its blocks.
-    - Each block is rendered by its label (paragraph title) and its content (body text); if the content is empty, only the label is displayed. Transitions are rendered inline; conditions are rendered on their branch; agent relationships are listed under their anchor block; a final section summarizes the state of the relationships (last known type per agent pair in the journey).
+    - Each block is rendered by its label (paragraph title) and its content (body text); if the content is empty, only the label is displayed. Transitions are rendered inline; **the participating agents under the content, line prefixed "Participations:"**; **agent relationships listed under their anchor block, each line prefixed "Relationships:"** (TSK39 4.1/4.2, labels TSK41).
     - The reading order is the journey's reading sequence (computed from the Start block), independently of the graphical positions.
     - Each reading page offers a link back to the index.
     - The export marks neither the map nor the project as modified.
-- **Note**: the "Files › Export Map..." entry is **greyed out in the MVP** (file export out of the MVP; only the in-app preview, FN033, is available in the MVP). The exact scope of the reading export (pages, modes) will be specified later; the technical export intended for reimport is to be defined during the design phase.
+- **Note**: the export is done via the "Files › Export Project..." entry (TSK42, session 12); "Files › Export Map..." and "Files › Import Map..." stay greyed out until further notice (JSON map/agent exchange between projects = post-MVP).
 
 
 ---
@@ -367,7 +367,7 @@
 
 ## FN033: Reading preview (the "Preview" view)
 - **Description**: Display in the "Preview" view a read-only reading preview of the current narrative map.
-- **References**: SU010, SU007 (file export, out of MVP) ; "Preview" tab of the tab bar ; Journey/Agent filters (FN029, FN039, RG048/RG063/RG064) ; design `docs/conception/05_preview-EN.md` (TSK37).
+- **References**: SU010, SU007 (reading HTML export via "Files › Export Project...", TSK42 session 12) ; "Preview" tab of the tab bar ; Journey/Agent filters (FN029, FN039, RG048/RG063/RG064) ; design `docs/conception/05_preview-EN.md` (TSK37).
 - **Expected behavior**:
     - The "Preview" tab is present in the tab bar next to the "Agents", "Journeys" and "Relationships" views; menu entry "View > Preview" active (switches to the view, TSK39 session 12 1.1; renamed from "Export", TSK37).
     - The view hosts the filter side panel (same `FiltersSidePanel` as the "Journeys" view, without the block list), mirrors of the "Display" menu and of the other views.
@@ -376,7 +376,7 @@
     - Rendering is dynamic according to the active filters (RG048/RG063/RG064): active journey filter → active journey only ("All journeys" → all journeys); agent filter → the blocks the agent participates in, transitions whose both blocks are visible, relationships whose anchor block is visible; elements outside the filters are **omitted from the rendering**.
     - Rendered sections: a) project (`lb`); b) agent list `lb (typ)` (links to g); c) map (`lb`); d) journey list (links to e); e) journey: sequence of blocks from Start in reading-sequence order (RG044), each block with `lb`, `typ`, `content` (note as a tooltip on hover), **the participating agents under the content, line prefixed "Participations:"** (TSK39 4.1, label TSK41 session 12), transitions rendered inline, then **the relationships anchored under the agents list, each line prefixed "Relationships:"** (labels of agents 1 and 2, `typ`, `content`, note as a tooltip — TSK39 4.2, label TSK41 session 12) — the "state of relationships" is thus rendered under each anchor block, with no separate final section; branches not connected to Start are rendered marked after the flow; f) orphans: blocks with no incoming nor outgoing transition; g) project agents `lb (typ)` (TSK39 4.4), `content`, note as a tooltip. No condition fields anymore (removed from the model, TSK39 3.2/4.3). Label as title, content as body text (label only if empty).
     - Viewing the preview and applying filters mark neither the map nor the project as modified.
-- **Note**: view renamed "Preview" (TSK37, session 11); the file export "Files > Export Map..." (FN013/SU007) remains post-MVP and greyed out — the coexistence "Preview" (in-app view) / "Export Map" (file) is assumed.
+- **Note**: view renamed "Preview" (TSK37, session 11); the reading export is done via "Files > Export Project..." (FN013/SU007, TSK42 session 12); "Export Map..." stays greyed out (exchange between projects, post-MVP) — the coexistence "Preview" (in-app view) / "Export Project..." (file) is assumed.
 
 
 ---

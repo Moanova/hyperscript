@@ -35,7 +35,7 @@
 - **Classification** : 1. Gestion du projet et cycle de vie
 
 ## RG007
-- **Description** : Lorsqu'aucun projet n'est ouvert, les entrées des menus Files (Close, Save, Save as...), Edit, Display et Project sont grisées. En MVP, « Export Map... », « Import Map... », « Recent Projects », tout le menu Edit et le sous-menu Zoom restent grisés même avec un projet ouvert.
+- **Description** : Lorsqu'aucun projet n'est ouvert, les entrées des menus Files (Close, Save, Save as...), Edit, Display et Project sont grisées. « Export Project... » est active dès qu'un projet est ouvert (TSK42, séance 12). Restent grisés même avec un projet ouvert : « Export Map... », « Import Map... », « Recent Projects », tout le menu Edit et le sous-menu Zoom (post-MVP, TSK42).
 - **Classification** : 1. Gestion du projet et cycle de vie
 
 ## RG008

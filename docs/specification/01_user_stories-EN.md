@@ -38,7 +38,7 @@
     - The user can rename the map by directly editing its label or via an edit dialog.
     - Any modification updates the last modification date of the map and of the project.
 - **MVP scope**:
-    - A single narrative map per project: creating, duplicating, deleting, navigating between maps and importing/exporting a map are not available. Only renaming and editing the content are functional in the MVP (the file export, SU007, is out of the MVP — "Files › Export Map..." greyed out; the in-app preview, "Export" view (SU010), is part of the minimal MVP).
+    - A single narrative map per project: creating, duplicating, deleting, navigating between maps and importing/exchanging a map between projects are not available. Only renaming and editing the content are functional ("Files › Import Map..." stays greyed out, post-MVP; the reading HTML export is done via "Files › Export Project...", TSK42 session 12; the in-app preview, "Preview" view (SU010), is part of the minimal MVP).
 
 
 ## SU003: Manage a Narrative Block
@@ -131,19 +131,18 @@
 - **Description**: As an author, I can export my narrative map as a standalone HTML document, readable in a standard browser, in order to validate my story and share it with my team.
 - **Details**:
     - The reading export is a standalone document: no server, no Internet connection, no external dependency.
-    - It generates a folder named after the narrative map, containing an index file and all the pages needed for hypertext navigation.
+    - It generates a folder named after the project, containing `index.html` (hypertext links to every journey page and to the agents page) and all the pages needed for hypertext navigation: one page per journey (`journey-<id>.html`), an agents page (`agents.html`) and a shared stylesheet (`style.css`, referenced relatively - standalone offline document) (revised session 12, TSK42).
     - The reading order is the reading sequence of the journey (computed from the Start block), independent of the graphical positions.
-    - Per block, the export renders: label as a paragraph title and content as body text (label only if the content is empty); transitions are rendered inline; conditions are rendered on their branch; agent relationships are listed under their anchor block; a final section summarizes the state of the relationships (last known type per agent pair in the journey).
+    - Per block, the export renders: label as a paragraph title and content as body text (label only if the content is empty); transitions are rendered inline; **the participating agents under the content, line prefixed "Participations:"**; **agent relationships listed under their anchor block, each line prefixed "Relationships:"** (TSK39 4.1/4.2, labels TSK41 session 12).
     - Each reading page offers a link back to the index.
     - The export operation marks neither the map nor the project as modified.
 - **Acceptance criteria**:
-    - The user can launch the export from the "Files" menu.
+    - The user can launch the export from the "Files" menu ("Files › Export Project...", TSK42 session 12).
     - The generated document displays correctly in standard browsers (Chrome, Firefox, Edge) without an Internet connection.
     - An intermediate page lists the journeys of the map; clicking a journey displays the complete linear reading of its sequence.
 - **MVP scope**:
-    - The file export is **out of the MVP scope** ("Files › Export Map..." greyed out); in the MVP, only the in-app preview ("Export" view, SU010/FN033) is available.
-    - The exact scope of the reading export (pages, reading modes) will be specified later for the post-MVP version.
-    - The technical export for reimport and the "by events" reading mode are to be defined during the design phase.
+    - The reading HTML export is done via the "Files › Export Project..." entry (TSK42, session 12); the "Files › Export Map..." and "Files › Import Map..." entries stay greyed out until further notice.
+    - Map import (SU002) and JSON exchange of maps/agents between projects remain **out of scope (post-MVP)**.
 
 
 ## SU008: Manage agent-block Participations

@@ -61,7 +61,7 @@ from core.services.relationship_service import RelationshipService
 from core.models.view_model import ProjectLayout
 from usecases.project_management import CreateProjectUseCase
 from usecases.file_management import (
-    LoadProjectUseCase, SaveProjectUseCase, QuitApplicationUseCase
+    LoadProjectUseCase, SaveProjectUseCase, QuitApplicationUseCase, ExportProjectUseCase
 )
 from usecases.view_management import (
     CreateBlockUseCase, UpdateBlockUseCase, DuplicateBlockUseCase, DeleteBlockUseCase,
@@ -110,6 +110,7 @@ class MainWindow(QMainWindow):
         self.create_project_usecase = CreateProjectUseCase(self.project_service)
         self.load_project_usecase = LoadProjectUseCase(self.project_service)
         self.save_project_usecase = SaveProjectUseCase(self.project_service)
+        self.export_project_usecase = ExportProjectUseCase(self.project_service)  # TSK42
         self.quit_usecase = QuitApplicationUseCase(self.project_service)
         self.about_service = AboutService()
         self.change_log_service = ChangeLogService()
@@ -225,8 +226,9 @@ class MainWindow(QMainWindow):
         self.menu_actions['save'] = file_menu.addAction("Save", self._save_project, "Ctrl+S")  # RG006
         self.menu_actions['save_as'] = file_menu.addAction("Save as...", self._save_project_as, "Ctrl+Shift+S")
         file_menu.addSeparator()
-        self.menu_actions['export_map'] = file_menu.addAction("Export Map...", lambda: None)  # greyed out in the MVP
-        self.menu_actions['import_map'] = file_menu.addAction("Import Map...", lambda: None)  # greyed out in the MVP
+        self.menu_actions['export_project'] = file_menu.addAction("Export Project...", self._export_project)  # TSK42
+        self.menu_actions['export_map'] = file_menu.addAction("Export Map...", lambda: None)  # stays greyed (MVP_GREYED, TSK42)
+        self.menu_actions['import_map'] = file_menu.addAction("Import Map...", lambda: None)  # stays greyed (MVP_GREYED, TSK42)
         file_menu.addSeparator()
         self.menu_actions['recent_projects'] = file_menu.addAction("Recent Projects", lambda: None)  # greyed out in the MVP
         file_menu.addSeparator()
@@ -306,7 +308,8 @@ class MainWindow(QMainWindow):
 
     # Entries enabled only when a project is open (RG007/RG008)
     PROJECT_DEPENDENT = {
-        'close', 'save', 'save_as', 'journey', 'agent_filter',
+        'close', 'save', 'save_as', 'export_project',  # TSK42
+        'journey', 'agent_filter',
         'view_journeys', 'view_agents', 'view_relationships', 'view_preview',  # TSK38: view_export renamed view_preview
         'agents_new',
         'blocks_new', 'blocks_edit', 'blocks_copy', 'blocks_delete',
@@ -467,6 +470,45 @@ class MainWindow(QMainWindow):
                 f"The file cannot be opened: {file_path}"
             )
         logger.debug("Project loaded: %s", self.project_service.current_project)
+
+    def _get_default_export_dir(self) -> str:
+        """Default directory for the export dialog: last used export dir
+        (user state), else the default project dir."""
+        last_dir = _get_user_state("last_export_dir")
+        if last_dir and os.path.isdir(last_dir):
+            return last_dir
+        return self._get_default_project_dir()
+
+    def _export_project(self):
+        """TSK42 (SU007/FN013): export the project as a standalone HTML reading
+        document - a folder named after the project (index.html + one page per
+        journey + agents.html + style.css) created in the folder chosen by the
+        user. Read-only: nothing is marked modified (RG058)."""
+        if not self.project_opened:
+            return
+        parent_dir = QFileDialog.getExistingDirectory(
+            self, "Export Project...", self._get_default_export_dir())
+        if not parent_dir:
+            return  # cancelled by the user
+        _set_user_state("last_export_dir", parent_dir)
+        target = self.export_project_usecase.target_folder(parent_dir)
+        if target and os.path.isdir(target):
+            reply = QMessageBox.question(
+                self,
+                "Confirmation",
+                f"'{target}' already exists. Overwrite its files?",
+                QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+            if reply != QMessageBox.StandardButton.Yes:
+                return
+        result = self.export_project_usecase.execute(parent_dir)
+        if result:
+            self.info_bar.show_message(f"Project exported to {result}")
+        else:
+            QMessageBox.critical(
+                self,
+                "Error exporting the project",
+                "The project could not be exported to the chosen folder."
+            )
 
     def _get_default_project_dir(self) -> str:
         """

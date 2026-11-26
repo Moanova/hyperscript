@@ -147,7 +147,7 @@
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | FN012 | Rename the narrative map | not-started | — | — | — | — | — |
-| FN013 | Export the narrative map as a reading document | greyed-MVP | Files › Export Map... | — | — | — | — |
+| FN013 | Export the narrative map as a standalone reading document (folder named after the project: index.html + pages + agents.html + style.css) | implemented | Files › Export Project... (TSK42 session 12) ; "Export Map..." stays greyed out | usecases/file_management/export_project_usecase.py ; core/services/preview_service.py (build_export_*_html, EXPORT_CSS) ; ui/main_window.py (_export_project) | — | tests/test_project/test_export_project_usecase.py ; tests/test_tsk42/ | TSK42 |
 
 ### Narrative blocks
 
@@ -235,7 +235,8 @@
 | Files › Close | Close | Ctrl+W | partial | menu_actions['close'] |
 | Files › Save | Save | Ctrl+S | partial | menu_actions['save'] |
 | Files › Save as... | Save as... | Ctrl+Shift+S | partial | menu_actions['save_as'] |
-| Files › Export Map... | Export Map... |  | greyed-MVP | — |
+| Files › Export Project... | Export Project... |  | implemented | menu_actions['export_project'] (TSK42 session 12) |
+| Files › Export Map... | Export Map... |  | greyed-MVP | — (stays greyed out, TSK42) |
 | Files › Import Map... | Import Map... |  | greyed-MVP | — |
 | Files › Recent Projects | Recent Projects |  | greyed-MVP | — |
 | Files › Quit | Quit | Ctrl+Q | partial | menu_actions['quit'] |
@@ -301,7 +302,7 @@
 | SU004 | Manage a Transition Between Blocks | FN020, FN021, FN022 | implemented |
 | SU005 | Manage a Journey | FN019, FN023, FN024, FN026, FN027, FN038 | implemented |
 | SU006 | Visualize the Narrative Map (view "Journeys") | FN017, FN028, FN029 | partial |
-| SU007 | Export the Narrative Map | FN013, FN033 | not-started |
+| SU007 | Export the Narrative Map | FN013, FN033 | implemented | HTML export via "Files › Export Project..." (TSK42 session 12) ; JSON exchange between projects post-MVP |
 | SU008 | Manage agent-block Participations | FN030, FN031 | implemented |
 | SU009 | Manage the agents view — re-designed session 04 (anchor dots + agent cards, TSK19b) | FN031, FN032 | implemented |
 | SU010 | View the reading preview ("Preview" view) | FN033 | implemented |

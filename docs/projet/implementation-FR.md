@@ -147,7 +147,7 @@
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | FN012 | Renommer la carte narrative | not-started | — | — | — | — | — |
-| FN013 | Exporter la carte narrative en document de lecture | greyed-MVP | Files › Export Map... | — | — | — | — |
+| FN013 | Exporter la carte narrative en document de lecture (HTML autonome : dossier nommé d'après le projet avec index.html + pages + agents.html + style.css) | implemented | Files › Export Project... (TSK42 séance 12) ; « Export Map... » reste grisée | usecases/file_management/export_project_usecase.py ; core/services/preview_service.py (build_export_*_html, EXPORT_CSS) ; ui/main_window.py (_export_project) | — | tests/test_project/test_export_project_usecase.py ; tests/test_tsk42/ | TSK42 |
 
 ### Blocs narratifs
 
@@ -235,7 +235,8 @@
 | Fichiers › Fermer | Fermer | Ctrl+W | partial | menu_actions['close'] |
 | Fichiers › Enregistrer | Enregistrer | Ctrl+S | partial | menu_actions['save'] |
 | Fichiers › Enregistrer sous... | Enregistrer sous... | Ctrl+Shift+S | partial | menu_actions['save_as'] |
-| Fichiers › Exporter la carte... | Exporter la carte... |  | greyed-MVP | — |
+| Fichiers › Exporter le projet... | Exporter le projet... |  | implemented | menu_actions['export_project'] (TSK42 séance 12) |
+| Fichiers › Exporter la carte... | Exporter la carte... |  | greyed-MVP | — (reste grisée, TSK42) |
 | Fichiers › Importer une carte... | Importer une carte... |  | greyed-MVP | — |
 | Fichiers › Projets récents | Projets récents |  | greyed-MVP | — |
 | Fichiers › Quitter | Quitter | Ctrl+Q | partial | menu_actions['quit'] |
@@ -301,7 +302,7 @@
 | SU004 | Gérer une transition entre blocs | FN020, FN021, FN022 | implemented |
 | SU005 | Gérer un parcours | FN019, FN023, FN024, FN026, FN027, FN038 | implemented |
 | SU006 | Visualiser la carte narrative (vue « Parcours ») | FN017, FN028, FN029 | partial |
-| SU007 | Exporter la carte narrative | FN013, FN033 | not-started |
+| SU007 | Exporter la carte narrative | FN013, FN033 | implemented | export HTML via « Files › Export Project... » (TSK42 séance 12) ; échange JSON entre projets post-MVP |
 | SU008 | Gérer les participations agent-bloc | FN030, FN031 | implemented |
 | SU009 | Gérer la vue agents — re-conçue séance 04 (points d'ancrage + cartes agent, TSK19b) | FN031, FN032 | implemented |
 | SU010 | Visualiser l'aperçu de lecture (vue « Preview ») | FN033 | implemented |
