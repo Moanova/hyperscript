@@ -28,17 +28,23 @@ from PySide6.QtCore import Qt
 from config.config_loader import get as _get_config
 from ui.utils import theme
 
+# Standard dialog button widths (config.json)
+BUTTON_WIDTH_PX = _get_config("dialog_button_width_px", 100)
+WIDE_BUTTON_WIDTH_PX = _get_config("dialog_wide_button_width_px", 120)
+
 
 class FormDialog(QDialog):
     """Base class of the entity edition dialogs (form + Ok/Cancel)."""
 
     NOTE_MAX_HEIGHT_PX = _get_config("dialog_note_max_height_px", 60)
     CONTENT_MIN_HEIGHT_PX = _get_config("dialog_content_min_height_px", 160)
+    MIN_WIDTH_PX = _get_config("dialog_form_min_width_px", 525)
+    MIN_HEIGHT_PX = _get_config("dialog_form_min_height_px", 420)
 
-    def _setup_ui(self, title: str, min_width: int, min_height: int) -> None:
+    def _setup_ui(self, title: str) -> None:
         self.setWindowTitle(title)
         self.setModal(True)
-        self.setMinimumSize(min_width, min_height)
+        self.setMinimumSize(self.MIN_WIDTH_PX, self.MIN_HEIGHT_PX)
         self.layout = QVBoxLayout(self)
         self.setStyleSheet(theme.DIALOG_STYLESHEET)
         self.form = QFormLayout()
@@ -52,10 +58,10 @@ class FormDialog(QDialog):
         button_layout.addStretch()
         ok_button = QPushButton("Ok")
         ok_button.clicked.connect(self._validate)
-        ok_button.setFixedWidth(100)
+        ok_button.setFixedWidth(BUTTON_WIDTH_PX)
         cancel_button = QPushButton("Cancel")
         cancel_button.clicked.connect(self.reject)
-        cancel_button.setFixedWidth(100)
+        cancel_button.setFixedWidth(BUTTON_WIDTH_PX)
         button_layout.addWidget(ok_button)
         button_layout.addWidget(cancel_button)
         self.layout.addLayout(button_layout)
@@ -90,6 +96,9 @@ class FormDialog(QDialog):
 class SelectionDialog(QDialog):
     """Base class of the single-choice selection dialogs."""
 
+    MIN_WIDTH_PX = _get_config("selection_dialog_min_width_px", 400)
+    MIN_HEIGHT_PX = _get_config("selection_dialog_min_height_px", 400)
+
     def __init__(self, items: list, parent=None, title: str = "Select"):
         super().__init__(parent)
         self._items = list(items)
@@ -99,7 +108,7 @@ class SelectionDialog(QDialog):
     def _setup_ui(self, title: str) -> None:
         self.setWindowTitle(title)
         self.setModal(True)
-        self.setMinimumSize(400, 400)
+        self.setMinimumSize(self.MIN_WIDTH_PX, self.MIN_HEIGHT_PX)
         self.layout = QVBoxLayout(self)
         self.setStyleSheet(theme.DIALOG_STYLESHEET)
 
@@ -111,11 +120,11 @@ class SelectionDialog(QDialog):
         button_layout.addStretch()
         self.ok_button = QPushButton("Ok")
         self.ok_button.clicked.connect(self.accept)
-        self.ok_button.setFixedWidth(100)
+        self.ok_button.setFixedWidth(BUTTON_WIDTH_PX)
         self.ok_button.setEnabled(False)
         cancel_button = QPushButton("Cancel")
         cancel_button.clicked.connect(self.reject)
-        cancel_button.setFixedWidth(100)
+        cancel_button.setFixedWidth(BUTTON_WIDTH_PX)
         button_layout.addWidget(self.ok_button)
         button_layout.addWidget(cancel_button)
         self.layout.addLayout(button_layout)

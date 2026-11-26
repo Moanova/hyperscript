@@ -17,16 +17,19 @@ get_values() returns {'note': str}.
 from PySide6.QtWidgets import QTextEdit, QSizePolicy
 
 from core.models.data_model import Transition
+from config.config_loader import get as _get_config
 from ui.dialogs.base_dialog import FormDialog
 
 
 class TransitionDialog(FormDialog):
     """Edition dialog of a transition (note only)."""
 
+    MIN_HEIGHT_PX = _get_config("transition_dialog_min_height_px", 240)
+
     def __init__(self, transition: Transition, parent=None):
         super().__init__(parent)
         self.transition = transition
-        self._setup_ui("Edit Transition", 525, 240)
+        self._setup_ui("Edit Transition")
         self._setup_content()
 
     def _setup_content(self):

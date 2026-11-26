@@ -34,7 +34,7 @@ class AgentDialog(FormDialog):
         super().__init__(parent)
         self.entity = entity
         self.default_label = default_label
-        self._setup_ui("Edit Agent" if self.entity else "New Agent", 525, 420)
+        self._setup_ui("Edit Agent" if self.entity else "New Agent")
         self._setup_content()
 
     def _setup_content(self):

@@ -1,6 +1,6 @@
 # TSK49 — Tailles des dialogues et boutons en config.json (plan TSK43, point 6)
 
-- **Statut** : To do (26-11-2026).
+- **Statut** : Review (26-11-2026) ; implémentée et pushée sur `dev` sur feu vert TSC séance 12.
 - **Origine** : demande TSC séance 12 — plan de refactorisation TSK43, point 6 (fiche `TSK43_code_review_technical_debt.md`).
 - **Dépendances** : → #TSK44 ; à coordonner avec #TSK45 (base dialogues : les tailles y seront consommées).
 
@@ -18,3 +18,4 @@
 ## Journal
 
 - 2026-11-26 : créée en To do (plan TSK43 point 6, demande TSC séance 12).
+- 2026-11-26 : **passée en Doing puis implémentée et passée en Review** (feu vert TSC) — `config.json` : +15 clés (68 → 83) : `dialog_button_width_px` 100, `dialog_wide_button_width_px` 120, `dialog_form_min_width_px` 525, `dialog_form_min_height_px` 420, `journey_dialog_min_height_px` 300, `relationship_dialog_min_height_px` 460, `transition_dialog_min_height_px` 240, `selection_dialog_min_width/height_px` 400/400, `about_dialog_min_width/height_px` 400/200, `change_log_dialog_min_width/height_px` 500/400, `agent_association_dialog_min_width/height_px` 400/400. `base_dialog.py` : constantes `BUTTON_WIDTH_PX`/`WIDE_BUTTON_WIDTH_PX` ; `FormDialog.MIN_WIDTH_PX/MIN_HEIGHT_PX` et `SelectionDialog.MIN_WIDTH_PX/MIN_HEIGHT_PX` lus via `_get_config` (défauts = valeurs d'avant) ; `_setup_ui(title)` ne prend plus de tailles. Dialogues de formulaire : hauteurs spécifiques en attribut de classe (`MIN_HEIGHT_PX` sur journey/relationship/transition). `about_dialog`, `change_log_dialog`, `agent_association_dialog` : `_get_config` directement + `BUTTON_WIDTH_PX`/`WIDE_BUTTON_WIDTH_PX`. 0 `setMinimumSize(N, N)`/`setFixedWidth(N)` restant dans `ui/dialogs/`. Sonde offscreen : tailles identiques (AgentDialog 525×420, JourneyDialog 525×300, sélection 400×400, boutons 100/120). Vérifications : py_compile OK, **pyflakes 0 warning sur `src/`**, suite **200 passed + 3 pré-existants hors scope** (identiques à `56393bf`). Commit+push `dev` effectués (feu vert TSC).

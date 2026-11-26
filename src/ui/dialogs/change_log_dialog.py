@@ -11,6 +11,7 @@ from PySide6.QtWidgets import (
 )
 from PySide6.QtCore import Qt
 from core.services.change_log_service import ChangeLogService
+from config.config_loader import get as _get_config
 from ui.utils import theme
 
 class ChangeLogDialog(QDialog):
@@ -21,7 +22,8 @@ class ChangeLogDialog(QDialog):
 
     def _setup_ui(self):
         self.setWindowTitle("Change Log")
-        self.setMinimumSize(500, 400)
+        self.setMinimumSize(_get_config("change_log_dialog_min_width_px", 500),
+                            _get_config("change_log_dialog_min_height_px", 400))
 
         layout = QVBoxLayout(self)
 

@@ -16,11 +16,14 @@ from typing import Optional
 from PySide6.QtWidgets import QLineEdit
 
 from core.models.data_model import Journey
+from config.config_loader import get as _get_config
 from ui.dialogs.base_dialog import FormDialog
 
 
 class JourneyDialog(FormDialog):
     """Journey edition dialog: lb, note."""
+
+    MIN_HEIGHT_PX = _get_config("journey_dialog_min_height_px", 300)
 
     def __init__(self, entity: Optional[Journey] = None, parent=None,
                  default_label: Optional[str] = None,
@@ -29,7 +32,7 @@ class JourneyDialog(FormDialog):
         self.entity = entity
         self.default_label = default_label
         self.default_note = default_note
-        self._setup_ui("Edit Journey" if self.entity else "New Journey", 525, 300)
+        self._setup_ui("Edit Journey" if self.entity else "New Journey")
         self._setup_content()
 
     def _setup_content(self):

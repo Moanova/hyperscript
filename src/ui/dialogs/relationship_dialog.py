@@ -24,11 +24,14 @@ from PySide6.QtWidgets import QComboBox
 
 from core.models.data_model import Agent, NarrativeMap, Relationship
 from core.services.relationship_service import RelationshipService
+from config.config_loader import get as _get_config
 from ui.dialogs.base_dialog import FormDialog
 
 
 class RelationshipDialog(FormDialog):
     """Relationship data edition dialog (creation when entity is None)."""
+
+    MIN_HEIGHT_PX = _get_config("relationship_dialog_min_height_px", 460)
 
     def __init__(self, agents: List[Agent], narrative_map: NarrativeMap,
                  entity: Optional[Relationship] = None, parent=None,
@@ -43,7 +46,7 @@ class RelationshipDialog(FormDialog):
         self._default_agent_1_id = default_agent_1_id
         self._default_agent_2_id = default_agent_2_id
         self._default_block_id = default_block_id
-        self._setup_ui("Edit Relationship" if self.entity else "New Relationship", 525, 460)
+        self._setup_ui("Edit Relationship" if self.entity else "New Relationship")
         self._setup_content()
 
     def _setup_content(self):

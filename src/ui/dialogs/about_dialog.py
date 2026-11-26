@@ -9,6 +9,8 @@
 from PySide6.QtWidgets import QDialog, QVBoxLayout, QTextEdit, QPushButton, QHBoxLayout
 
 from core.services.about_service import AboutService
+from config.config_loader import get as _get_config
+from ui.dialogs.base_dialog import BUTTON_WIDTH_PX
 from ui.utils import theme
 
 class AboutDialog(QDialog):
@@ -22,7 +24,8 @@ class AboutDialog(QDialog):
 
     def _setup_ui(self):
         self.setWindowTitle(self.about_service.get_about_info()["title"])
-        self.setMinimumSize(400, 200)
+        self.setMinimumSize(_get_config("about_dialog_min_width_px", 400),
+                            _get_config("about_dialog_min_height_px", 200))
         self.layout = QVBoxLayout(self)
 
         # Dark theme (charter 98)
@@ -50,7 +53,7 @@ class AboutDialog(QDialog):
         button_layout.addStretch()
         ok_button = QPushButton("Ok")
         ok_button.clicked.connect(self.accept)
-        ok_button.setFixedWidth(100)
+        ok_button.setFixedWidth(BUTTON_WIDTH_PX)
         button_layout.addWidget(ok_button)
         button_layout.addStretch()
         self.layout.addLayout(button_layout)

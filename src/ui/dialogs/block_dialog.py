@@ -55,7 +55,7 @@ class BlockDialog(FormDialog):
         self._attached = set(attached_journey_ids or [])
         self._agents = list(agents)
         self._participating = set(participating_agent_ids or [])
-        self._setup_ui(f"Edit Block ({self.block.typ})", 525, 420)
+        self._setup_ui(f"Edit Block ({self.block.typ})")
         self._setup_content()
 
     def _setup_content(self):

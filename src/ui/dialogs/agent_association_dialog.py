@@ -28,7 +28,9 @@ from PySide6.QtWidgets import (
 )
 
 from core.models.data_model import Agent, Block
+from config.config_loader import get as _get_config
 from ui.dialogs.agent_dialog import AgentDialog
+from ui.dialogs.base_dialog import BUTTON_WIDTH_PX, WIDE_BUTTON_WIDTH_PX
 from ui.utils import theme
 
 
@@ -52,7 +54,8 @@ class AgentAssociationDialog(QDialog):
     def _setup_ui(self):
         self.setWindowTitle(f"Add Participation with '{self._block.lb}'")  # TSK39 (1.3): libellé normalisé
         self.setModal(True)
-        self.setMinimumSize(400, 400)
+        self.setMinimumSize(_get_config("agent_association_dialog_min_width_px", 400),
+                            _get_config("agent_association_dialog_min_height_px", 400))
         self.layout = QVBoxLayout(self)
         self.setStyleSheet(theme.DIALOG_STYLESHEET)
 
@@ -67,10 +70,10 @@ class AgentAssociationDialog(QDialog):
         button_layout.addStretch()
         self.new_button = QPushButton("New agent...")
         self.new_button.clicked.connect(self._new_agent_requested)
-        self.new_button.setFixedWidth(120)
+        self.new_button.setFixedWidth(WIDE_BUTTON_WIDTH_PX)
         self.close_button = QPushButton("Close")
         self.close_button.clicked.connect(self.accept)
-        self.close_button.setFixedWidth(100)
+        self.close_button.setFixedWidth(BUTTON_WIDTH_PX)
         button_layout.addWidget(self.new_button)
         button_layout.addWidget(self.close_button)
         self.layout.addLayout(button_layout)
