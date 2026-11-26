@@ -36,7 +36,6 @@ BADGE_BORDER_COLOR = _get_config("badge_border_color", "#F0F0F0")
 BADGE_TEXT_COLOR = _get_config("badge_text_color", "#1E1E1E")
 MENU_HOVER_BG = _get_config("menu_hover_bg", "#383838")
 ERROR_COLOR = _get_config("error_color", "#D19A66")
-FOCUS_COLOR = _get_config("focus_color", "#383838")
 
 # Narrative block type colors (acted session 04 / TSK16 from TSC visual
 # feedback: sand #E5C07B, gold #D19A66, red #E06666; Pivot and Condition
@@ -65,7 +64,6 @@ def block_color(block_type: str) -> str:
 # Typography (charter 98)
 FONT_FAMILY = _get_config("node_font_family", "Segoe UI")
 MENU_FONT_SIZE_PX = _get_config("menu_font_size_px", 12)
-NODE_FONT_SIZE_PX = _get_config("node_font_size_px", 13)
 NODE_LABEL_FONT_SIZE_PX = _get_config("node_label_font_size_px", 9)
 NODE_TITLE_FONT_SIZE_PX = _get_config("node_title_font_size_px", 14)
 

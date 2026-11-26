@@ -564,23 +564,6 @@ class JourneysWorkspace(QGraphicsView, QObject):
             self._select_item_only(node)
             self.ensure_visible(node.pos().x(), node.pos().y())
 
-    def find_connection(self, transition_id: int):
-        """Find the Connection of a business transition id."""
-        connection = self._connections.get(transition_id)
-        if connection is not None:
-            return connection
-        for item in self.scene.items():
-            if isinstance(item, Connection) and item.get_relation_id() == transition_id:
-                return item
-        return None
-
-    def has_connection_between(self, source_node, target_node) -> bool:
-        """True when a visual transition already links the two nodes."""
-        for item in self.scene.items():
-            if isinstance(item, Connection):
-                if item.source_node is source_node and item.target_node is target_node:
-                    return True
-        return False
 
     def next_free_position(self, x: float = 2000.0, y: float = 2000.0):
         """First grid-snapped, non-overlapping position near (x, y) (RG050)."""

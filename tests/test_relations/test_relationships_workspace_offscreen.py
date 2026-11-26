@@ -64,9 +64,11 @@ from usecases.view_management import CreateBlockUseCase, CreateTransitionUseCase
 from usecases.relationship_management import CreateRelationshipUseCase
 from ui.views.relationships_workspace import (
     RelationshipsWorkspace, _GridLineItem, _CELL_SIZE, _CELLS_LEFT, _CELLS_TOP,
-    _CARD_OFF_X, _CARD_OFF_Y, _PANEL_WIDTH, _SEPARATOR_HEIGHT,
+    _CARD_OFF_X, _CARD_OFF_Y,
 )
-from ui.widgets.filters_side_panel import FiltersSidePanel  # TSK33
+from ui.widgets.filters_side_panel import (  # TSK33
+    FiltersSidePanel, PANEL_WIDTH_PX, SEPARATOR_HEIGHT_PX,
+)
 from ui.nodes.matrix_relationship_card import MatrixRelationshipCard  # TSK32
 from ui.nodes.matrix_agent_card import MatrixAgentCard  # TSK36
 from ui.utils import theme
@@ -324,10 +326,10 @@ def test_side_panel_has_thick_separator_after_agent_filter(qapp):
     separates the filter zone from the ordered block list."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
     separators = [f for f in ws.findChildren(QFrame)
-                  if f.minimumHeight() == f.maximumHeight() == _SEPARATOR_HEIGHT
+                  if f.minimumHeight() == f.maximumHeight() == SEPARATOR_HEIGHT_PX
                   and "background-color" in f.styleSheet()]
     assert separators
-    assert _SEPARATOR_HEIGHT >= 2  # thicker than the old 1 px HLine
+    assert SEPARATOR_HEIGHT_PX >= 2  # thicker than the old 1 px HLine
 
 
 def test_matrix_card_hover_tooltip_does_not_raise(qapp):
@@ -490,13 +492,13 @@ def test_no_gray_strip_on_the_right_of_the_panel(qapp):
     panel set via set_panel_width - no pin needed) - no exposed (light)
     splitter background on the right edge."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
-    ws._splitter.set_panel_width(_PANEL_WIDTH)  # TSK35: width via the splitter API
+    ws._splitter.set_panel_width(PANEL_WIDTH_PX)  # TSK35: width via the splitter API
     ws.resize(1100, 700)
     ws.show()
     qapp.processEvents()
     sp = ws._splitter
     sizes = sp.sizes()
-    assert sizes[-1] == _PANEL_WIDTH
+    assert sizes[-1] == PANEL_WIDTH_PX
     panel = next(c for c in sp.children()
                  if c.isWidgetType() and isinstance(c, FiltersSidePanel))  # TSK33
     assert panel.x() + panel.width() == sp.width()  # panel flush to the right edge

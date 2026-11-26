@@ -40,7 +40,7 @@ from typing import Dict, List, Optional, Set, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from core.models.data_model import (
-        Agent, Block, Journey, NarrativeMap, Project, Relationship,
+        Agent, Block, Journey, NarrativeMap, Project,
     )
 
 from core.services.agent_filter_service import AgentFilterService

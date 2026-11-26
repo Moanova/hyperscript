@@ -25,7 +25,7 @@ Decisions (docs/conception/05_preview-FR/EN.md, TSK37):
   workspace background (BG_PRIMARY), otherwise the text is invisible.
 """
 
-from typing import Dict, List, Optional, TYPE_CHECKING
+from typing import Dict, Optional, TYPE_CHECKING
 
 from PySide6.QtWidgets import QTextBrowser, QToolTip
 from PySide6.QtCore import QUrl
@@ -34,7 +34,7 @@ from config.config_loader import get as _get_config
 from ui.utils import theme
 
 if TYPE_CHECKING:
-    from core.models.data_model import Agent, Journey, NarrativeMap, Project
+    from core.models.data_model import Journey, NarrativeMap, Project
 
 _LINK_COLOR = _get_config("link_color", "#E5C07B")
 

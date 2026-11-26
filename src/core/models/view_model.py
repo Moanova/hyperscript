@@ -232,13 +232,6 @@ class WorkspaceLayout:
             scroll_y=float(data.get('scroll_y', 0.0)),
         )
 
-    def get_node_layout(self, node_type: BlockType, node_id: int) -> Optional[NodeLayout]:
-        """Get the layout of a block (block types all share the same node dict)."""
-        return self.block_nodes.get(node_id)
-
-    def get_connection_layout(self, relation_id: int) -> Optional[ConnectionLayout]:
-        """Get the layout of a transition by its ID."""
-        return self.transition_connections.get(relation_id)
 
     def add_node(self, node_layout: NodeLayout) -> None:
         """Add or update a block node layout."""

@@ -34,7 +34,7 @@ import json
 import logging
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import Optional
 
 logger = logging.getLogger(__name__)
 
@@ -43,7 +43,6 @@ from core.models.view_model import (
     ProjectLayout,
     NodeLayout,
     ConnectionLayout,
-    AgentCardLayout,
     PortPosition,
     ConnectionStyle
 )
@@ -81,38 +80,6 @@ def sanitize_filename(filename: str) -> str:
     if len(safe_name) > 100:
         safe_name = safe_name[:100]
     return safe_name
-
-
-def get_safe_dir_name(name: str, base_dir: Path) -> Path:
-    """
-    Generate a unique directory name within base_dir.
-    
-    If the name already exists, append a numeric suffix (_2, _3, etc.).
-    Falls back to a hash-based name if too many conflicts.
-    
-    Args:
-        name: The desired directory name (already sanitized)
-        base_dir: The parent directory
-        
-    Returns:
-        A Path to a unique directory that doesn't exist yet
-    """
-    candidate = base_dir / name
-    if not candidate.exists():
-        return candidate
-    
-    # Try numeric suffixes
-    counter = 2
-    while counter < 1000:
-        new_candidate = base_dir / f"{name}_{counter}"
-        if not new_candidate.exists():
-            return new_candidate
-        counter += 1
-    
-    # Fallback: use hash of the name
-    import hashlib
-    name_hash = hashlib.md5(name.encode()).hexdigest()[:8]
-    return base_dir / f"{name}_{name_hash}"
 
 
 class LayoutService:
@@ -285,31 +252,6 @@ class LayoutService:
             logger.error("Error loading project layout from %s: %s", filepath, e)
             return None
 
-    @classmethod
-    def get_project_dir(cls, project_filepath: str) -> Path:
-        """
-        Public method to get the project directory (for external use).
-        
-        Args:
-            project_filepath: Full path to the project JSON file
-            
-        Returns:
-            Path to the project directory
-        """
-        return cls._get_project_dir(project_filepath)
-
-    @classmethod
-    def get_layout_dir(cls, project_filepath: str) -> Path:
-        """
-        Public method to get the layouts directory (for external use).
-        
-        Args:
-            project_filepath: Full path to the project JSON file
-            
-        Returns:
-            Path to the layouts directory
-        """
-        return cls._get_layout_dir(project_filepath)
 
     @classmethod
     def save_workspace_layout(
@@ -383,192 +325,6 @@ class LayoutService:
             logger.error("Error loading layout from %s: %s", filepath, e)
             return None
 
-    @classmethod
-    def delete_workspace_layout(
-        cls,
-        project_filepath: str,
-        narrative_map_id: str
-    ) -> bool:
-        """
-        Delete a workspace layout file.
-        
-        Args:
-            project_filepath: Full path to the project JSON file
-            narrative_map_id: UUID of the narrative map
-            
-        Returns:
-            True if the file was deleted or didn't exist, False on error
-        """
-        filepath = cls._get_layout_filepath(project_filepath, narrative_map_id)
-        
-        if not filepath.exists():
-            return True  # Already deleted
-        
-        try:
-            filepath.unlink()
-            return True
-        except IOError as e:
-            logger.error("Error deleting layout %s: %s", filepath, e)
-            return False
-
-    @classmethod
-    def workspace_layout_exists(
-        cls,
-        project_filepath: str,
-        narrative_map_id: str
-    ) -> bool:
-        """
-        Check if a workspace layout file exists.
-        
-        Args:
-            project_filepath: Full path to the project JSON file
-            narrative_map_id: UUID of the narrative map
-            
-        Returns:
-            True if the layout file exists, False otherwise
-        """
-        filepath = cls._get_layout_filepath(project_filepath, narrative_map_id)
-        return filepath.exists()
-
-    @classmethod
-    def list_project_layouts(
-        cls,
-        project_filepath: str
-    ) -> List[str]:
-        """
-        List all narrative map IDs that have saved layouts for a project.
-        
-        Args:
-            project_filepath: Full path to the project JSON file
-            
-        Returns:
-            List of narrative_map_id strings that have saved layouts
-        """
-        layout_dir = cls._get_layout_dir(project_filepath)
-        if not layout_dir.exists():
-            return []
-        
-        layouts = []
-        for filepath in layout_dir.glob("*.json"):
-            if filepath.name == cls.PROJECT_LAYOUT_FILENAME:
-                continue  # RG067: project-level layout, not a map layout
-            # Le nom du fichier est directement l'UUID de la NarrativeMap
-            narrative_map_id = filepath.stem
-            # Revert sanitization (replace underscores with hyphens for UUIDs)
-            narrative_map_id = narrative_map_id.replace("_", "-")
-            layouts.append(narrative_map_id)
-
-        return layouts
-
-    @classmethod
-    def delete_stale_layouts(
-        cls,
-        project_filepath: str,
-        keep_ids: List[str]
-    ) -> int:
-        """
-        Delete layout files that do not belong to the given narrative map IDs.
-
-        Called after a successful save over an existing project file, so that
-        layouts left over from a previously saved project (which was
-        overwritten) are removed. Only the layouts of the narrative maps
-        actually belonging to the saved project must remain.
-
-        Args:
-            project_filepath: Full path to the project JSON file
-            keep_ids: narrative_map_id strings whose layouts must be kept
-
-        Returns:
-            Number of deleted layout files, or -1 on error
-        """
-        if not project_filepath:
-            raise ValueError("project_filepath cannot be empty")
-
-        layout_dir = cls._get_layout_dir(project_filepath)
-        if not layout_dir.exists():
-            return 0
-
-        # Sanitize keep_ids the same way _get_layout_filepath does,
-        # so the comparison matches the filenames on disk. The project-level
-        # layout (RG067) is not a map layout: it is always kept.
-        keep_filenames = {
-            narrative_map_id.replace("/", "_").replace("\\", "_") + ".json"
-            for narrative_map_id in keep_ids
-        }
-        keep_filenames.add(cls.PROJECT_LAYOUT_FILENAME)
-
-        deleted = 0
-        try:
-            for filepath in layout_dir.glob("*.json"):
-                if filepath.name not in keep_filenames:
-                    filepath.unlink()
-                    deleted += 1
-                    logger.debug("Stale layout deleted: %s", filepath)
-            return deleted
-        except IOError as e:
-            logger.error("Error deleting stale layouts in %s: %s", layout_dir, e)
-            return -1
-
-    @classmethod
-    def delete_project_layouts(
-        cls,
-        project_filepath: str
-    ) -> bool:
-        """
-        Delete all layout files for a project.
-        
-        Args:
-            project_filepath: Full path to the project JSON file
-            
-        Returns:
-            True if all layouts were deleted or directory didn't exist, False on error
-        """
-        layout_dir = cls._get_layout_dir(project_filepath)
-        if not layout_dir.exists():
-            return True
-        
-        try:
-            # Delete all JSON files in the layouts directory
-            for filepath in layout_dir.glob("*.json"):
-                filepath.unlink()
-            # Remove the layouts directory if empty
-            layout_dir.rmdir()
-            
-            # Try to remove the project directory if empty
-            project_dir = cls._get_project_dir(project_filepath)
-            try:
-                project_dir.rmdir()
-            except OSError:
-                # Directory not empty (maybe other files), that's ok
-                pass
-            
-            return True
-        except IOError as e:
-            logger.error("Error deleting project layouts %s: %s", layout_dir, e)
-            return False
-
-    @classmethod
-    def create_empty_layout(
-        cls,
-        narrative_map_id: str
-    ) -> WorkspaceLayout:
-        """
-        Create an empty WorkspaceLayout with default values.
-        
-        Args:
-            narrative_map_id: UUID of the narrative map
-            
-        Returns:
-            A new empty WorkspaceLayout instance
-        """
-        return WorkspaceLayout(
-            narrative_map_id=narrative_map_id,
-            block_nodes={},
-            transition_connections={},
-            zoom_level=1.0,
-            scroll_x=0.0,
-            scroll_y=0.0
-        )
 
     @classmethod
     def snap_to_grid(cls, value: float, grid_size: float = None, offset: float = 0.0) -> float:

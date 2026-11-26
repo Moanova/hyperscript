@@ -107,14 +107,13 @@ from core.services.relationship_service import RelationshipService
 from ui.nodes.matrix_agent_card import MatrixAgentCard
 from ui.nodes.matrix_relationship_card import MatrixRelationshipCard
 from ui.widgets.filters_side_panel import (
-    FiltersSidePanel, SidePanelSplitter, PANEL_WIDTH_PX, SEPARATOR_HEIGHT_PX,
+    FiltersSidePanel, SidePanelSplitter,
 )
 from config.config_loader import get as _get_config
 from ui.utils import theme
 
 # TSK33: the side panel is the shared FiltersSidePanel; its width comes from
 # the shared side_panel_width_px key (fallback relationships_view_panel_width_px)
-_PANEL_WIDTH = PANEL_WIDTH_PX  # alias kept for the offscreen tests
 _CELL_SIZE = int(_get_config("relationships_view_cell_size_px", 100))  # square cells (TSK29)
 _BG_PRIMARY = _get_config("bg_primary", theme.BG_PRIMARY)
 _GRID_MINOR_COLOR = _get_config("grid_minor_color", "#333333")
@@ -128,7 +127,6 @@ _SCENE_MIN_SIZE = 4000
 _REL_CARD_W = MatrixRelationshipCard.WIDTH
 _REL_CARD_H = MatrixRelationshipCard.HEIGHT
 # TSK31 (3.1): separator between the filter zone and the block list
-_SEPARATOR_HEIGHT = SEPARATOR_HEIGHT_PX  # alias kept for the offscreen tests
 _CARD_W = MatrixAgentCard.WIDTH
 _CARD_H = MatrixAgentCard.HEIGHT
 _CARD_OFF_X = (_CELL_SIZE - _CARD_W) / 2   # 10 px at C=100 -> 20 px between adjacent cards

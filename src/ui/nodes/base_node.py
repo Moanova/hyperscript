@@ -118,9 +118,6 @@ class BaseNode(QGraphicsRectItem):
         self._init_label()
         self._position_label()
         
-        # Initialize ports (empty dict, to be populated by subclasses if needed)
-        self.ports = {}
-
         # Position change observers (connections that need to update when this node moves)
         self._position_observers = []
         
@@ -545,29 +542,6 @@ class BaseNode(QGraphicsRectItem):
         return self.output_port is not None and self.output_port.isVisible()
 
 
-    def add_port(self, name: str, position: QPointF) -> None:
-        """
-        Add a connection port to the node.
-        
-        Args:
-            name: Name of the port
-            position: Position relative to the node (0-1 in both axes)
-        """
-        self.ports[name] = position
-
-    def get_port(self, name: str) -> Optional[QPointF]:
-        """
-        Get the position of a port by name.
-        
-        Args:
-            name: Name of the port
-            
-        Returns:
-            Position of the port in node coordinates, or None if not found
-        """
-        return self.ports.get(name)
-
-
     # -------------------------------------------------------------------------
     # Utility methods
     # -------------------------------------------------------------------------
@@ -606,13 +580,6 @@ class TypedNode(BaseNode):
         super().update_from_layout()
         self._update_colors()
 
-    def set_note(self, note: str) -> None:
-        """Set the entity's note."""
-        self.entity.note = note
-
-    def get_note(self) -> Optional[str]:
-        """Get the entity's note."""
-        return self.entity.note
 
     def get_port_position(self, port_name: str) -> QPointF:
         """Get the scene position of a connection port ('left' or 'right')."""

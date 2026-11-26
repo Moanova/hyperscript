@@ -38,7 +38,7 @@ from typing import Any, Optional
 
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsTextItem, QGraphicsItem, QToolTip
 from PySide6.QtCore import Qt, QPointF
-from PySide6.QtGui import QPen, QBrush, QColor, QFont, QPainterPath
+from PySide6.QtGui import QPen, QBrush, QFont, QPainterPath
 
 from core.models.data_model import Agent
 from core.models.view_model import AgentCardLayout

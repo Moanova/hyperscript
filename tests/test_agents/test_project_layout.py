@@ -9,8 +9,7 @@
 """Unit tests for the project-level layout (TSK19b, RG067): AgentCardLayout /
 ProjectLayout serialization and LayoutService.save_project_layout /
 load_project_layout (layouts/project.json), plus the cell-grid snap and
-nearest-free-cell search (RG065, TSK21) and the exclusion of project.json
-from the per-map layout listings."""
+nearest-free-cell search (RG065, TSK21)."""
 
 import json
 
@@ -69,24 +68,6 @@ def test_load_project_layout_missing_file_returns_none(tmp_path):
     assert LayoutService.load_project_layout(project_file) is None
 
 
-def test_project_layout_file_excluded_from_map_layouts(tmp_path):
-    """project.json (RG067) must not be listed as a narrative-map layout,
-    and must survive delete_stale_layouts."""
-    project_file = str(tmp_path / "myproj.json")
-    LayoutService.save_workspace_layout(
-        project_file, "map-uuid-1",
-        LayoutService.create_empty_layout("map-uuid-1"))
-    LayoutService.save_project_layout(project_file, ProjectLayout())
-
-    listed = LayoutService.list_project_layouts(project_file)
-    assert "map-uuid-1" in listed
-    assert "project" not in listed
-
-    deleted = LayoutService.delete_stale_layouts(project_file, keep_ids=["map-uuid-1"])
-    assert deleted == 0
-    layout_dir = tmp_path / "myproj" / "layouts"
-    assert (layout_dir / "map-uuid-1.json").exists()
-    assert (layout_dir / "project.json").exists()
 
 
 def test_snap_to_cell_grid():
