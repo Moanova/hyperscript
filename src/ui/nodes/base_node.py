@@ -17,7 +17,8 @@ for:
 - Handling selection and movement
 - Supporting connection ports (incoming left, outgoing right)
 
-The concrete node type is BlockNode.
+Concrete node types: BlockNode (via TypedNode, Journeys view) and
+AgentCardItem (Agents view, TSK46).
 """
 
 from PySide6.QtWidgets import QGraphicsRectItem, QGraphicsTextItem, QGraphicsItem, QGraphicsEllipseItem, QToolTip
@@ -42,8 +43,7 @@ class BaseNode(QGraphicsRectItem):
     Attributes:
         entity: The business entity this node represents (Block)
         layout: The NodeLayout containing visual properties (position, size, etc.)
-        label: QGraphicsTextItem for displaying the block's type
-        ports: Dictionary of connection ports (for future use)
+        label: QGraphicsTextItem for displaying the entity label
     """
     
     # Default dimensions (sourced from config.json)
@@ -242,7 +242,7 @@ class BaseNode(QGraphicsRectItem):
 
         # Update color if specified (layout color overrides the surface;
         # the type outline is preserved, charter 98)
-        if self.layout.color:
+        if getattr(self.layout, "color", None):
             try:
                 color = QColor(self.layout.color)
                 if color.isValid():
