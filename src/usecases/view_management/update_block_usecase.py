@@ -26,6 +26,7 @@ class UpdateBlockUseCase:
                 content: Optional[str] = None,
                 journey_ids: Optional[List[int]] = None) -> Block:
         # None means "unchanged"; pass "" to clear a field
+        """Apply the block updates (lb/note/content/journeys/agents); return it, or None when refused."""
         if lb is not None:
             block.lb = lb
         if note is not None:

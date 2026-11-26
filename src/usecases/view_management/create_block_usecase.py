@@ -22,6 +22,7 @@ class CreateBlockUseCase:
         self.project_service = project_service
 
     def execute(self, typ: str, lb: str = None, filter_active: bool = False) -> Block:
+        """Create a block of the given type, attached to the active journey (RG040); return it."""
         narrative_map = self.project_service.current_project.narrative_maps[0]  # MVP: single map
         if typ not in BLOCK_TYPES or typ == "Start":
             raise ValueError(f"Cannot create a block of type {typ!r} manually")  # RG025

@@ -25,10 +25,12 @@ from core.services.journey_sequence_service import JourneySequenceService
 
 class DeleteJourneyUseCase:
 
+    """Use case deleting a journey (refused when it anchors the Start block, RG068)."""
     def __init__(self, project_service: ProjectService):
         self.project_service = project_service
 
     def execute(self, journey: Journey) -> Optional[Dict]:
+        """Delete the journey; return True on success, False when refused."""
         if not self.project_service.current_project:
             return None
         narrative_map = self.project_service.current_project.narrative_maps[0]  # MVP: single map

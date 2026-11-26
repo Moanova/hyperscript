@@ -19,6 +19,7 @@ class UpdateJourneyUseCase:
         self.project_service = project_service
 
     def execute(self, journey: Journey, lb: Optional[str] = None, note: Optional[str] = None) -> Optional[Journey]:
+        """Apply the journey updates (lb/note); return it, or None when refused."""
         if not self.project_service.current_project:
             return None
         if lb is not None:

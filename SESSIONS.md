@@ -39,6 +39,7 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 - **TSK48 implémentée (feu vert TSC séance 12) et passée en Review** — constantes visuelles centralisées dans `theme.py` (`LINK_COLOR`/`GRID_MINOR_COLOR`/`GRID_MAJOR_COLOR` ajoutés ; `_BG_PRIMARY` ×4, `_GRID_*_COLOR` ×3, `_BORDER_COLOR`/`_BG_SURFACE`/`_TEXT_SECONDARY`/`_LINK_COLOR` remplacés par `theme.*`) ; py_compile OK, pyflakes clean `src/`, **200 tests passed + 3 pré-existants hors scope** ; fiche TSK48 journalisée ; commit+push `dev`.
 - **TSK49 implémentée (feu vert TSC séance 12) et passée en Review** — ~26 nombres magiques de tailles de dialogues/boutons remplacés par 15 nouvelles clés `config.json` (`dialog_*_px`) ; `base_dialog.py` expose `BUTTON_WIDTH_PX`/`WIDE_BUTTON_WIDTH_PX` et les tailles min via `_get_config` (défauts = valeurs actuelles) ; 0 nombre en dur restant dans `ui/dialogs/` ; tailles vérifiées identiques offscreen ; py_compile OK, pyflakes clean `src/`, **200 tests passed + 3 pré-existants hors scope** ; fiche TSK49 journalisée ; commit+push `dev`.
 - **TSK50 implémentée (feu vert TSC séance 12) et passée en Review** — encapsulation : `LayoutService.rects_overlap` public, propriété `RelationshipsWorkspace.splitter`, `FiltersSidePanel.set_anchor_block_silent` public (main_window + tests migrés) ; `_is_grid_line` laissé (intra-module) ; py_compile OK, pyflakes clean `src/`, **200 tests passed + 3 pré-existants hors scope** ; fiche TSK50 journalisée ; commit+push `dev`.
+- **TSK51 implémentée (feu vert TSC séance 12, dernière tâche de la séance) et passée en Review** — 109 docstrings anglais ajoutés (9 classes + 100 méthodes publiques ; rescan : 0 manquant, 0 accentué) ; diff documentaire seul (+109 lignes) ; py_compile OK, pyflakes clean `src/`, **200 tests passed + 3 pré-existants hors scope** ; fiche TSK51 journalisée ; commit+push `dev`.
 
 ### Choix actés
 - TSK39 laissée en **To do** (seule la création de tâche + l'analyse étaient demandées ; implémentation sur feu vert TSC). Dépendances → #TSK37, #TSK38 (Review, ce qui autorisera le passage en Doing le moment venu).
@@ -47,7 +48,7 @@ Les entrées sont ajoutées dans l'ordre antechronologique.
 - 2.4 **confirmé TSC séance 12, puis révisé séance 12 (TSK40)** : règle finalement **inversée** — « All journeys » → `lb (parcours…)` entre parenthèses, parcours précis filtré → `lb (typ)` à la place des parcours.
 
 ### État en fin de séance
-- Kanban : **TSK37/TSK38 Done**, **TSK39, TSK40 et TSK41 en Review** (implémentées, tests OK, toutes committées), **TSK42 en Review** (export HTML « Files › Export Project... », implémentée et testée, committée), **TSK43 en Doing** (analyse dette technique terminée, plan proposé), **TSK44–TSK50 en Review** (implémentées et pushées), **TSK51–TSK52 en To do** (plan de refactorisation). Commits poussés sur `dev` (`voir git log`).
+- Kanban : **TSK37/TSK38 Done**, **TSK39, TSK40 et TSK41 en Review** (implémentées, tests OK, toutes committées), **TSK42 en Review** (export HTML « Files › Export Project... », implémentée et testée, committée), **TSK43 en Doing** (analyse dette technique terminée, plan proposé), **TSK44–TSK51 en Review** (implémentées et pushées), **TSK52 en To do** (post-MVP). Commits poussés sur `dev` (`voir git log`).
 
 ### Problèmes rencontrés
 - Aucun.

@@ -23,6 +23,7 @@ class AssociateParticipationUseCase:
         self.project_service = project_service
 
     def execute(self, agent_id: int, block_id: int) -> Participation:
+        """Create the participation (agent on block); return it, or None when it exists."""
         project = self.project_service.current_project
         narrative_map = project.narrative_maps[0]  # MVP: single map
         agent = ParticipationService.get_agent(project, agent_id)

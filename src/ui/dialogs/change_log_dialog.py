@@ -15,6 +15,7 @@ from config.config_loader import get as _get_config
 from ui.utils import theme
 
 class ChangeLogDialog(QDialog):
+    """Read-only dialog listing the application change log."""
     def __init__(self, change_log_service: ChangeLogService, parent=None):
         super().__init__(parent)
         self.change_log_service = change_log_service

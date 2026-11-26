@@ -19,6 +19,7 @@ class UpdateTransitionUseCase:
         self.project_service = project_service
 
     def execute(self, transition: Transition, note: Optional[str] = None) -> Transition:
+        """Apply the transition updates (note); return it, or None when refused."""
         if note is not None:
             transition.note = note
         self.project_service.set_modified(True)

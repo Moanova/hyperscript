@@ -167,6 +167,7 @@ class JourneysWorkspace(BaseGraphicsWorkspace):
     def mouseMoveEvent(self, event):
         # Bypass BaseGraphicsWorkspace.mouseMoveEvent (it already auto-scrolls):
         # the temp trace must run BEFORE the auto-scroll, as before TSK47
+        """Update the temp transition trace, then auto-scroll on drag (BaseGraphicsWorkspace)."""
         QGraphicsView.mouseMoveEvent(self, event)
 
         # Temp trace follows the cursor in transition creation mode
@@ -178,6 +179,7 @@ class JourneysWorkspace(BaseGraphicsWorkspace):
         self._auto_scroll_on_drag(event)
 
     def mouseReleaseEvent(self, event):
+        """Forward the release to the view (the block snap on release happens in the nodes)."""
         super().mouseReleaseEvent(event)
 
     # viewportEvent (tooltip swallowing) is inherited from BaseGraphicsWorkspace

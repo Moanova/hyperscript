@@ -23,6 +23,7 @@ class UpdateAgentUseCase:
     def execute(self, agent: Agent, lb: Optional[str] = None, typ: Optional[str] = None,
                 note: Optional[str] = None, content: Optional[str] = None) -> Agent:
         # None means "unchanged"; pass "" to clear a field
+        """Apply the updates; return the updated agent, or None when refused."""
         if lb is not None:
             if not lb.strip():
                 raise ValueError("Agent label cannot be empty")  # FN031

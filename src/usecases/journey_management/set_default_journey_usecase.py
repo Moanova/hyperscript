@@ -21,6 +21,7 @@ class SetDefaultJourneyUseCase:
         self.project_service = project_service
 
     def execute(self, journey: Journey) -> Optional[Journey]:
+        """Set the journey as the map default (RG062); return True on success."""
         if not self.project_service.current_project:
             return None
         narrative_map = self.project_service.current_project.narrative_maps[0]  # MVP: single map

@@ -39,6 +39,7 @@ def sanitize_folder_name(name: str) -> str:
 
 
 class ExportProjectUseCase:
+    """Use case exporting the project as a static HTML site (SU007/FN013, TSK42)."""
     def __init__(self, project_service: ProjectService):
         self.project_service = project_service
 

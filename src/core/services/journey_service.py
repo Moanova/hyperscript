@@ -31,10 +31,12 @@ class JourneyService:
 
     @staticmethod
     def attachment_journey_ids(narrative_map: NarrativeMap, block_id: int) -> List[int]:
+        """Return the ids of the journeys the given block is attached to."""
         return [jn.journey_id for jn in narrative_map.journey_node if jn.block_id == block_id]
 
     @staticmethod
     def attach_block(narrative_map: NarrativeMap, block_id: int, journey_id: int) -> Journey_node:
+        """Attach a block to a journey (creates the Journey_node entry)."""
         jn = Journey_node(
             id=narrative_map.get_next_id('journey_node'),
             journey_id=journey_id,

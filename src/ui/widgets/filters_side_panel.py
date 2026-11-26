@@ -117,6 +117,7 @@ class FiltersSidePanel(QWidget):
     # Data / refresh
     # ------------------------------------------------------------------
     def set_data(self, project: Project, narrative_map: NarrativeMap):
+        """Set the project/map data, then rebuild the filter combos and the block list."""
         self._project = project
         self._narrative_map = narrative_map
 
@@ -128,9 +129,11 @@ class FiltersSidePanel(QWidget):
 
     @property
     def block_ids(self) -> List[int]:
+        """Return the ids of the blocks currently listed in the block sequence (property)."""
         return self._block_ids
 
     def get_anchor_block_id(self) -> Optional[int]:
+        """Return the anchor block id selected in the block list, or None (property-style accessor)."""
         return self._anchor_block_id
 
     def set_anchor_block(self, block_id: int):
@@ -140,6 +143,7 @@ class FiltersSidePanel(QWidget):
             self._sync_block_list_selection()
 
     def set_anchor_block_silent(self, block_id: Optional[int]):
+        """Set the anchor block without emitting signals (workspace sync; public since TSK50)."""
         self._anchor_block_id = block_id
         self._sync_block_list_selection()
 
@@ -147,16 +151,19 @@ class FiltersSidePanel(QWidget):
     # Filters (pushed by MainWindow; the panel zones only request changes)
     # ------------------------------------------------------------------
     def set_journey_filter_active(self, active: bool):
+        """Set the journey filter state (RG047)."""
         self.journey_filter_active = active
         self.rebuild_filter_combos()
         self.rebuild_block_list()
 
     def set_agent_filter(self, agent_id: Optional[int]):
+        """Set the agent filter: an agent id, or None for "All agents"."""
         self.agent_filter_agent_id = agent_id
         self.rebuild_filter_combos()
         self.rebuild_block_list()
 
     def rebuild_filter_combos(self):
+        """Rebuild the journey/agent filter combos from the current project and map."""
         self._updating_combos = True
         try:
             nm = self._narrative_map
@@ -196,6 +203,7 @@ class FiltersSidePanel(QWidget):
     # to the blocks visible under the active filters - RG064)
     # ------------------------------------------------------------------
     def rebuild_block_list(self):
+        """Rebuild the block sequence list according to the active filters (TSK40 rule)."""
         if self.block_list is None:  # TSK33: no block list in the "Journeys" view
             self._block_ids = []
             return
@@ -262,6 +270,7 @@ class SidePanelHandle(QSplitterHandle):
         self.setCursor(Qt.CursorShape.SizeHorCursor)
 
     def paintEvent(self, event):
+        """Paint the collapse/expand chevron on the splitter handle."""
         super().paintEvent(event)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
@@ -277,10 +286,12 @@ class SidePanelHandle(QSplitterHandle):
         painter.drawPolyline(points)
 
     def mousePressEvent(self, event):
+        """Start a click on the handle (collapse toggle or drag start, TSK35)."""
         self._press_pos = event.position().toPoint()
         super().mousePressEvent(event)
 
     def mouseReleaseEvent(self, event):
+        """Toggle collapse on a simple click; end the drag otherwise (TSK35)."""
         super().mouseReleaseEvent(event)
         if self._press_pos is not None and \
                 (event.position().toPoint() - self._press_pos).manhattanLength() < self.CLICK_SLOP_PX:
@@ -326,9 +337,11 @@ class SidePanelSplitter(QSplitter):
         self.splitterMoved.connect(self._on_splitter_moved)
 
     def createHandle(self):
+        """Create the custom side-panel handle with the chevron (TSK35)."""
         return SidePanelHandle(Qt.Orientation.Horizontal, self)  # TSK35
 
     def resizeEvent(self, event):
+        """Re-apply the current panel width on resize (TSK35)."""
         super().resizeEvent(event)
         # TSK35: on resize the splitter scales its sizes proportionally -
         # re-apply the CURRENT panel width (unlike the old fixed pin of
@@ -355,6 +368,7 @@ class SidePanelSplitter(QSplitter):
         self.panel_width_changed.emit(width)
 
     def toggle_collapse(self):
+        """Collapse/expand the side panel from the handle chevron (RG047)."""
         if self.collapsed:
             self.expand()
         else:

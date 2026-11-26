@@ -11,10 +11,12 @@ from core.services.project_service import ProjectService
 
 class CreateProjectUseCase:
 
+    """Use case creating a new empty project ("Files > New...")."""
     def __init__(self, project_service: ProjectService):
         self.project_service = project_service
 
     def execute(self) -> Project:
+        """Create and open a new project; return it."""
         project = self.project_service.create_project()
         self._initialize_narrative_map(project.narrative_maps[0])
         return project

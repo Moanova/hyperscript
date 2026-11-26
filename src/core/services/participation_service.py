@@ -26,6 +26,7 @@ class ParticipationService:
 
     @staticmethod
     def get_agent(project: Project, agent_id: int) -> Optional[Agent]:
+        """Return the project agent with the given id, or None."""
         for a in project.agent:
             if a.id == agent_id:
                 return a
@@ -33,6 +34,7 @@ class ParticipationService:
 
     @staticmethod
     def get_block(narrative_map: NarrativeMap, block_id: int) -> Optional[Block]:
+        """Return the narrative-map block with the given id, or None."""
         for b in narrative_map.block:
             if b.id == block_id:
                 return b
@@ -49,6 +51,7 @@ class ParticipationService:
 
     @staticmethod
     def get_block_participations(narrative_map: NarrativeMap, block_id: int) -> List[Participation]:
+        """Return the participations anchored on the given block."""
         return [p for p in narrative_map.participation if p.block_id == block_id]
 
     @staticmethod

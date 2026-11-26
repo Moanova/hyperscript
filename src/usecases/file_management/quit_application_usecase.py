@@ -10,6 +10,7 @@ from core.services.project_service import ProjectService
 
 class QuitApplicationUseCase:
 
+    """Use case quitting the app (save prompt when the project is modified)."""
     def __init__(self, project_service: ProjectService):
         self.project_service = project_service
 

@@ -26,6 +26,7 @@ class UpdateRelationshipUseCase:
                 block_id: Optional[int] = None, note: Optional[str] = None,
                 content: Optional[str] = None) -> Optional[Relationship]:
         # None means "unchanged"; pass "" to clear a field
+        """Apply the relationship updates; return it, or None when refused."""
         narrative_map = self.project_service.current_project.narrative_maps[0]  # MVP: single map
         if typ is not None:
             if not RelationshipService.validate_type(typ):  # FN037

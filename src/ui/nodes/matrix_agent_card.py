@@ -53,6 +53,7 @@ class MatrixAgentCard(QGraphicsRectItem):
         self.setToolTip(tooltip)
 
     def itemChange(self, change, value):
+        """Apply the selection appearance on selection change."""
         if change == QGraphicsItem.GraphicsItemChange.ItemSelectedChange:
             self._selected = bool(value)
             self.update()
@@ -72,6 +73,7 @@ class MatrixAgentCard(QGraphicsRectItem):
         return p
 
     def boundingRect(self):
+        """Bounding rect of the card (pen width included)."""
         return QRectF(0, 0, self.WIDTH, self.HEIGHT).adjusted(
             -self.HIT_AREA_WIDTH / 2, -self.HIT_AREA_WIDTH / 2,
             self.HIT_AREA_WIDTH / 2, self.HIT_AREA_WIDTH / 2)
@@ -79,14 +81,17 @@ class MatrixAgentCard(QGraphicsRectItem):
     def hoverEnterEvent(self, event):
         # RG054: immediate tooltip (the workspace swallows Qt's delayed one);
         # no widget argument: QToolTip.showText expects a QWidget, not a QGraphicsItem
+        """Show the tooltip immediately on hover (RG054)."""
         QToolTip.showText(event.screenPos(), self.toolTip())
         super().hoverEnterEvent(event)
 
     def hoverLeaveEvent(self, event):
+        """Hide the tooltip when the hover ends."""
         QToolTip.hideText()
         super().hoverLeaveEvent(event)
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
+        """Paint the card as a rounded rectangle (block-style sand border)."""
         rect = QRectF(0, 0, self.WIDTH, self.HEIGHT)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setBrush(QBrush(QColor(self.BG_COLOR)))

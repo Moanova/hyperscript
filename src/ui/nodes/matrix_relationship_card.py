@@ -51,6 +51,7 @@ class MatrixRelationshipCard(QGraphicsRectItem):
         self.setAcceptHoverEvents(True)
 
     def set_relationship(self, rel_id: int, label: str, tooltip: str):
+        """Set the business relationship id carried by the card."""
         self.rel_id = rel_id
         self._label = label
         self.setToolTip(tooltip)
@@ -65,20 +66,24 @@ class MatrixRelationshipCard(QGraphicsRectItem):
         return stroker.createStroke(p).united(p)
 
     def boundingRect(self):
+        """Bounding rect of the card (pen width included)."""
         return QRectF(0, 0, self.WIDTH, self.HEIGHT).adjusted(
             -self.HIT_AREA_WIDTH / 2, -self.HIT_AREA_WIDTH / 2,
             self.HIT_AREA_WIDTH / 2, self.HIT_AREA_WIDTH / 2)
 
     def hoverEnterEvent(self, event):
         # RG054: immediate tooltip; no widget argument (QGraphicsItem is not a QWidget)
+        """Show the tooltip immediately on hover (RG054)."""
         QToolTip.showText(event.screenPos(), self.toolTip())
         super().hoverEnterEvent(event)
 
     def hoverLeaveEvent(self, event):
+        """Hide the tooltip when the hover ends."""
         QToolTip.hideText()
         super().hoverLeaveEvent(event)
 
     def paint(self, painter: QPainter, option: QStyleOptionGraphicsItem, widget: QWidget = None):
+        """Paint the relationship card (rounded rect, type color border)."""
         rect = QRectF(0, 0, self.WIDTH, self.HEIGHT)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
         painter.setBrush(QBrush(QColor(self.BG_COLOR)))

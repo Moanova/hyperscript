@@ -9,6 +9,7 @@
 from core.services.project_service import ProjectService
 
 class LoadProjectUseCase:
+    """Use case loading a project from its JSON file (RG007)."""
     def __init__(self, project_service: ProjectService):
         self.project_service = project_service
 

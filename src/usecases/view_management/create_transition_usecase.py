@@ -23,6 +23,7 @@ class CreateTransitionUseCase:
         self.project_service = project_service
 
     def execute(self, from_block_id: int, to_block_id: int, note: Optional[str] = None) -> Optional[Transition]:
+        """Create a transition between two blocks (RG028 matrix); return it, or None when refused."""
         narrative_map = self.project_service.current_project.narrative_maps[0]  # MVP: single map
         transition = TransitionService.create_transition(narrative_map, from_block_id, to_block_id, note)  # RG028
         if transition is None:

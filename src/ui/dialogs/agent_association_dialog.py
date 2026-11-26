@@ -85,6 +85,7 @@ class AgentAssociationDialog(QDialog):
         self._refresh_list()
 
     def set_status(self, text: str):
+        """Set the feedback line shown below the agent list."""
         self.status_label.setText(text)
 
     def _refresh_list(self):

@@ -23,6 +23,7 @@ class DissociateParticipationUseCase:
         self.project_service = project_service
 
     def execute(self, agent_id: int, block_id: int) -> Optional[Participation]:
+        """Remove the participation; return True when removed."""
         project = self.project_service.current_project
         narrative_map = project.narrative_maps[0]  # MVP: single map
         if ParticipationService.get_agent(project, agent_id) is None:

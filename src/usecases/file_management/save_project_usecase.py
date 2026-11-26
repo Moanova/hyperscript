@@ -9,6 +9,7 @@
 from core.services.project_service import ProjectService
 
 class SaveProjectUseCase:
+    """Use case saving the current project to its JSON file (RG007)."""
     def __init__(self, project_service: ProjectService):
         self.project_service = project_service
 

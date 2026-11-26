@@ -77,10 +77,12 @@ class Agent:
             raise ValueError(f"Invalid Agent.typ: {self.typ}. Must be one of: {AGENT_TYPES}")
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize the entity to a JSON-compatible dict."""
         return _entity_to_dict(self)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Agent':
+        """Build the entity from its serialized dict (classmethod)."""
         return _entity_from_dict(cls, data)
 
 
@@ -104,10 +106,12 @@ class Block:
             raise ValueError(f"Invalid Block.typ: {self.typ}. Must be one of: {BLOCK_TYPES}")
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize the entity to a JSON-compatible dict."""
         return _entity_to_dict(self)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Block':
+        """Build the entity from its serialized dict (classmethod)."""
         return _entity_from_dict(cls, data)
 
 
@@ -126,10 +130,12 @@ class Transition:
         _check_int_id(self, ["id", "from_block_id", "to_block_id"])
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize the entity to a JSON-compatible dict."""
         return _entity_to_dict(self)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Transition':
+        """Build the entity from its serialized dict (classmethod)."""
         return _entity_from_dict(cls, data)
 
 
@@ -148,10 +154,12 @@ class Participation:
         _check_int_id(self, ["id", "block_id", "agent_id"])
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize the entity to a JSON-compatible dict."""
         return _entity_to_dict(self)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Participation':
+        """Build the entity from its serialized dict (classmethod)."""
         return _entity_from_dict(cls, data)
 
 
@@ -180,10 +188,12 @@ class Relationship:
             self.agent_1_id, self.agent_2_id = self.agent_2_id, self.agent_1_id
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize the entity to a JSON-compatible dict."""
         return _entity_to_dict(self)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Relationship':
+        """Build the entity from its serialized dict (classmethod)."""
         return _entity_from_dict(cls, data)
 
 
@@ -204,10 +214,12 @@ class Journey:
             self.default = bool(self.default)
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize the entity to a JSON-compatible dict."""
         return _entity_to_dict(self)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Journey':
+        """Build the entity from its serialized dict (classmethod)."""
         return _entity_from_dict(cls, data)
 
 
@@ -226,10 +238,12 @@ class Journey_node:
         _check_int_id(self, ["id", "journey_id", "block_id", "sequence_order"])
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize the entity to a JSON-compatible dict."""
         return _entity_to_dict(self)
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Journey_node':
+        """Build the entity from its serialized dict (classmethod)."""
         return _entity_from_dict(cls, data)
 
 
@@ -251,6 +265,7 @@ class NarrativeMap:
     journey_node: List[Journey_node] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize the narrative map (blocks, transitions, journeys, ...) to a dict."""
         return {
             'id': self.id,
             'lb': self.lb,
@@ -267,6 +282,7 @@ class NarrativeMap:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'NarrativeMap':
+        """Build the narrative map from its serialized dict (classmethod)."""
         return cls(
             id=data.get('id'),
             lb=data.get('lb'),
@@ -319,6 +335,7 @@ class Project:
     narrative_maps: List[NarrativeMap] = field(default_factory=list)
 
     def to_dict(self) -> Dict[str, Any]:
+        """Serialize the project (agents, maps, layouts refs) to a dict."""
         return {
             'format_version': FORMAT_VERSION,
             'id': self.id,
@@ -331,6 +348,7 @@ class Project:
 
     @classmethod
     def from_dict(cls, data: Dict[str, Any]) -> 'Project':
+        """Build the project from its serialized dict (classmethod)."""
         return cls(
             id=data.get('id'),
             lb=data.get('lb'),
@@ -349,8 +367,10 @@ class Project:
 
 
 def new_project_id() -> str:
+    """Return a new unique project id (UUID4 string)."""
     return str(uuid4())
 
 
 def new_narrative_map_id() -> str:
+    """Return a new unique narrative map id (UUID4 string)."""
     return str(uuid4())

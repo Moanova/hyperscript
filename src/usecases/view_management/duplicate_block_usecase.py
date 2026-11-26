@@ -22,6 +22,7 @@ class DuplicateBlockUseCase:
         self.project_service = project_service
 
     def execute(self, block: Block, filter_active: bool = False) -> Block:
+        """Duplicate the block (Start is never duplicated, RG068); return the copy, or None."""
         if block.typ == "Start":
             raise ValueError("The Start block cannot be duplicated")  # RG025
         narrative_map = self.project_service.current_project.narrative_maps[0]  # MVP: single map

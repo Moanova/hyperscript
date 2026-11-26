@@ -49,6 +49,7 @@ class TransitionService:
 
     @staticmethod
     def get_block(narrative_map: NarrativeMap, block_id: int) -> Optional[Block]:
+        """Return the narrative-map block with the given id, or None."""
         for b in narrative_map.block:
             if b.id == block_id:
                 return b
@@ -99,10 +100,12 @@ class TransitionService:
 
     @staticmethod
     def transitions_from(narrative_map: NarrativeMap, block_id: int) -> List[Transition]:
+        """Return the outgoing transitions of the given block."""
         return [t for t in narrative_map.transition if t.from_block_id == block_id]
 
     @staticmethod
     def transitions_to(narrative_map: NarrativeMap, block_id: int) -> List[Transition]:
+        """Return the incoming transitions of the given block."""
         return [t for t in narrative_map.transition if t.to_block_id == block_id]
 
     @staticmethod

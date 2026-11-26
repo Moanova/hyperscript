@@ -25,6 +25,7 @@ class CreateAgentUseCase:
 
     def execute(self, lb: Optional[str] = None, typ: str = "Character",
                 note: Optional[str] = None, content: Optional[str] = None) -> Agent:
+        """Create the agent; return it, or None when the label/type is refused."""
         if typ not in AGENT_TYPES:
             raise ValueError(f"Invalid Agent.typ: {typ}. Must be one of: {AGENT_TYPES}")
         project = self.project_service.current_project

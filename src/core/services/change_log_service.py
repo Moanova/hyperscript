@@ -10,6 +10,7 @@ import json
 import os
 
 class ChangeLogService:
+    """Reads the change log entries from config/change_log.json."""
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
     def get_changes(self) -> list[dict]:

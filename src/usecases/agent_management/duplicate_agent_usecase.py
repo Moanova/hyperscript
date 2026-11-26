@@ -23,6 +23,7 @@ class DuplicateAgentUseCase:
         self.project_service = project_service
 
     def execute(self, source: Agent, lb: Optional[str] = None) -> Agent:
+        """Duplicate the agent; return the copy, or None when refused."""
         project = self.project_service.current_project
         if source not in project.agent:
             raise ValueError(f"Agent {source.id} not found in the project")

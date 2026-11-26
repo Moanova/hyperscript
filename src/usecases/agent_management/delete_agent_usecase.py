@@ -23,6 +23,7 @@ class DeleteAgentUseCase:
         self.project_service = project_service
 
     def execute(self, agent_id: int) -> Optional[Dict]:
+        """Delete the agent; return True on success, False when refused."""
         project = self.project_service.current_project
         agent = ParticipationService.get_agent(project, agent_id)
         if agent is None:

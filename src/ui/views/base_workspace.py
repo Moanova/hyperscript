@@ -150,6 +150,7 @@ class BaseGraphicsWorkspace(QGraphicsView, QObject):
     # ------------------------------------------------------------------
 
     def mouseMoveEvent(self, event):
+        """Forward the move event, then auto-scroll near the viewport edges while dragging."""
         super().mouseMoveEvent(event)
         self._auto_scroll_on_drag(event)
 

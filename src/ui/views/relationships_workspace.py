@@ -153,6 +153,7 @@ class _MatrixCell(QGraphicsRectItem):
         self.setZValue(0)
 
     def shape(self):
+        """Clickable shape of the cell: the full cell rect (RG055 hit area)."""
         stroker = QPainterPathStroker()
         stroker.setWidth(_CELL_HIT_WIDTH)
         path = QPainterPath()
@@ -186,6 +187,7 @@ class _MatrixCell(QGraphicsRectItem):
         # TSK31 (2.3): the cell is transparent (no fill, no border) - the
         # background grid lines show through; only a dim overlay when the cell
         # is inactive (diagonal/lower triangle) or outside the filter (TSK32)
+        """Paint the cell (dimmed when outside the active journey, checked when it hosts a relationship)."""
         if self.dimmed:
             painter.setRenderHint(QPainter.RenderHint.Antialiasing)
             painter.setBrush(QBrush(QColor(0, 0, 0, 120)))
@@ -200,9 +202,11 @@ class _GridLineItem(QGraphicsLineItem):
     scene index would drop the item as soon as the view scrolls past it."""
 
     def shape(self):
+        """Empty shape: grid lines are not clickable."""
         return QPainterPath()
 
     def boundingRect(self):
+        """Bounding rect of the grid line (pen width included)."""
         line = self.line()
         left = min(line.x1(), line.x2())
         top = min(line.y1(), line.y2())
@@ -239,6 +243,7 @@ class _MatrixGraphicsView(QGraphicsView):
 
     def viewportEvent(self, event):
         # Swallow Qt's delayed automatic tooltip (AGENTS.md pattern)
+        """Swallow Qt's delayed automatic tooltip event (cards show it instantly)."""
         if event.type() == QEvent.ToolTip:
             return True
         return super().viewportEvent(event)
@@ -247,6 +252,7 @@ class _MatrixGraphicsView(QGraphicsView):
         return self.mapToScene(event.position().toPoint())
 
     def mousePressEvent(self, event):
+        """Left click activates the cell/card; right click requests the context menu (RG055)."""
         if event.button() == Qt.MouseButton.LeftButton:
             pos = self._scene_pos(event)
             card = self._workspace._card_at(pos)
@@ -268,6 +274,7 @@ class _MatrixGraphicsView(QGraphicsView):
         super().mousePressEvent(event)
 
     def mouseMoveEvent(self, event):
+        """Drag the card under the cursor to reorder its row/column while the left button is held."""
         if self._dragged_card is not None and event.buttons() & Qt.MouseButton.LeftButton:
             self._workspace._on_card_dragged(self._dragged_card, self._scene_pos(event))
             event.accept()
@@ -275,6 +282,7 @@ class _MatrixGraphicsView(QGraphicsView):
         super().mouseMoveEvent(event)
 
     def mouseReleaseEvent(self, event):
+        """End the card drag (drop on the target row/column)."""
         if self._dragged_card is not None:
             self._workspace._on_card_released(self._dragged_card, self._scene_pos(event))
             self._dragged_card = None
@@ -285,6 +293,7 @@ class _MatrixGraphicsView(QGraphicsView):
     def contextMenuEvent(self, event):
         # TSK31 (2.1): QContextMenuEvent exposes pos()/globalPos() (QPoint),
         # not position() - avoid AttributeError on right click
+        """Forward the context menu request with the scene position (RG055)."""
         pos = self.mapToScene(event.pos())
         card = self._workspace._card_at(pos)
         if card is not None:
@@ -439,13 +448,16 @@ class RelationshipsWorkspace(QWidget):
         layout.relationships_view_agent_order = list(self._order)
 
     def get_anchor_block_id(self) -> Optional[int]:
+        """Return the anchor block id currently selected in the side panel."""
         return self.panel.get_anchor_block_id()  # TSK33
 
     def agent_id_at_row(self, row: int) -> Optional[int]:
         # TSK32: rows and columns share the same order
+        """Return the agent id at the given matrix row, or None when out of range."""
         return self._order[row] if 0 <= row < len(self._order) else None
 
     def agent_id_at_col(self, col: int) -> Optional[int]:
+        """Return the agent id at the given matrix column, or None when out of range."""
         return self._order[col] if 0 <= col < len(self._order) else None
 
     # ------------------------------------------------------------------
@@ -544,11 +556,13 @@ class RelationshipsWorkspace(QWidget):
             self.scene.addItem(line)
 
     def resizeEvent(self, event):
+        """Redraw the matrix grid for the new visible area."""
         super().resizeEvent(event)
         # TSK33: the SidePanelSplitter pins the panel slot itself (TSK31 3.2)
         self._draw_grid()
 
     def showEvent(self, event):
+        """Redraw the grid when the tab is first shown (TSK34)."""
         super().showEvent(event)
         # TSK34 (retour 2): the grid is redrawn on resize/scroll, but a page
         # hidden at populate time never received a resize event -> redraw the
@@ -656,10 +670,12 @@ class RelationshipsWorkspace(QWidget):
     # TSK33: the combos and the block list are rebuilt by the side panel
     # (FiltersSidePanel); the workspace only recomputes the matrix
     def set_journey_filter_active(self, active: bool):
+        """Forward the journey filter state to the side panel."""
         self.panel.set_journey_filter_active(active)
         self._rebuild_cells()
 
     def set_agent_filter(self, agent_id: Optional[int]):
+        """Forward the agent filter to the side panel."""
         self.panel.set_agent_filter(agent_id)
         self._rebuild_cells()
 

@@ -17,6 +17,7 @@ class DeleteRelationshipUseCase:
         self.project_service = project_service
 
     def execute(self, relationship_id: int) -> bool:
+        """Delete the relationship; return True on success."""
         project = self.project_service.current_project
         if project is None:
             return False

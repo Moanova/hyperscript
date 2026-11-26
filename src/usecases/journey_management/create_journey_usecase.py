@@ -23,6 +23,7 @@ class CreateJourneyUseCase:
         self.project_service = project_service
 
     def execute(self, lb: Optional[str] = None, note: Optional[str] = None) -> Optional[Journey]:
+        """Create the journey; return it, or None when refused."""
         if not self.project_service.current_project:
             return None
         narrative_map = self.project_service.current_project.narrative_maps[0]  # MVP: single map

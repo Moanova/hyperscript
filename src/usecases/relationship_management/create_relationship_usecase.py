@@ -28,6 +28,7 @@ class CreateRelationshipUseCase:
 
     def execute(self, agent_1_id: int, agent_2_id: int, typ: str, block_id: int,
                 note: Optional[str] = None, content: Optional[str] = None) -> Optional[Relationship]:
+        """Create the relationship (distinct pair RG035, anchor block); return it, or None when refused."""
         project = self.project_service.current_project
         if project is None:
             return None

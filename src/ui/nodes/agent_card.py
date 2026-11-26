@@ -159,6 +159,7 @@ class AgentCardItem(BaseNode):
     def mouseReleaseEvent(self, event) -> None:
         # Bypass BaseNode.mouseReleaseEvent (grid snap RG046): the card snaps
         # to the invisible cell grid instead (RG065, below)
+        """On release, snap the card to the nearest free cell of the invisible grid (RG065)."""
         QGraphicsRectItem.mouseReleaseEvent(self, event)
         # RG065: on release, snap to the nearest cell of the invisible grid
         # (nearest FREE cell when the target cell is occupied)
@@ -202,6 +203,7 @@ class AgentCardItem(BaseNode):
         return QPointF(free_x, free_y)
 
     def itemChange(self, change: QGraphicsItem.GraphicsItemChange, value: Any) -> Any:
+        """Raise the selected card above the others; position/selection handled by BaseNode."""
         if change == QGraphicsItem.ItemSelectedChange:
             # The selected card is raised above the others, so a card
             # dragged over a neighbour never disappears behind it

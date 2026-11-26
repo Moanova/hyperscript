@@ -10,9 +10,11 @@ import json
 import os
 
 class AboutService:
+    """Reads the application about info from config/about.json."""
     BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
     def get_about_info(self) -> dict:
+        """Return the about info dict (title, version, year, author, built_by)."""
         config_path = os.path.join(self.BASE_DIR, "config", "about.json")
         try:
             with open(config_path, "r", encoding="utf-8") as f:

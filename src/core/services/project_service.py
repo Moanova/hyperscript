@@ -113,6 +113,7 @@ class ProjectService:
 
     @property
     def current_project(self) -> Project:
+        """Return the currently open Project, or None (property)."""
         return self._current_project
 
     @property
@@ -122,9 +123,11 @@ class ProjectService:
 
     @property
     def is_modified(self) -> bool:
+        """Return True when the project has unsaved changes (property)."""
         return self._is_modified
 
     def set_modified(self, modified: bool) -> None:
+        """Mark the project as modified (True) or saved (False)."""
         self._is_modified = modified
         if modified and callable(self.on_modified):
             self.on_modified()
