@@ -1,6 +1,6 @@
 # Hyperscript ::: Tableau kanban du projet
 
-- **Date de dernière modification** : 26-11-2026 (TSK01–TSK38 Done ; **TSK39 retours de test séance 12 implémentée et passée en Review** ; **TSK40 correction 2.4 + renommages panneau latéral implémentée et passée en Review**) ; To do et Doing vides)
+- **Date de dernière modification** : 26-11-2026 (TSK01–TSK38 Done ; **TSK39 retours de test séance 12 implémentée et passée en Review** ; **TSK40 correction 2.4 + renommages panneau latéral implémentée et passée en Review** ; **TSK41 libellés Preview « Participations: »/« Relationships: » implémentée et passée en Review**) ; To do et Doing vides)
 - **Description** : Suivi de l'avancement des tâches du projet.
   - Les chantiers majeurs sont des **épics** (EPCnn) découpés en **tâches** (TSKnn).
   - Le détail de chaque tâche (analyse, décisions, journal des travaux) est consigné dans un fichier markdown dédié du sous-dossier `tasks/`, nommé d'après le code de la tâche.
@@ -81,6 +81,8 @@
 - 26-11-2026 (séance 12, correction TSC) : **TSK40 créée en To do** (→ #TSK39) — TSC corrige la règle 2.4 (elle était inversée) : sur « All journeys » ce sont le(s) parcours du bloc qui figurent entre parenthèses après `lb`, et quand un parcours précis est filtré c'est le type du bloc `lb (typ)` ; + petite évolution du panneau latéral : renommages « Journey » → « Journey Filter », « Agent » → « Agent Filter », « Blocks » → « Block Sequence ».
 - 26-11-2026 (séance 12) : **TSK40 passée en Doing** (→ #TSK39, Review) — feu vert TSC « implémenter directement et pousser » ; fiche `tasks/TSK40_side_panel_labels_2_4_inversion.md`.
 - 26-11-2026 (séance 12) : **TSK40 implémentée et passée en Review** — règle 2.4 inversée dans `filters_side_panel.py` (`lb (parcours…)` sur « All journeys », `lb (typ)` quand un parcours est filtré) + libellés « Journey Filter » / « Agent Filter » / « Block Sequence » ; test 2.4 de `tests/test_tsk39/` remané + nouveaux tests `tests/test_tsk40/` (+2) ; `04_interface` §4/§6 FR/EN à jour ; py_compile OK, pyflakes sans nouveau warning vs base, **192 tests passed + 3 pré-existants hors scope** ; fiche TSK40 journalisée ; commit+push `dev` sur demande TSC.
+- 26-11-2026 (séance 12, ultime modification mineure TSC) : **TSK41 créée en To do puis passée en Doing** — vue « Preview » : préfixe « Agents: » → « Participations: » pour les agents participants d'un bloc, et préfixe « Relationships: » devant chaque relation ancrée (`preview_service.py` `_block_html`).
+- 26-11-2026 (séance 12) : **TSK41 implémentée et passée en Review** — `_block_html` : `<em>Participations: …</em>` et `<p>Relationships: …</p>` par relation ; test preview mis à jour ; specs `03_features`/`04_interface`/conception 05 FR/EN ; py_compile OK, pyflakes clean, **192 tests passed + 3 pré-existants hors scope** ; fiche TSK41 journalisée ; commit+push `dev` sur demande explicite TSC.
 
 ---
 
@@ -93,6 +95,8 @@
 
 
 ### Review
+
+- [ ] TSK41 — Libellés de la vue « Preview » (séance 12, ultime modification mineure TSC) : agents participants d'un bloc préfixés « Participations: » (au lieu de « Agents: »), relations ancrées préfixées « Relationships: » — `core/services/preview_service.py` `_block_html` — **implémentée et passée en Review 26-11-2026** (py_compile OK, 192 tests passed + 3 pré-existants hors scope ; specs FR/EN à jour ; commit+push `dev` sur demande TSC) — fiche `tasks/TSK41_preview_labels.md`
 
 - [ ] TSK40 — Correction TSC séance 12 (→ #TSK39) : (1) règle 2.4 inversée dans le panneau latéral : « All journeys » → `lb (parcours…)` entre parenthèses, parcours précis filtré → `lb (typ)` à la place ; (2) renommages des sections du panneau : « Journey » → « Journey Filter », « Agent » → « Agent Filter », « Blocks » → « Block Sequence » — **implémentée et passée en Review 26-11-2026** (py_compile OK, 192 tests passed + 3 pré-existants hors scope ; `04_interface` §4/§6 FR/EN à jour) — fiche `tasks/TSK40_side_panel_labels_2_4_inversion.md`
 

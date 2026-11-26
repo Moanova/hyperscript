@@ -125,9 +125,9 @@ def test_participating_agents_rendered_under_block_content():
     assert r is not None
     html = PreviewService.build_preview_html(project, nm)
     i_content = html.index("scene text")
-    i_agents = html.index("Agents: Alice, Bob")
-    i_rel = html.index("Alice — Bob : friend")
-    assert i_content < i_agents < i_rel  # content -> agents -> relations
+    i_agents = html.index("Participations: Alice, Bob")  # TSK41: label "Participations:"
+    i_rel = html.index("Relationships: Alice — Bob : friend")  # TSK41: prefix "Relationships:"
+    assert i_content < i_agents < i_rel  # content -> participations -> relations
 
 
 def test_agent_type_in_parentheses_after_label():

@@ -15,9 +15,10 @@ QTextBrowser). Decisions (docs/conception/05_preview-FR/EN.md, TSK37):
 - sections, in order: a) project label, b) agent list "label (type)" (links
   to g), c) map label, d) journey list (links to e), e) per journey the blocks
   from Start in reading-sequence order (RG044) with label/type, content, the
-  participating agents (TSK39 4.1), transitions inline, and the relationships
+  participating agents prefixed "Participations:" (TSK39 4.1, label TSK41),
+  transitions inline, and the relationships prefixed "Relationships:"
   anchored on each block (agent labels 1 and 2, type, content, note - TSK39
-  4.2: under the agents list) - the "state of relationships" is rendered
+  4.2: under the agents list, label TSK41) - the "state of relationships" is rendered
   under each anchor block, with no separate final section; f) orphan blocks
   (no incoming nor outgoing transition) of the current journey; g) all project
   agents "label (type)" (TSK39 4.4), content, note;
@@ -215,12 +216,13 @@ class PreviewService:
         parts.append(_body(b.content))
         # TSK39 (4.1): the participating agents, under the block content
         # (TSK39 4.3: the structured condition fields were removed in session 12)
+        # TSK41 (session 12): prefix "Participations:" instead of "Agents:"
         participants = sorted(
             agent_by_id[p.agent_id].lb
             for p in ParticipationService.get_block_participations(nm, block_id)
             if p.agent_id in agent_by_id)
         if participants:
-            parts.append(f"<p><em>Agents: {', '.join(_esc(lb) for lb in participants)}</em></p>")
+            parts.append(f"<p><em>Participations: {', '.join(_esc(lb) for lb in participants)}</em></p>")
         # transitions rendered inline (outgoing, within the journey, visible)
         for t in sorted(nm.transition, key=lambda t: t.id):
             if t.from_block_id == block_id and t.to_block_id in attached and t.to_block_id in visible:
@@ -230,6 +232,7 @@ class PreviewService:
                     label = f'<a href="#note-transition-{t.id}">{label}</a>'
                 parts.append(f"<p>{label}</p>")
         # relationships anchored on this block (state of relationships, section e)
+        # TSK41 (session 12): each relationship line is prefixed "Relationships:"
         for r in RelationshipService.get_block_relationships(nm, block_id):
             a1 = agent_by_id.get(r.agent_1_id)
             a2 = agent_by_id.get(r.agent_2_id)
@@ -237,7 +240,7 @@ class PreviewService:
             label = f"{pair} : {_esc(r.typ)}"
             if r.note:
                 label = f'<a href="#note-relationship-{r.id}">{label}</a>'
-            parts.append(f"<p>{label}</p>")
+            parts.append(f"<p>Relationships: {label}</p>")
             parts.append(_body(r.content))
         return "\n".join(parts)
 
