@@ -123,7 +123,7 @@ def test_panel_slot_keeps_its_width_on_resize(qapp):
         assert panel.x() + panel.width() == sp.width()
         mw._on_tab_changed("Relationships")
         qapp.processEvents()
-        rel_sp = mw.relationships_workspace._splitter
+        rel_sp = mw.relationships_workspace.splitter
         rel_sp.set_panel_width(PANEL_WIDTH_PX)
         qapp.processEvents()
         assert rel_sp.sizes()[-1] == PANEL_WIDTH_PX
@@ -273,7 +273,7 @@ def test_panel_resizable_width_synced_between_views_not_persisted(qapp):
         mw._on_tab_changed("Journeys")
         qapp.processEvents()
         sp_j = mw.journeys_splitter
-        sp_r = mw.relationships_workspace._splitter
+        sp_r = mw.relationships_workspace.splitter
         received = []
         sp_j.panel_width_changed.connect(lambda w: received.append(w))
         sp_j.set_panel_width(320)
@@ -314,7 +314,7 @@ def test_panel_width_standard_on_project_open_ignoring_stale_user_state(qapp):
         qapp.processEvents()
         assert mw.journeys_splitter.sizes()[-1] == PANEL_WIDTH_PX
         assert mw.journeys_panel.width() == PANEL_WIDTH_PX
-        assert mw.relationships_workspace._splitter._expanded_width == PANEL_WIDTH_PX
+        assert mw.relationships_workspace.splitter._expanded_width == PANEL_WIDTH_PX
         mw.hide()
     finally:
         close_main_window(mw)

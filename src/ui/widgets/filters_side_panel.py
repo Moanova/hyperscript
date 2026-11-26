@@ -139,7 +139,7 @@ class FiltersSidePanel(QWidget):
             self._anchor_block_id = block_id
             self._sync_block_list_selection()
 
-    def _set_anchor_block_silent(self, block_id: Optional[int]):
+    def set_anchor_block_silent(self, block_id: Optional[int]):
         self._anchor_block_id = block_id
         self._sync_block_list_selection()
 

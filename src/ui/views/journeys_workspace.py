@@ -505,7 +505,7 @@ class JourneysWorkspace(BaseGraphicsWorkspace):
         fits_visible = (left <= x and x + w <= visible.right()
                         and top <= y and y + h <= visible.bottom())
         is_free = not any(
-            LayoutService._rects_overlap(x, y, w, h, ex, ey, ew, eh)
+            LayoutService.rects_overlap(x, y, w, h, ex, ey, ew, eh)
             for ex, ey, ew, eh in existing_rects)
         if fits_visible and is_free:
             return x, y

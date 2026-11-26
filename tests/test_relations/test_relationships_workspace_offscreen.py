@@ -492,11 +492,11 @@ def test_no_gray_strip_on_the_right_of_the_panel(qapp):
     panel set via set_panel_width - no pin needed) - no exposed (light)
     splitter background on the right edge."""
     ws, nm, start, s1, alpha, zoo, mid = make_workspace(qapp)
-    ws._splitter.set_panel_width(PANEL_WIDTH_PX)  # TSK35: width via the splitter API
+    ws.splitter.set_panel_width(PANEL_WIDTH_PX)  # TSK35: width via the splitter API
     ws.resize(1100, 700)
     ws.show()
     qapp.processEvents()
-    sp = ws._splitter
+    sp = ws.splitter
     sizes = sp.sizes()
     assert sizes[-1] == PANEL_WIDTH_PX
     panel = next(c for c in sp.children()

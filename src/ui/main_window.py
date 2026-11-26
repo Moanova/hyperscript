@@ -721,7 +721,7 @@ class MainWindow(QMainWindow):
         # shared by the map views during the session but NOT persisted
         # (decision session 11): every project creation/open starts at the
         # standard width (PANEL_WIDTH_PX), whatever user_state.json holds
-        for sp in (self.journeys_splitter, relationships_workspace._splitter, self.preview_splitter):
+        for sp in (self.journeys_splitter, relationships_workspace.splitter, self.preview_splitter):
             sp.panel_width_changed.connect(lambda w, src=sp: self._on_side_panel_width_changed(w, src))
             sp.set_panel_width(PANEL_WIDTH_PX)
 
@@ -956,7 +956,7 @@ class MainWindow(QMainWindow):
         try:
             splitters = [self.journeys_splitter]
             if self.relationships_workspace is not None:
-                splitters.append(self.relationships_workspace._splitter)
+                splitters.append(self.relationships_workspace.splitter)
             for sp in splitters:
                 if sp is not None and sp is not source:
                     sp.set_panel_width(width)

@@ -326,7 +326,7 @@ class RelationshipsWorkspace(QWidget):
 
     @_anchor_block_id.setter
     def _anchor_block_id(self, value: Optional[int]):
-        self.panel._set_anchor_block_silent(value)
+        self.panel.set_anchor_block_silent(value)
 
     @property
     def _journey_filter_active(self) -> bool:
@@ -386,6 +386,11 @@ class RelationshipsWorkspace(QWidget):
         self.block_list = self.panel.block_list
         self._splitter = SidePanelSplitter(self.view, self.panel, parent=self)
         layout.addWidget(self._splitter)
+
+    @property
+    def splitter(self):
+        """Public accessor of the side-panel splitter (TSK50)."""
+        return self._splitter
 
     def _on_panel_anchor_selected(self, block_id: int):
         self._rebuild_cells()

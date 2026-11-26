@@ -347,7 +347,7 @@ class LayoutService:
         return round((value - offset) / grid_size) * grid_size + offset
 
     @staticmethod
-    def _rects_overlap(x1, y1, w1, h1, x2, y2, w2, h2) -> bool:
+    def rects_overlap(x1, y1, w1, h1, x2, y2, w2, h2) -> bool:
         """Check whether two rectangles overlap."""
         return not (x1 + w1 <= x2 or x2 + w2 <= x1 or
                     y1 + h1 <= y2 or y2 + h2 <= y1)
@@ -389,7 +389,7 @@ class LayoutService:
         for _ in range(max_attempts):
             collision = False
             for ex, ey, ew, eh in existing_rects:
-                if cls._rects_overlap(current_x, current_y, width, height,
+                if cls.rects_overlap(current_x, current_y, width, height,
                                       ex, ey, ew, eh):
                     collision = True
                     break
@@ -404,7 +404,7 @@ class LayoutService:
         for _ in range(max_attempts):
             collision = False
             for ex, ey, ew, eh in existing_rects:
-                if cls._rects_overlap(current_x, current_y, width, height,
+                if cls.rects_overlap(current_x, current_y, width, height,
                                       ex, ey, ew, eh):
                     collision = True
                     break
@@ -456,7 +456,7 @@ class LayoutService:
             cx = x
             while cx + width <= right and scanned < max_cells:
                 if cx >= left and cy >= top and not any(
-                        cls._rects_overlap(cx, cy, width, height, ex, ey, ew, eh)
+                        cls.rects_overlap(cx, cy, width, height, ex, ey, ew, eh)
                         for ex, ey, ew, eh in existing_rects):
                     return cx, cy
                 cx += step_x
@@ -513,7 +513,7 @@ class LayoutService:
                         left, top, right, bottom = bounds
                         if cx < left or cy < top or cx + width > right or cy + height > bottom:
                             continue
-                    if not any(cls._rects_overlap(cx, cy, width, height,
+                    if not any(cls.rects_overlap(cx, cy, width, height,
                                                   ex, ey, ew, eh)
                                for ex, ey, ew, eh in existing_rects):
                         return cx, cy
