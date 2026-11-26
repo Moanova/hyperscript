@@ -1,8 +1,8 @@
 # ---------------------------------------------------------------------
 # Application  : Hyperscript
 # Script       : journeys_workspace.py
-# Version      : 1
-# Date         : 2026-11-11
+# Version      : 2
+# Date         : 2026-11-26
 # Design       : TSC
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
@@ -24,13 +24,9 @@ the cursor before the menu opens (RG055).
 import logging
 from typing import Dict
 
-from PySide6.QtWidgets import (
-    QGraphicsView, QGraphicsScene,
-    QGraphicsEllipseItem, QGraphicsItem,
-    QFrame,
-)
-from PySide6.QtCore import Qt, QPointF, Signal, QObject, QEvent
-from PySide6.QtGui import QColor, QPen, QBrush, QPainter, QPainterPath
+from PySide6.QtWidgets import QGraphicsView, QGraphicsEllipseItem, QGraphicsItem
+from PySide6.QtCore import Qt, QPointF, Signal
+from PySide6.QtGui import QColor, QPen, QPainterPath
 
 from core.models.view_model import WorkspaceLayout
 from core.models.data_model import Block, Transition
@@ -39,6 +35,7 @@ from core.services.journey_filter_service import JourneyFilterService
 from core.services.agent_filter_service import AgentFilterService
 from ui.nodes.block_node import BlockNode
 from ui.nodes.connection import Connection
+from ui.views.base_workspace import BaseGraphicsWorkspace
 from ui.utils import theme
 from config.config_loader import get as _get_config
 
@@ -51,15 +48,17 @@ _BG_PRIMARY = _get_config("bg_primary", theme.BG_PRIMARY)
 
 logger = logging.getLogger(__name__)
 
-# Auto-scroll margin (px) from the viewport edges while dragging (04_interface)
-_SCROLL_MARGIN = 50
-_SCROLL_SPEED = 20
 # Distance (px) to a port for a click to count as a port click
 _PORT_CLICK_THRESHOLD = 15
 
 
-class JourneysWorkspace(QGraphicsView, QObject):
-    """Central workspace of the "Journeys" view: blocks and transitions graph."""
+class JourneysWorkspace(BaseGraphicsWorkspace):
+    """Central workspace of the "Journeys" view: blocks and transitions graph.
+
+    TSK47: the common view/scene setup, ensure_visible/add_item_at, the drag
+    auto-scroll and the tooltip swallowing come from BaseGraphicsWorkspace;
+    the grid, the transition-creation trace and the filters stay here.
+    """
 
     # Emitted when the user traced a transition from a source block's outgoing
     # port to a target block's incoming port (FN020); MainWindow applies the
@@ -67,65 +66,23 @@ class JourneysWorkspace(QGraphicsView, QObject):
     # the model (RG058)
     transition_created = Signal(object, object)  # source BlockNode, target BlockNode
 
-    # Emitted when the visual workspace changed (block moved - FN017)
-    workspace_modified = Signal()
-
-    # Emitted on right-click after selecting the item under the cursor (RG055):
-    # MainWindow builds the context menu dynamically from the application menu
-    context_menu_requested = Signal(object, object)  # item (BlockNode/Connection/None), global QPoint
-
     # Emitted when the single selection changes (RG049) - MainWindow forwards
     # the selected block to the "Relationships" view (FN032, TSK27)
     selection_changed = Signal(object)  # BlockNode/Connection or None
 
     def __init__(self, narrative_map=None, info_bar=None, main_window=None):
         super().__init__()
-
-        # No frame: the default QFrame StyledPanel border was drawn in
-        # light gray (bottom-left corner above the info bar)
-        self.setFrameShape(QFrame.NoFrame)
-
         self.narrative_map = narrative_map
-        self.info_bar = info_bar
-        self.main_window = main_window
-
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._on_context_menu_requested)
-
-        self.scene = QGraphicsScene(self)
-        self.setScene(self.scene)
-        self.scene.setBackgroundBrush(QBrush(QColor(_BG_PRIMARY)))
 
         self.grid_lines = []
-
         self._block_nodes: Dict[int, BlockNode] = {}
         self._connections: Dict[int, Connection] = {}
 
-        self.setStyleSheet(theme.WORKSPACE_STYLESHEET)
-        # A plain QWidget subclass does not paint its stylesheet
-        # background unless WA_StyledBackground is set
-        self.setAttribute(Qt.WA_StyledBackground, True)
-
-        # Initial scene size 4000x4000 so the scrollbars are active by default.
-        # Set on the SCENE (items read scene.sceneRect() to constrain their
-        # moves) and mirrored on the view (scroll range)
-        self.scene_rect_margin = 200
-        self.scene.setSceneRect(0, 0, 4000, 4000)
-        self.setSceneRect(0, 0, 4000, 4000)
+        # Common view/scene setup; the scroll repaint hook redraws the grid
+        self._init_view(info_bar=info_bar, main_window=main_window)
         self._draw_grid()
 
-        # Scrollbars always visible
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-
-        self.centerOn(2000, 2000)
-
-        self.horizontalScrollBar().valueChanged.connect(self._draw_grid)
-        self.verticalScrollBar().valueChanged.connect(self._draw_grid)
-
         self.setAcceptDrops(True)
-        # No rubber band: single selection only (RG049)
-        self.setDragMode(QGraphicsView.NoDrag)
 
         # Transition creation mode (traced from the source's outgoing port)
         self.transition_creation_mode = False
@@ -140,7 +97,9 @@ class JourneysWorkspace(QGraphicsView, QObject):
         self.journey_filter_active = False
         self.agent_filter_agent_id = None
 
-        self.setRenderHint(QPainter.Antialiasing)
+    def _on_scroll_changed(self, value) -> None:
+        """Scroll repaint hook of the base view: redraw the grid."""
+        self._draw_grid()
 
     # ------------------------------------------------------------------
     # Grid / scene geometry
@@ -201,48 +160,17 @@ class JourneysWorkspace(QGraphicsView, QObject):
         super().showEvent(event)
         self._draw_grid()
 
-    def _expand_scene_to_include(self, x: float, y: float, margin: int = None):
-        """Dynamically expand the sceneRect to include the point (x, y)."""
-        if margin is None:
-            margin = self.scene_rect_margin
-        new_rect = self.scene.sceneRect()
-        expanded = False
-        if x - margin < new_rect.left():
-            new_rect.setLeft(x - margin)
-            expanded = True
-        if x + margin > new_rect.right():
-            new_rect.setRight(x + margin)
-            expanded = True
-        if y - margin < new_rect.top():
-            new_rect.setTop(y - margin)
-            expanded = True
-        if y + margin > new_rect.bottom():
-            new_rect.setBottom(y + margin)
-            expanded = True
-        if expanded:
-            self.scene.setSceneRect(new_rect)
-            self.setSceneRect(new_rect)
-
-    def ensure_visible(self, x: float, y: float, margin: int = 200):
-        """Center the view when (x, y) falls outside the visible area (RG051)."""
-        viewport_rect = self.viewport().rect()
-        viewport_pos = self.mapFromScene(QPointF(x, y))
-        if not viewport_rect.contains(viewport_pos):
-            self.centerOn(x, y)
-
-    def add_item_at(self, x: float, y: float, item: QGraphicsItem):
-        """Add an item to the scene and expand the scene if needed."""
-        self.scene.addItem(item)
-        item.setPos(x, y)
-        self._expand_scene_to_include(x, y)
-        self.ensure_visible(x, y)
+    # _expand_scene_to_include / ensure_visible / add_item_at are inherited
+    # from BaseGraphicsWorkspace
 
     # ------------------------------------------------------------------
     # Mouse / viewport events
     # ------------------------------------------------------------------
 
     def mouseMoveEvent(self, event):
-        super().mouseMoveEvent(event)
+        # Bypass BaseGraphicsWorkspace.mouseMoveEvent (it already auto-scrolls):
+        # the temp trace must run BEFORE the auto-scroll, as before TSK47
+        QGraphicsView.mouseMoveEvent(self, event)
 
         # Temp trace follows the cursor in transition creation mode
         if self.transition_creation_mode and self.temp_connection and self.source_node:
@@ -250,39 +178,12 @@ class JourneysWorkspace(QGraphicsView, QObject):
             self._update_temp_connection(mouse_scene_pos)
 
         # Auto-scroll when the mouse is near a viewport edge while dragging
-        if event.buttons() == Qt.LeftButton:
-            viewport_rect = self.viewport().rect()
-            mouse_viewport_pos = event.position().toPoint()
-
-            if mouse_viewport_pos.x() < _SCROLL_MARGIN:
-                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - _SCROLL_SPEED)
-            elif mouse_viewport_pos.x() > viewport_rect.width() - _SCROLL_MARGIN:
-                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + _SCROLL_SPEED)
-            if mouse_viewport_pos.y() < _SCROLL_MARGIN:
-                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - _SCROLL_SPEED)
-            elif mouse_viewport_pos.y() > viewport_rect.height() - _SCROLL_MARGIN:
-                self.verticalScrollBar().setValue(self.verticalScrollBar().value() + _SCROLL_SPEED)
-
-            for item in self.scene.selectedItems():
-                if not (item.flags() & QGraphicsItem.ItemIsMovable):
-                    continue
-                item_pos = item.scenePos()
-                self._expand_scene_to_include(item_pos.x(), item_pos.y())
+        self._auto_scroll_on_drag(event)
 
     def mouseReleaseEvent(self, event):
         super().mouseReleaseEvent(event)
 
-    def viewportEvent(self, event):
-        """Swallow Qt's delayed automatic tooltip event.
-
-        Item tooltips are shown instantly by the items themselves (see
-        BaseNode.hoverEnterEvent / Connection.hoverEnterEvent). Letting the
-        automatic mechanism run would pop a second tooltip at the cursor
-        when the mouse rests.
-        """
-        if event.type() == QEvent.ToolTip:
-            return True
-        return super().viewportEvent(event)
+    # viewportEvent (tooltip swallowing) is inherited from BaseGraphicsWorkspace
 
     def mousePressEvent(self, event):
         """Single selection (RG049); in transition creation mode, port selection."""

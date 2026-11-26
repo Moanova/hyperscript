@@ -1,8 +1,8 @@
 # ---------------------------------------------------------------------
 # Application  : Hyperscript
 # Script       : agents_workspace.py
-# Version      : 3
-# Date         : 2026-11-18
+# Version      : 4
+# Date         : 2026-11-26
 # Design       : TSC
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
@@ -39,17 +39,14 @@ and the MainWindow applies the use cases.
 """
 import logging
 
-from PySide6.QtWidgets import (
-    QGraphicsView, QGraphicsScene,
-    QGraphicsItem,
-    QFrame,
-)
-from PySide6.QtCore import Qt, QPointF, Signal, QObject, QEvent
-from PySide6.QtGui import QColor, QBrush, QPainter
+from PySide6.QtWidgets import QGraphicsItem
+from PySide6.QtCore import Qt, QPointF
+from PySide6.QtGui import QColor, QBrush
 
 from core.models.view_model import ProjectLayout, AgentCardLayout
 from core.services.layout_service import LayoutService
 from ui.nodes.agent_card import AgentCardItem
+from ui.views.base_workspace import BaseGraphicsWorkspace
 from ui.utils import theme
 from config.config_loader import get as _get_config
 
@@ -68,65 +65,21 @@ _GRID_OFFSET_Y = _CELL_HEIGHT - _CARD_HEIGHT
 
 logger = logging.getLogger(__name__)
 
-# Auto-scroll margin (px) from the viewport edges while dragging (04_interface)
-_SCROLL_MARGIN = 50
-_SCROLL_SPEED = 20
 
+class AgentsWorkspace(BaseGraphicsWorkspace):
+    """Workspace of the "Agents" view: one card per project agent.
 
-class AgentsWorkspace(QGraphicsView, QObject):
-    """Workspace of the "Agents" view: one card per project agent."""
-
-    # Emitted when the visual workspace changed (card moved - FN017/RG060)
-    workspace_modified = Signal()
-
-    # Emitted on right-click after selecting the item under the cursor (RG055):
-    # MainWindow builds the context menu dynamically from the application menu
-    context_menu_requested = Signal(object, object)  # item (AgentCardItem/None), global QPoint
+    TSK47: the common view/scene setup, ensure_visible/add_item_at, the
+    drag auto-scroll and the tooltip swallowing come from
+    BaseGraphicsWorkspace; the anchor dots and the cell-grid snap stay here.
+    """
 
     def __init__(self, project=None, info_bar=None, main_window=None):
         super().__init__()
-
-        # No frame: the default QFrame StyledPanel border was drawn in
-        # light gray (bottom-left corner above the info bar)
-        self.setFrameShape(QFrame.NoFrame)
-
         self.project = project
-        self.info_bar = info_bar
-        self.main_window = main_window
-
-        self.setContextMenuPolicy(Qt.CustomContextMenu)
-        self.customContextMenuRequested.connect(self._on_context_menu_requested)
-
-        self.scene = QGraphicsScene(self)
-        self.setScene(self.scene)
-        self.scene.setBackgroundBrush(QBrush(QColor(_BG_PRIMARY)))
-
-        self.setStyleSheet(theme.WORKSPACE_STYLESHEET)
-        # A plain QWidget subclass does not paint its stylesheet
-        # background unless WA_StyledBackground is set
-        self.setAttribute(Qt.WA_StyledBackground, True)
-
-        # Initial scene size 4000x4000 so the scrollbars are active by default.
-        # Set on the SCENE (items read scene.sceneRect() to constrain their
-        # moves) and mirrored on the view (scroll range)
-        self.scene_rect_margin = 200
-        self._set_scene_rect(0, 0, 4000, 4000)
-
-        # Scrollbars always visible
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-
-        self.centerOn(2000, 2000)
-
-        # Anchor dots are painted in drawBackground over the visible area;
-        # a repaint is enough to refresh them on scroll/resize
-        self.horizontalScrollBar().valueChanged.connect(self.viewport().update)
-        self.verticalScrollBar().valueChanged.connect(self.viewport().update)
-
-        # No rubber band: single selection only (RG049)
-        self.setDragMode(QGraphicsView.NoDrag)
-
-        self.setRenderHint(QPainter.Antialiasing)
+        # Common view/scene setup (scroll repaint hook = viewport().update(),
+        # which refreshes the anchor dots drawn in drawBackground)
+        self._init_view(info_bar=info_bar, main_window=main_window)
 
     # ------------------------------------------------------------------
     # Anchor dots / scene geometry
@@ -152,12 +105,6 @@ class AgentsWorkspace(QGraphicsView, QObject):
         super().resizeEvent(event)
         self.viewport().update()
 
-    def _set_scene_rect(self, x: float, y: float, w: float, h: float):
-        """Set the scene rect on the scene (items constrain their moves with
-        scene.sceneRect()) and mirror it on the view (scroll range)."""
-        self.scene.setSceneRect(x, y, w, h)
-        self.setSceneRect(x, y, w, h)
-
     def _expand_scene_to_include(self, x: float, y: float, margin: int = None):
         """Dynamically expand the sceneRect to include the point (x, y).
         TSK30 (2.1): the workspace extends rightwards/downwards only - the
@@ -181,60 +128,15 @@ class AgentsWorkspace(QGraphicsView, QObject):
             new_rect.setBottom(y + margin)
             expanded = True
         if expanded:
-            self.scene.setSceneRect(new_rect)
-            self.setSceneRect(new_rect)
-
-    def ensure_visible(self, x: float, y: float, margin: int = 200):
-        """Center the view when (x, y) falls outside the visible area (RG051)."""
-        viewport_rect = self.viewport().rect()
-        viewport_pos = self.mapFromScene(QPointF(x, y))
-        if not viewport_rect.contains(viewport_pos):
-            self.centerOn(x, y)
-
-    def add_item_at(self, x: float, y: float, item: QGraphicsItem):
-        """Add an item to the scene and expand the scene if needed."""
-        self.scene.addItem(item)
-        item.setPos(x, y)
-        self._expand_scene_to_include(x, y)
-        self.ensure_visible(x, y)
+            self._set_scene_rect(new_rect.x(), new_rect.y(),
+                                 new_rect.width(), new_rect.height())
 
     # ------------------------------------------------------------------
     # Mouse / viewport events
     # ------------------------------------------------------------------
 
-    def mouseMoveEvent(self, event):
-        super().mouseMoveEvent(event)
-
-        # Auto-scroll when the mouse is near a viewport edge while dragging
-        if event.buttons() == Qt.LeftButton:
-            viewport_rect = self.viewport().rect()
-            mouse_viewport_pos = event.position().toPoint()
-
-            if mouse_viewport_pos.x() < _SCROLL_MARGIN:
-                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() - _SCROLL_SPEED)
-            elif mouse_viewport_pos.x() > viewport_rect.width() - _SCROLL_MARGIN:
-                self.horizontalScrollBar().setValue(self.horizontalScrollBar().value() + _SCROLL_SPEED)
-            if mouse_viewport_pos.y() < _SCROLL_MARGIN:
-                self.verticalScrollBar().setValue(self.verticalScrollBar().value() - _SCROLL_SPEED)
-            elif mouse_viewport_pos.y() > viewport_rect.height() - _SCROLL_MARGIN:
-                self.verticalScrollBar().setValue(self.verticalScrollBar().value() + _SCROLL_SPEED)
-
-            for item in self.scene.selectedItems():
-                if not (item.flags() & QGraphicsItem.ItemIsMovable):
-                    continue
-                item_pos = item.scenePos()
-                self._expand_scene_to_include(item_pos.x(), item_pos.y())
-
-    def viewportEvent(self, event):
-        """Swallow Qt's delayed automatic tooltip event.
-
-        Item tooltips are shown instantly by the items themselves (see
-        AgentCardItem.hoverEnterEvent). Letting the automatic mechanism run
-        would pop a second tooltip at the cursor when the mouse rests.
-        """
-        if event.type() == QEvent.ToolTip:
-            return True
-        return super().viewportEvent(event)
+    # mouseMoveEvent (auto-scroll on drag) and viewportEvent (tooltip
+    # swallowing) are inherited from BaseGraphicsWorkspace
 
     def mousePressEvent(self, event):
         """Single selection (RG049): a click on a card selects it alone, a
