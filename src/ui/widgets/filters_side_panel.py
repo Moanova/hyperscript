@@ -9,10 +9,10 @@
 """Filters side panel shared by the map views (TSK33, session 10).
 
 The "Relationships" view hosts FiltersSidePanel(show_block_list=True): the
-Journey + Agent filter zones, a separator, then the ordered block list used
-to follow the relationships (RG069). The "Journeys" view hosts the SAME panel
-with show_block_list=False: the Journey + Agent filter zones only, the area
-below the filters stays empty.
+"Journey Filter" + "Agent Filter" zones (TSK40, session 12), a separator,
+then the "Block Sequence" list used to follow the relationships (RG069).
+The "Journeys" view hosts the SAME panel with show_block_list=False: the two
+filter zones only, the area below the filters stays empty.
 
 The panel NEVER writes the business model (RG058): the combos emit
 journey_filter_requested / agent_filter_requested and the MainWindow applies
@@ -58,9 +58,10 @@ logger = logging.getLogger(__name__)
 
 
 class FiltersSidePanel(QWidget):
-    """Side panel of a map view: Journey + Agent filter combos (mirrors of the
-    Display menu), then - only when show_block_list=True ("Relationships"
-    view) - a separator and the ordered block list (RG069)."""
+    """Side panel of a map view: "Journey Filter" + "Agent Filter" combos
+    (TSK40 session 12 labels; mirrors of the Display menu), then - only when
+    show_block_list=True ("Relationships" view) - a separator and the
+    "Block Sequence" list (RG069)."""
 
     journey_filter_requested = Signal(object)   # journey id or None (All journeys); mirror of Display > Journey (TSK30 4.1)
     agent_filter_requested = Signal(object)     # agent id or None
@@ -88,11 +89,11 @@ class FiltersSidePanel(QWidget):
         # TSK31 (3.2): dark-themed panel content (labels, combos, list, scrollbars)
         self.setStyleSheet(theme.SIDE_PANEL_STYLESHEET)
         layout = QVBoxLayout(self)
-        layout.addWidget(QLabel("Journey"))
+        layout.addWidget(QLabel("Journey Filter"))  # TSK40 (session 12): renamed
         self.journey_combo = QComboBox()
         self.journey_combo.currentIndexChanged.connect(self._on_journey_combo)
         layout.addWidget(self.journey_combo)
-        layout.addWidget(QLabel("Agent"))
+        layout.addWidget(QLabel("Agent Filter"))  # TSK40 (session 12): renamed
         self.agent_combo = QComboBox()
         self.agent_combo.currentIndexChanged.connect(self._on_agent_combo)
         layout.addWidget(self.agent_combo)
@@ -103,7 +104,7 @@ class FiltersSidePanel(QWidget):
             separator.setFixedHeight(SEPARATOR_HEIGHT_PX)
             separator.setStyleSheet(f"background-color: {_GRID_MAJOR_COLOR}; border: none;")
             layout.addWidget(separator)
-            layout.addWidget(QLabel("Blocks"))
+            layout.addWidget(QLabel("Block Sequence"))  # TSK40 (session 12): renamed
             self.block_list = QListWidget()
             self.block_list.currentRowChanged.connect(self._on_block_selected)
             # TSK31 (3.2): the block list scrollbar is always visible, styled like
@@ -219,14 +220,14 @@ class FiltersSidePanel(QWidget):
             for bid in self._block_ids:
                 b = blocks[bid]
                 if self.journey_filter_active:
-                    # TSK39 (2.4, confirmed TSC session 12): a specific journey
-                    # filtered -> the journey(s) the block is attached to in
-                    # parentheses, instead of the block type
+                    # TSK40 (session 12, revised 2.4 - was TSK39): a specific
+                    # journey filtered -> the block TYPE in parentheses
+                    label = f"{b.lb} ({b.typ})"
+                else:
+                    # "All journeys": the journey(s) the block is attached to in
+                    # parentheses, instead of the block type (TSK40, session 12)
                     journey_ids = JourneyService.attachment_journey_ids(nm, bid)
                     label = f"{b.lb} ({', '.join(journeys[jid].lb for jid in journey_ids if jid in journeys)})"
-                else:
-                    # "All journeys": the block type stays (unchanged behavior)
-                    label = f"{b.lb} ({b.typ})"
                 item = QListWidgetItem(label)
                 item.setData(Qt.UserRole, bid)
                 self.block_list.addItem(item)

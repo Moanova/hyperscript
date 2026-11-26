@@ -361,25 +361,27 @@ def test_2_3_deleted_agent_card_removed_from_matrix(qapp, monkeypatch):
 
 # ---------------------------------------------------------------------
 # 2.4 libellé du panneau latéral selon le filtre parcours
+# (règle inversée par TSC séance 12 -> TSK40 : « All journeys » = parcours
+# entre parenthèses, parcours filtré = type)
 # ---------------------------------------------------------------------
-def test_2_4_block_list_label_type_on_all_journeys_journeys_when_filtered(qapp):
+def test_2_4_block_list_label_journeys_on_all_journeys_type_when_filtered(qapp):
     mw = make_main_window()
     try:
         ws = mw.relationships_workspace
         nm = mw._current_narrative_map()
         start = next(b for b in nm.block if b.typ == "Start")
         ws.refresh()
-        # filtre inactif (« All journeys ») -> type entre parenthèses (décision TSC confirmée)
-        labels = [ws.block_list.item(i).text() for i in range(ws.block_list.count())]
-        assert f"{start.lb} ({start.typ})" in labels
-        # filtre sur le parcours actif -> parcours entre parenthèses à la place du type
-        mw._set_journey_filter_active(True)
+        # filtre inactif (« All journeys ») -> parcours entre parenthèses (TSK40)
         labels = [ws.block_list.item(i).text() for i in range(ws.block_list.count())]
         j = nm.get_active_journey()
         assert f"{start.lb} ({j.lb})" in labels
-        mw._set_journey_filter_active(False)
+        # filtre sur le parcours actif -> type entre parenthèses à la place des parcours
+        mw._set_journey_filter_active(True)
         labels = [ws.block_list.item(i).text() for i in range(ws.block_list.count())]
         assert f"{start.lb} ({start.typ})" in labels
+        mw._set_journey_filter_active(False)
+        labels = [ws.block_list.item(i).text() for i in range(ws.block_list.count())]
+        assert f"{start.lb} ({j.lb})" in labels
     finally:
         close_main_window(mw)
 

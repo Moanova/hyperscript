@@ -48,7 +48,7 @@
 ## Décisions actées (séance 12, TSC)
 
 1. **3.2** : retrait complet de la condition structurée **hors du modèle** (`Block.condition`, `CONDITION_KINDS`, validation, use case, dialogue, preview, specs, tests) — « afin de simplifier le modèle ».
-2. **2.4 (confirmé TSC séance 12)** : filtre sur un parcours précis dans le panneau latéral → parcours du bloc entre parenthèses **à la place du type** ; « All journeys » → **type de bloc conservé** (comportement actuel inchangé). La formulation du retour 2.4 était ambiguë ; la validation TSC tranche pour la conservation du type sur « All journeys ».
+2. **2.4 (confirmé TSC séance 12, puis REVISÉ séance 12 → TSK40)** : implémenté d'abord comme filtre sur un parcours précis → parcours du bloc entre parenthèses **à la place du type** ; « All journeys » → type conservé. TSC a ensuite corrigé : la règle est **inversée** — « All journeys » → `lb (parcours…)`, parcours précis filtré → `lb (typ)` (voir TSK40, `tasks/TSK40_side_panel_labels_2_4_inversion.md`).
 3. **Bascule de vue par action utilisateur** = `TabBar.setCurrentTab` (avec émission de `currentChanged`), jamais `forceCurrentTab` (sans émission), réservé à la restauration de l'onglet par défaut à l'ouverture d'un projet.
 4. **1.9** : suppression complète de la duplication de parcours (code mort retiré, pas de shim de compatibilité).
 
