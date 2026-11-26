@@ -41,10 +41,7 @@ from config.config_loader import get as _get_config
 
 _GRID_MINOR_SIZE = _get_config("grid_minor_size", 20)
 _GRID_MAJOR_SIZE = _get_config("grid_major_size", 80)
-_GRID_MINOR_COLOR = _get_config("grid_minor_color", "#333333")
-_GRID_MAJOR_COLOR = _get_config("grid_major_color", "#4A4A4A")
 _TEMP_CONNECTION_COLOR = _get_config("temp_connection_color", theme.CONNECTION_COLOR)
-_BG_PRIMARY = _get_config("bg_primary", theme.BG_PRIMARY)
 
 logger = logging.getLogger(__name__)
 
@@ -123,7 +120,7 @@ class JourneysWorkspace(BaseGraphicsWorkspace):
         margin = 100
         scene_rect.adjust(-margin, -margin, margin, margin)
 
-        pen_main = QPen(QColor(_GRID_MINOR_COLOR))
+        pen_main = QPen(QColor(theme.GRID_MINOR_COLOR))
         pen_main.setWidth(1)
         start_x = int(scene_rect.left() - (scene_rect.left() % _GRID_MINOR_SIZE))
         for x in range(start_x, int(scene_rect.right()) + _GRID_MINOR_SIZE, _GRID_MINOR_SIZE):
@@ -136,7 +133,7 @@ class JourneysWorkspace(BaseGraphicsWorkspace):
             line.setZValue(-2)
             self.grid_lines.append(line)
 
-        pen_sub = QPen(QColor(_GRID_MAJOR_COLOR))
+        pen_sub = QPen(QColor(theme.GRID_MAJOR_COLOR))
         pen_sub.setWidth(1)
         start_x = int(scene_rect.left() - (scene_rect.left() % _GRID_MAJOR_SIZE))
         for x in range(start_x, int(scene_rect.right()) + _GRID_MAJOR_SIZE, _GRID_MAJOR_SIZE):

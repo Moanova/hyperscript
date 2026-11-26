@@ -115,10 +115,6 @@ from ui.utils import theme
 # TSK33: the side panel is the shared FiltersSidePanel; its width comes from
 # the shared side_panel_width_px key (fallback relationships_view_panel_width_px)
 _CELL_SIZE = int(_get_config("relationships_view_cell_size_px", 100))  # square cells (TSK29)
-_BG_PRIMARY = _get_config("bg_primary", theme.BG_PRIMARY)
-_GRID_MINOR_COLOR = _get_config("grid_minor_color", "#333333")
-_GRID_MAJOR_COLOR = _get_config("grid_major_color", "#4A4A4A")
-_BORDER_COLOR = _get_config("border_color", "#383838")
 _CELL_HIT_WIDTH = _get_config("journeys_view_hit_area_width_px", 12.0)
 _CELL_MARGIN = 2.0
 # TSK30: scene anchored on the top-left corner, growing rightwards/downwards only
@@ -372,7 +368,7 @@ class RelationshipsWorkspace(QWidget):
         self.scene = QGraphicsScene()
         self.view = _MatrixGraphicsView(self)
         self.view.setScene(self.scene)
-        self.view.setBackgroundBrush(QBrush(QColor(_BG_PRIMARY)))
+        self.view.setBackgroundBrush(QBrush(QColor(theme.BG_PRIMARY)))
         # TSK30: redraw the grid over the newly visible area on scroll
         self.view.horizontalScrollBar().valueChanged.connect(self._draw_grid)
         self.view.verticalScrollBar().valueChanged.connect(self._draw_grid)
@@ -530,14 +526,14 @@ class RelationshipsWorkspace(QWidget):
         start_x = int(x1 - (x1 % _CELL_SIZE))
         for x in range(start_x, int(x2) + _CELL_SIZE, _CELL_SIZE):
             line = _GridLineItem(x, y1, x, y2)
-            line.setPen(QPen(QColor(_GRID_MAJOR_COLOR if round(x / _CELL_SIZE) % 4 == 0 else _GRID_MINOR_COLOR), 1))
+            line.setPen(QPen(QColor(theme.GRID_MAJOR_COLOR if round(x / _CELL_SIZE) % 4 == 0 else theme.GRID_MINOR_COLOR), 1))
             line.setZValue(-2)
             line._is_grid_line = True
             self.scene.addItem(line)
         start_y = int(y1 - (y1 % _CELL_SIZE))
         for y in range(start_y, int(y2) + _CELL_SIZE, _CELL_SIZE):
             line = _GridLineItem(x1, y, x2, y)
-            line.setPen(QPen(QColor(_GRID_MAJOR_COLOR if round(y / _CELL_SIZE) % 4 == 0 else _GRID_MINOR_COLOR), 1))
+            line.setPen(QPen(QColor(theme.GRID_MAJOR_COLOR if round(y / _CELL_SIZE) % 4 == 0 else theme.GRID_MINOR_COLOR), 1))
             line.setZValue(-2)
             line._is_grid_line = True
             self.scene.addItem(line)

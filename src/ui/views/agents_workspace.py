@@ -47,10 +47,8 @@ from core.models.view_model import ProjectLayout, AgentCardLayout
 from core.services.layout_service import LayoutService
 from ui.nodes.agent_card import AgentCardItem
 from ui.views.base_workspace import BaseGraphicsWorkspace
-from ui.utils import theme
 from config.config_loader import get as _get_config
 
-_BG_PRIMARY = _get_config("bg_primary", theme.BG_PRIMARY)
 _DOT_SPACING = _get_config("agents_view_dot_spacing_px", 20)
 _DOT_RADIUS = _get_config("agents_view_dot_radius_px", 1.5)
 _DOT_COLOR = _get_config("agents_view_dot_color", "#4A4A4A")

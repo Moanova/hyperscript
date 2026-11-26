@@ -27,9 +27,6 @@ from PySide6.QtCore import Qt, QPointF, Signal, QObject, QEvent
 from PySide6.QtGui import QColor, QBrush, QPainter
 
 from ui.utils import theme
-from config.config_loader import get as _get_config
-
-_BG_PRIMARY = _get_config("bg_primary", theme.BG_PRIMARY)
 
 logger = logging.getLogger(__name__)
 
@@ -62,7 +59,7 @@ class BaseGraphicsWorkspace(QGraphicsView, QObject):
 
         self.scene = QGraphicsScene(self)
         self.setScene(self.scene)
-        self.scene.setBackgroundBrush(QBrush(QColor(_BG_PRIMARY)))
+        self.scene.setBackgroundBrush(QBrush(QColor(theme.BG_PRIMARY)))
 
         self.setStyleSheet(theme.WORKSPACE_STYLESHEET)
         # A plain QWidget subclass does not paint its stylesheet

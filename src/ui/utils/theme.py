@@ -36,6 +36,9 @@ BADGE_BORDER_COLOR = _get_config("badge_border_color", "#F0F0F0")
 BADGE_TEXT_COLOR = _get_config("badge_text_color", "#1E1E1E")
 MENU_HOVER_BG = _get_config("menu_hover_bg", "#383838")
 ERROR_COLOR = _get_config("error_color", "#D19A66")
+LINK_COLOR = _get_config("link_color", "#E5C07B")
+GRID_MINOR_COLOR = _get_config("grid_minor_color", "#333333")
+GRID_MAJOR_COLOR = _get_config("grid_major_color", "#4A4A4A")
 
 # Narrative block type colors (acted session 04 / TSK16 from TSC visual
 # feedback: sand #E5C07B, gold #D19A66, red #E06666; Pivot and Condition

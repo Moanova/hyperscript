@@ -30,13 +30,11 @@ from typing import Dict, Optional, TYPE_CHECKING
 from PySide6.QtWidgets import QTextBrowser, QToolTip
 from PySide6.QtCore import QUrl
 
-from config.config_loader import get as _get_config
 from ui.utils import theme
 
 if TYPE_CHECKING:
     from core.models.data_model import Journey, NarrativeMap, Project
 
-_LINK_COLOR = _get_config("link_color", "#E5C07B")
 
 # The browser must carry the workspace background explicitly: the app-wide
 # stylesheet already sets a light text color on every QWidget, and
@@ -50,7 +48,7 @@ _PREVIEW_BROWSER_STYLESHEET = f"""
         font-size: {theme.MENU_FONT_SIZE_PX}px;
     }}
     QTextBrowser a {{
-        color: {_LINK_COLOR};
+        color: {theme.LINK_COLOR};
     }}
 """
 

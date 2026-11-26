@@ -49,10 +49,6 @@ PANEL_MIN_WIDTH_PX = int(_get_config("side_panel_min_width_px", 180))
 SEPARATOR_HEIGHT_PX = int(_get_config("relationships_view_separator_height_px", 2))
 _ALL_JOURNEYS_LABEL = _get_config("journey_list_all_label", "All journeys")
 _ALL_AGENTS_LABEL = _get_config("agent_list_all_label", "All agents")
-_GRID_MAJOR_COLOR = _get_config("grid_major_color", "#4A4A4A")
-_BG_SURFACE = _get_config("bg_surface", theme.BG_SURFACE)
-_BORDER_COLOR = _get_config("border_color", theme.BORDER_COLOR)
-_TEXT_SECONDARY = _get_config("text_secondary", theme.TEXT_SECONDARY)
 
 logger = logging.getLogger(__name__)
 
@@ -102,7 +98,7 @@ class FiltersSidePanel(QWidget):
             # TSK30 (3.8) + TSK31 (3.1): separator between the filter zone and the block list
             separator = QFrame()
             separator.setFixedHeight(SEPARATOR_HEIGHT_PX)
-            separator.setStyleSheet(f"background-color: {_GRID_MAJOR_COLOR}; border: none;")
+            separator.setStyleSheet(f"background-color: {theme.GRID_MAJOR_COLOR}; border: none;")
             layout.addWidget(separator)
             layout.addWidget(QLabel("Block Sequence"))  # TSK40 (session 12): renamed
             self.block_list = QListWidget()
@@ -269,7 +265,7 @@ class SidePanelHandle(QSplitterHandle):
         super().paintEvent(event)
         painter = QPainter(self)
         painter.setRenderHint(QPainter.RenderHint.Antialiasing)
-        painter.setPen(QPen(QColor(_TEXT_SECONDARY), 1.6))
+        painter.setPen(QPen(QColor(theme.TEXT_SECONDARY), 1.6))
         cx, cy = self.width() / 2.0, self.height() / 2.0
         d = 3.5
         if getattr(self.splitter(), "collapsed", False):
@@ -319,8 +315,8 @@ class SidePanelSplitter(QSplitter):
         self.collapsed = False
         # TSK31 (3.2): dark splitter (handle + any exposed background)
         self.setStyleSheet(
-            f"QSplitter {{ background-color: {_BG_SURFACE}; }}"
-            f"QSplitter::handle {{ background-color: {_BORDER_COLOR}; }}")
+            f"QSplitter {{ background-color: {theme.BG_SURFACE}; }}"
+            f"QSplitter::handle {{ background-color: {theme.BORDER_COLOR}; }}")
         self.addWidget(view)
         self.addWidget(panel)
         self.setStretchFactor(0, 1)
