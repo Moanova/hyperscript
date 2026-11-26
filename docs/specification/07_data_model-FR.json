@@ -203,30 +203,6 @@
                "default_value": "Scene",
                "description": "Type du bloc : Début (Start), Scène (Scene), Pivot, Condition, Fin (End) — choisi à la création et immuable ensuite"
             },
-            "condition": {
-               "type": "object",
-               "description": "Condition structurée — renseignée uniquement pour typ = Condition (unique support de la condition)",
-               "properties": {
-                  "kind": {
-                     "type": "string",
-                     "enum": [
-                        "Choice",
-                        "Artefact",
-                        "Skill",
-                        "Flag"
-                     ],
-                     "description": "Nature de la condition : choix / artefact / compétence / flag"
-                  },
-                  "ref_agent_id": {
-                     "type": "integer",
-                     "description": "Référence vers un agent Artefact (référence à Agent.id) ; null si sans référence"
-                  },
-                  "label": {
-                     "type": "string",
-                     "description": "Libellé de la condition"
-                  }
-               }
-            },
             "creation_date_time": {
                "type": "string",
                "format": "date-time",

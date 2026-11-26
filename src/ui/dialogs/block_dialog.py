@@ -6,7 +6,7 @@
 # Design       : TSC
 # Build        : Mistral Vibe
 # ---------------------------------------------------------------------
-"""Block edition dialog (TSK12, FN015/FN035/RG042).
+"""Block edition dialog (TSK12, FN015/RG042; TSK39 session 12: FN030).
 
 Edits a narrative block (fusion of planoscript's ComponentDialog and
 RelationDialog, adapted to the single typed Block):
@@ -16,22 +16,23 @@ RelationDialog, adapted to the single typed Block):
 - "Journeys": multiple-choice list of the map's journeys (RG042: the list
   cannot be emptied - a block cannot be detached from its last journey;
   disabled when the map has a single journey);
-- for a Condition block only: the structured condition (FN035): kind
-  (Choice / Artefact / Skill / Flag), optional reference to an Artefact
-  agent, label.
+- "Agents": multiple-choice list of the project's agents (FN030, TSK39
+  session 12) - the participating agents are checked; the checked set is
+  applied by the caller through the participation use cases. The structured
+  condition fields (FN035) were removed in session 12 to simplify the model.
 
-get_values() returns {'lb', 'note', 'content', 'journey_ids', 'condition'}.
+get_values() returns {'lb', 'note', 'content', 'journey_ids', 'agent_ids'}.
 """
-from typing import List, Optional
+from typing import List
 
 from PySide6.QtWidgets import (
-    QDialog, QVBoxLayout, QFormLayout, QLineEdit, QComboBox,
+    QDialog, QVBoxLayout, QFormLayout, QLineEdit,
     QTextEdit, QListWidget, QListWidgetItem, QPushButton, QHBoxLayout,
     QLabel, QSizePolicy
 )
 from PySide6.QtCore import Qt
 
-from core.models.data_model import CONDITION_KINDS, Block
+from core.models.data_model import Block
 from config.config_loader import get as _get_config
 from ui.utils import theme
 
@@ -44,21 +45,23 @@ class BlockDialog(QDialog):
     JOURNEYS_LIST_MAX_HEIGHT_PX = 120
 
     def __init__(self, block: Block, journeys: List, attached_journey_ids,
-                 artefact_agents: List = (), parent=None):
+                 agents: List = (), participating_agent_ids=(), parent=None):
         """
         Args:
             block: the Block entity being edited
             journeys: list of the Journey entities of the map
             attached_journey_ids: ids of the journeys the block is currently
                 attached to (checked in the list)
-            artefact_agents: list of the project's Artefact agents (for the
-                condition reference of a Condition block)
+            agents: list of the project's Agent entities
+            participating_agent_ids: ids of the agents currently participating
+                in the block (checked in the list)
         """
         super().__init__(parent)
         self.block = block
         self._journeys = list(journeys)
         self._attached = set(attached_journey_ids or [])
-        self._artefact_agents = list(artefact_agents)
+        self._agents = list(agents)
+        self._participating = set(participating_agent_ids or [])
         self._setup_ui()
         self._setup_content()
 
@@ -94,10 +97,6 @@ class BlockDialog(QDialog):
         self.content_edit.setMinimumHeight(self.CONTENT_MIN_HEIGHT_PX)
         self.form.addRow("Content:", self.content_edit)
 
-        # Structured condition (Condition blocks only - FN035, unique support)
-        if self.block.typ == "Condition":
-            self._setup_condition_fields()
-
         # Journeys multiple-choice list (RG042)
         self.journeys_list = QListWidget()
         for journey in self._journeys:
@@ -115,35 +114,24 @@ class BlockDialog(QDialog):
             self.journeys_list.setEnabled(False)
         self.form.addRow("Journeys:", self.journeys_list)
 
+        # Agents multiple-choice list (FN030, TSK39 session 12): same pattern
+        # as the journey attachments - the participating agents are checked
+        self.agents_list = QListWidget()
+        for agent in sorted(self._agents, key=lambda a: (a.lb, a.id)):
+            item = QListWidgetItem(f"{agent.lb} ({agent.typ})")
+            item.setData(Qt.ItemDataRole.UserRole, agent.id)
+            item.setFlags(item.flags() | Qt.ItemFlag.ItemIsUserCheckable)
+            item.setCheckState(Qt.CheckState.Checked
+                               if agent.id in self._participating
+                               else Qt.CheckState.Unchecked)
+            self.agents_list.addItem(item)
+        self.agents_list.setMaximumHeight(self.JOURNEYS_LIST_MAX_HEIGHT_PX)
+        self.form.addRow("Agents:", self.agents_list)
+
         # Inline validation message (hidden by default)
         self.error_label = QLabel("")
         self.error_label.setStyleSheet(f"color: {theme.ERROR_COLOR};")
         self.layout.addWidget(self.error_label)
-
-    def _setup_condition_fields(self):
-        """Structured condition of a Condition block (FN035)."""
-        condition = getattr(self.block, 'condition', None) or {}
-
-        self.condition_kind_combo = QComboBox()
-        self.condition_kind_combo.addItems(CONDITION_KINDS)
-        kind = condition.get("kind", CONDITION_KINDS[0])
-        index = self.condition_kind_combo.findText(kind)
-        if index >= 0:
-            self.condition_kind_combo.setCurrentIndex(index)
-        self.form.addRow("Condition kind:", self.condition_kind_combo)
-
-        self.condition_ref_combo = QComboBox()
-        self.condition_ref_combo.addItem("None", None)
-        ref_id = condition.get("ref_agent_id")
-        for agent in self._artefact_agents:
-            self.condition_ref_combo.addItem(agent.lb, agent.id)
-            if ref_id is not None and agent.id == ref_id:
-                self.condition_ref_combo.setCurrentIndex(self.condition_ref_combo.count() - 1)
-        self.form.addRow("Artefact ref:", self.condition_ref_combo)
-
-        self.condition_label_edit = QLineEdit()
-        self.condition_label_edit.setText(condition.get("label") or "")
-        self.form.addRow("Condition label:", self.condition_label_edit)
 
     def _add_buttons(self):
         button_layout = QHBoxLayout()
@@ -176,15 +164,14 @@ class BlockDialog(QDialog):
                 ids.append(item.data(Qt.ItemDataRole.UserRole))
         return ids
 
-    def get_condition(self) -> Optional[dict]:
-        """Return the structured condition values (Condition blocks only)."""
-        if self.block.typ != "Condition":
-            return None
-        return {
-            "kind": self.condition_kind_combo.currentText(),
-            "ref_agent_id": self.condition_ref_combo.currentData(),
-            "label": self.condition_label_edit.text(),
-        }
+    def get_agent_ids(self) -> List[int]:
+        """Return the ids of the checked agents (FN030)."""
+        ids = []
+        for i in range(self.agents_list.count()):
+            item = self.agents_list.item(i)
+            if item.checkState() == Qt.CheckState.Checked:
+                ids.append(item.data(Qt.ItemDataRole.UserRole))
+        return ids
 
     def get_values(self) -> dict:
         """Return the values entered by the user."""
@@ -193,5 +180,5 @@ class BlockDialog(QDialog):
             'note': self.note_edit.toPlainText(),
             'content': self.content_edit.toPlainText(),
             'journey_ids': self.get_journey_ids(),
-            'condition': self.get_condition(),
+            'agent_ids': self.get_agent_ids(),
         }

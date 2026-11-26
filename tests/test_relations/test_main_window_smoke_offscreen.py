@@ -34,6 +34,21 @@ from usecases.agent_management import CreateAgentUseCase
 from usecases.relationship_management import CreateRelationshipUseCase  # TSK34
 
 
+
+
+class FakeJourneyDialog:
+    """TSK39 (1.8): _new_journey opens the edition dialog - mocked here."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def exec(self):
+        return QDialog.DialogCode.Accepted
+
+    def get_values(self):
+        return {"lb": "Journey 2", "note": ""}
+
+
 @pytest.fixture(scope="module")
 def qapp():
     app = QApplication.instance() or QApplication([])
@@ -79,13 +94,14 @@ def test_create_project_builds_all_workspaces(qapp):
         mw.close()
 
 
-def test_relationships_journey_filter_requested_activates_journey(qapp):
+def test_relationships_journey_filter_requested_activates_journey(qapp, monkeypatch):
     """TSK30 (4.1): the side panel journey combo emits the chosen journey id;
     the MainWindow handler activates that journey (FN026) and enables the
     filter (FN029); None = "All journeys" disables the filter."""
     mw = MainWindow()
     try:
         mw._create_project()
+        monkeypatch.setattr(mw_module, "JourneyDialog", FakeJourneyDialog)  # TSK39 (1.8)
         mw._new_journey()  # second journey (FN023, via the real menu path)
         nm = mw._current_narrative_map()
         j2 = nm.journey[-1]

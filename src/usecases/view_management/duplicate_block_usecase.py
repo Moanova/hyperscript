@@ -14,7 +14,7 @@ from core.services.journey_sequence_service import JourneySequenceService
 
 class DuplicateBlockUseCase:
     """FN016: duplicate a block - distinct label ('{lb} (copy)', the application
-    is unilingual English), new identifier, same type/note/content/condition.
+    is unilingual English), new identifier, same type/note/content.
     The copy is attached like a new block (RG040). The Start block cannot be
     duplicated (RG025)."""
 
@@ -31,7 +31,6 @@ class DuplicateBlockUseCase:
             typ=block.typ,
             note=block.note,
             content=block.content,
-            condition=dict(block.condition) if block.condition else None,
         )
         narrative_map.block.append(copy)
         JourneyService.attach_new_block(narrative_map, copy.id, filter_active)  # RG040

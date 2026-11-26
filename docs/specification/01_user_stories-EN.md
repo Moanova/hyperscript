@@ -152,7 +152,7 @@
     - An agent is a project-level element, of type Character or Artefact. A block belongs to a narrative map. A participation links an agent to a block.
     - A participation is non-oriented; there can be only one per (agent, block) pair.
     - Derived journey membership: a participation belongs to a journey if and only if its block belongs to it.
-    - Two persistent entry points: the context menu of a block in the "Journeys" view ("Associate agents...") and the "Project > Agents > Associate with Block..." entry — checking associates, unchecking dissociates; both entry points modify the same data and are immediately reflected in each other.
+    - Two persistent entry points: the context menu of a block in the "Journeys" view ("Add Participation") and the "Project > Agents > Add Participation" entry (normalized label session 12, TSK39 1.3), plus the "Agents" list of the block edit dialog (TSK39 3.1) — checking associates, unchecking dissociates; both entry points modify the same data and are immediately reflected in each other.
     - The participating agents of a block are represented by badges displayed on the block in the "Journeys" view.
     - Deleting an agent or a block cascades to its participations.
 - **Acceptance criteria**:

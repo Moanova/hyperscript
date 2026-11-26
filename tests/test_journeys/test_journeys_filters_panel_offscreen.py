@@ -47,6 +47,25 @@ def _isolated_user_state(tmp_path, monkeypatch):
     monkeypatch.setattr(usl, "_state", {})
 
 
+
+
+class FakeJourneyDialog:
+    """TSK39 (1.8): _new_journey opens the edition dialog - mocked here."""
+
+    def __init__(self, *args, **kwargs):
+        pass
+
+    def exec(self):
+        return QDialog.DialogCode.Accepted
+
+    def get_values(self):
+        return {"lb": "Journey 2", "note": ""}
+
+
+def mock_journey_dialog(monkeypatch):
+    monkeypatch.setattr(mw_module, "JourneyDialog", FakeJourneyDialog)
+
+
 def make_main_window():
     mw = MainWindow()
     mw._create_project()  # FN005: create + open + _init_workspace
@@ -113,12 +132,13 @@ def test_panel_slot_keeps_its_width_on_resize(qapp):
         close_main_window(mw)
 
 
-def test_journeys_panel_journey_combo_activates_journey_and_syncs_panels(qapp):
+def test_journeys_panel_journey_combo_activates_journey_and_syncs_panels(qapp, monkeypatch):
     """TSK33 + TSK30 (4.1): choosing a journey in the "Journeys" panel combo
     activates it (FN026) and enables the filter (FN029); both panels' combos
     then show it (mirror of Display > Journey)."""
     mw = make_main_window()
     try:
+        mock_journey_dialog(monkeypatch)
         mw._new_journey()  # second journey (FN023, real menu path)
         nm = mw._current_narrative_map()
         j2 = nm.journey[-1]
@@ -134,11 +154,12 @@ def test_journeys_panel_journey_combo_activates_journey_and_syncs_panels(qapp):
         close_main_window(mw)
 
 
-def test_display_menu_filter_updates_both_panels(qapp):
+def test_display_menu_filter_updates_both_panels(qapp, monkeypatch):
     """TSK33: the Display menu path pushes the filter state to both side
     panels (journey + agent) and to the "Journeys" workspace."""
     mw = make_main_window()
     try:
+        mock_journey_dialog(monkeypatch)
         mw._new_journey()
         nm = mw._current_narrative_map()
         j2 = nm.journey[-1]
@@ -157,11 +178,12 @@ def test_display_menu_filter_updates_both_panels(qapp):
         close_main_window(mw)
 
 
-def test_journey_crud_resyncs_both_panels(qapp):
+def test_journey_crud_resyncs_both_panels(qapp, monkeypatch):
     """TSK33: a journey CRUD resyncs the journey combos of both panels."""
     mw = make_main_window()
     try:
         n0 = mw.journeys_panel.journey_combo.count()
+        mock_journey_dialog(monkeypatch)
         mw._new_journey()
         assert mw.journeys_panel.journey_combo.count() == n0 + 1
         assert combo_datas(mw.journeys_panel.journey_combo) == \

@@ -8,9 +8,9 @@
 # ---------------------------------------------------------------------
 """Transition edition dialog (TSK12, FN021).
 
-Edits a transition's editable attribute: the free-text note only. A
-transition carries no condition - the structured condition is carried by
-the Condition block (FN035).
+Edits a transition's editable attribute: the free-text note only (a
+transition carries no structured condition - TSK39 session 12 removed the
+condition fields from the model).
 
 get_values() returns {'note': str}.
 """

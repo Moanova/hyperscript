@@ -143,7 +143,7 @@
 - **Classification** : 2. Narrative map structure
 
 ## RG031
-- **Description** : A Condition block can only receive incoming transitions from Pivot blocks, and only emit outgoing transitions to Scene or End blocks (matrix RG028); it carries a structured condition (kind: choice / artefact / skill / flag; optional reference to an Artefact agent; label) — the unique support of it. Chaining Condition blocks (Condition → Condition) is not allowed: AND is not expressible; two Condition blocks from the same Pivot equal an OR (RG030).
+- **Description** : A Condition block can only receive incoming transitions from Pivot blocks, and only emit outgoing transitions to Scene or End blocks (matrix RG028). The structured condition was **removed from the model** session 12 (TSK39 3.2): a Condition block only carries label, note and content. Chaining Condition blocks (Condition → Condition) is not allowed: AND is not expressible; two Condition blocks from the same Pivot equal an OR (RG030).
 - **Classification** : 2. Narrative map structure
 
 ## RG032
@@ -169,7 +169,7 @@
 - **Classification** : 3. Journey logic and membership
 
 ## RG038
-- **Description** : Duplicating a journey does not change the active one when the journey filter is activated.
+- **Description** : journey duplication (FN025) was removed session 12 (TSK39 1.9), so this rule no longer has an object (number kept for traceability).
 - **Classification** : 3. Journey logic and membership
 
 ## RG039
@@ -189,7 +189,7 @@
 - **Classification** : 3. Journey logic and membership
 
 ## RG043
-- **Description** : Duplicating a journey copies the attachments of its blocks.
+- **Description** : journey duplication (FN025) was removed session 12 (TSK39 1.9), so this rule no longer has an object (number kept for traceability).
 - **Classification** : 3. Journey logic and membership
 
 ## RG044

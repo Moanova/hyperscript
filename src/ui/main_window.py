@@ -69,7 +69,7 @@ from usecases.view_management import (
 )
 from usecases.journey_management import (
     CreateJourneyUseCase, UpdateJourneyUseCase, ActivateJourneyUseCase,
-    SetDefaultJourneyUseCase, DuplicateJourneyUseCase, DeleteJourneyUseCase
+    SetDefaultJourneyUseCase, DeleteJourneyUseCase
 )
 from usecases.agent_management import (
     CreateAgentUseCase, UpdateAgentUseCase, DuplicateAgentUseCase, DeleteAgentUseCase,
@@ -125,7 +125,6 @@ class MainWindow(QMainWindow):
         self.update_journey_usecase = UpdateJourneyUseCase(self.project_service)
         self.activate_journey_usecase = ActivateJourneyUseCase(self.project_service)
         self.set_default_journey_usecase = SetDefaultJourneyUseCase(self.project_service)
-        self.duplicate_journey_usecase = DuplicateJourneyUseCase(self.project_service)
         self.delete_journey_usecase = DeleteJourneyUseCase(self.project_service)
         # Agent / participation use cases (TSK17/TSK18)
         self.create_agent_usecase = CreateAgentUseCase(self.project_service)
@@ -256,16 +255,18 @@ class MainWindow(QMainWindow):
         # Project
         project_menu = self.menu_bar.addMenu("Project")
         view_menu = project_menu.addMenu("View")
-        self.menu_actions['view_journeys'] = view_menu.addAction("Journeys", lambda: None)
-        self.menu_actions['view_agents'] = view_menu.addAction("Agents", lambda: None)
-        self.menu_actions['view_relationships'] = view_menu.addAction("Relationships", lambda: None)
-        self.menu_actions['view_preview'] = view_menu.addAction("Preview", lambda: None)  # TSK38: renamed from "Export"; stub, activated via the tab bar
+        # TSK39 (1.1): the View entries activate the target view (tab bar + page)
+        self.menu_actions['view_journeys'] = view_menu.addAction("Journeys", lambda: self._switch_view("Journeys"))
+        self.menu_actions['view_agents'] = view_menu.addAction("Agents", lambda: self._switch_view("Agents"))
+        self.menu_actions['view_relationships'] = view_menu.addAction("Relationships", lambda: self._switch_view("Relationships"))
+        self.menu_actions['view_preview'] = view_menu.addAction("Preview", lambda: self._switch_view("Preview"))  # TSK38: renamed from "Export"
         agents_menu = project_menu.addMenu("Agents")
         self.menu_actions['agents_new'] = agents_menu.addAction("New...", lambda: self._new_agent())
         self.menu_actions['agents_edit'] = agents_menu.addAction("Edit...", lambda: self._edit_agent())
         self.menu_actions['agents_copy'] = agents_menu.addAction("Copy", lambda: self._copy_agent())
         self.menu_actions['agents_delete'] = agents_menu.addAction("Delete...", lambda: self._delete_agent())
-        self.menu_actions['agents_associate'] = agents_menu.addAction("Associate with Block...", lambda: self._associate_agent_with_block())
+        # TSK39 (1.3): normalized label "Add Participation" (same label in the block context menu)
+        self.menu_actions['agents_associate'] = agents_menu.addAction("Add Participation", lambda: self._associate_agent_with_block())
         blocks_menu = project_menu.addMenu("Blocks")
         new_block_menu = blocks_menu.addMenu("New")
         self.menu_actions['blocks_new_scene'] = new_block_menu.addAction("Scene", lambda: self._create_new_block("Scene"))
@@ -283,7 +284,7 @@ class MainWindow(QMainWindow):
         journeys_menu = project_menu.addMenu("Journeys")
         self.menu_actions['journeys_new'] = journeys_menu.addAction("New", self._new_journey)
         self.menu_actions['journeys_edit'] = journeys_menu.addAction("Edit...", self._edit_journey)
-        self.menu_actions['journeys_copy'] = journeys_menu.addAction("Copy", self._copy_journey)
+        # TSK39 (1.9): "Copy" removed from the Journeys submenu (duplicate journey deleted)
         self.menu_actions['journeys_set_default'] = journeys_menu.addAction("Set as Default...", self._set_default_journey)
         self.menu_actions['journeys_delete'] = journeys_menu.addAction("Delete...", self._delete_journey)
         relationships_menu = project_menu.addMenu("Relationships")
@@ -310,7 +311,7 @@ class MainWindow(QMainWindow):
         'agents_new',
         'blocks_new', 'blocks_edit', 'blocks_copy', 'blocks_delete',
         'transitions_new', 'transitions_edit', 'transitions_delete',
-        'journeys_new', 'journeys_edit', 'journeys_copy', 'journeys_set_default', 'journeys_delete',
+        'journeys_new', 'journeys_edit', 'journeys_set_default', 'journeys_delete',
         'relationships_new', 'relationships_edit', 'relationships_delete',
     }
 
@@ -348,6 +349,21 @@ class MainWindow(QMainWindow):
                 action.setEnabled(has_project)
             else:
                 action.setEnabled(True)
+        # TSK39 (1.3/1.5/1.6/1.7): entries bound to the "Journeys" view and its
+        # current selection - the whole "Transitions" menu and Blocks
+        # Edit/Delete require the "Journeys" view active; Edit/Delete (and
+        # "Add Participation") additionally require an active block/transition
+        journeys_active = has_project and self.tab_bar.currentTab() == "Journeys"
+        selected = self._get_selected_item() if journeys_active else None
+        has_block = isinstance(selected, BlockNode)
+        has_transition = isinstance(selected, Connection)
+        self.menu_actions['transitions_new'].setEnabled(journeys_active)
+        self.menu_actions['transitions_edit'].setEnabled(journeys_active and has_transition)
+        self.menu_actions['transitions_delete'].setEnabled(journeys_active and has_transition)
+        self.menu_actions['blocks_edit'].setEnabled(journeys_active and has_block)
+        self.menu_actions['blocks_delete'].setEnabled(journeys_active and has_block)
+        has_agents = has_project and bool(self.project_service.current_project.agent)
+        self.menu_actions['agents_associate'].setEnabled(journeys_active and has_block and has_agents)
         # "Save" is enabled only when the open project is modified (RG006)
         self.menu_actions['save'].setEnabled(has_project and self.project_service.is_modified)
         # TSK27: keep the "Relationships" view in sync with the model
@@ -715,10 +731,17 @@ class MainWindow(QMainWindow):
         self.agent_filter_agent_id = None
         self.tab_bar.hide()
 
+    def _switch_view(self, name: str):
+        """TSK39 (1.1): Project > View - activate the target view. setCurrentTab
+        (not forceCurrentTab) so currentChanged is emitted and the stacked page
+        actually switches (TSK39 2.2)."""
+        self.tab_bar.setCurrentTab(name)
+
     def _on_tab_changed(self, tab_name: str):
         page = self.view_pages.get(tab_name)
         if page is not None:
             self.pages.setCurrentWidget(page)
+        self._update_menu_state()  # TSK39 (1.5/1.6/1.7): menu states follow the active view
         if tab_name == "Preview" and self.preview_workspace is not None:
             # TSK38: regenerate the reading preview on each switch to the view
             self._refresh_preview()
@@ -751,6 +774,7 @@ class MainWindow(QMainWindow):
         """TSK27/FN032: remember the block selected in "Journeys" to forward it
         to the "Relationships" view on tab switch."""
         self._last_journeys_block_id = item.entity.id if isinstance(item, BlockNode) else None
+        self._update_menu_state()  # TSK39 (1.3/1.5/1.7): menu states follow the selection
 
     def _on_relationships_anchor_selected(self, block_id: int):
         nm = self._current_narrative_map()
@@ -763,9 +787,11 @@ class MainWindow(QMainWindow):
     # ---------------------------------------------------------------------
     def _create_new_block(self, typ: str):
         """FN014: create a block of the given type at the first free grid position
-        anchored on the Start block (TSK16, option B), not at the scene center."""
+        in the currently visible area (TSK39 3.3). TSK39 (1.4): switch to the
+        "Journeys" view when the action is triggered from another view."""
         if self.journeys_workspace is None:
             return
+        self.tab_bar.setCurrentTab("Journeys")  # TSK39 (1.4)
         block = self.create_block_usecase.execute(typ, filter_active=self.journey_filter_active)  # RG040
         x, y = self.journeys_workspace.next_free_creation_position()
         layout = LayoutService.create_node_layout(block.id, block.typ, x, y)  # RG046: snapped
@@ -831,6 +857,7 @@ class MainWindow(QMainWindow):
         x, y = self.journeys_workspace.next_free_position(item.pos().x() + 120, item.pos().y())
         layout = LayoutService.create_node_layout(copy.id, copy.typ, x, y)
         self.journeys_workspace.create_block_node(copy, layout, select=True)
+        self.tab_bar.setCurrentTab("Journeys")  # TSK39 (1.4): show the copy in the "Journeys" view
         self._update_menu_state()
 
     def _delete_selected_block(self):
@@ -906,29 +933,41 @@ class MainWindow(QMainWindow):
             self.preview_panel.refresh()
 
     def _new_journey(self):
-        """FN023: create a journey (not activated; the active journey is unchanged)."""
-        self.create_journey_usecase.execute()
-        self._rebuild_journey_menu()
-        self._resync_filter_panels()
-        self._update_menu_state()
-
-    def _copy_journey(self):
-        """FN025/RG043: duplicate the active journey (block attachments copied)."""
+        """FN023: create a journey through the edition dialog (TSK39 1.8: New...
+        opens a window to enter the journey's label and note); the new journey is
+        not activated - the active journey is unchanged."""
         nm = self._current_narrative_map()
-        active = nm.get_active_journey() if nm else None
-        if active is not None:
-            self.duplicate_journey_usecase.execute(active)
+        dialog = JourneyDialog(parent=self,
+                               default_label=f"Journey {nm.get_next_id('journey')}" if nm else None)
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        values = dialog.get_values()
+        self.create_journey_usecase.execute(lb=values['lb'], note=values['note'])
         self._rebuild_journey_menu()
         self._resync_filter_panels()
         self._update_menu_state()
 
     def _delete_journey(self):
-        """FN027: delete the active journey (RG024: the last one cannot be deleted)."""
+        """FN027: delete a journey chosen in a selection dialog, with confirmation
+        (TSK39 1.8: Delete... opens a window instead of deleting silently).
+        RG024: the last journey cannot be deleted."""
         nm = self._current_narrative_map()
-        active = nm.get_active_journey() if nm else None
-        if active is None:
+        if nm is None or not nm.journey:
             return
-        result = self.delete_journey_usecase.execute(active)
+        dialog = JourneySelectionDialog(nm.journey, parent=self, title="Delete Journey")
+        if dialog.exec() != QDialog.DialogCode.Accepted:
+            return
+        journey = dialog.get_selected_journey()
+        if journey is None:
+            return
+        reply = QMessageBox.question(
+            self, "Confirmation",
+            f"Delete journey '{journey.lb}'? The attachments of its blocks are "
+            f"reassigned to the default journey (RG034).",
+            QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No)
+        if reply != QMessageBox.StandardButton.Yes:
+            return
+        result = self.delete_journey_usecase.execute(journey)
         if not result or not result.get('success'):
             QMessageBox.information(self, "Cannot delete journey",
                                     "The last journey of the map cannot be deleted.")
@@ -1051,6 +1090,7 @@ class MainWindow(QMainWindow):
                                                   note=values['note'], content=values['content'])
         if self.agents_workspace is not None:
             self.agents_workspace.add_agent_card(agent)  # TSK19b: one card per agent
+        self.tab_bar.setCurrentTab("Agents")  # TSK39 (1.2): show the new agent in the "Agents" view
         self.info_bar.show_message(f"Agent '{values['lb']}' created")
         self._rebuild_agent_menu()
         self._resync_filter_panels()  # TSK33: resync both side panels (agent combos)
@@ -1087,6 +1127,7 @@ class MainWindow(QMainWindow):
         copy = self.duplicate_agent_usecase.execute(agent)
         if self.agents_workspace is not None:
             self.agents_workspace.add_agent_card(copy)  # TSK19b
+        self.tab_bar.setCurrentTab("Agents")  # TSK39 (1.2): show the copy in the "Agents" view
         self.info_bar.show_message(f"Agent '{copy.lb}' created")
         self._rebuild_agent_menu()
         self._resync_filter_panels()  # TSK33: resync both side panels (agent combos)
@@ -1133,10 +1174,10 @@ class MainWindow(QMainWindow):
         self._update_menu_state()
 
     def _associate_agent_with_block(self, agent=None):
-        """FN030: 'Associate with Block...' - pick an agent (or take the one
-        of the agent card that opened the context menu, TSK19b), then the
-        block currently selected in the Journeys view, and open the
-        association dialog."""
+        """FN030: 'Add Participation' (TSK39 1.3: normalized label) - pick an
+        agent (or take the one of the agent card that opened the context menu,
+        TSK19b), then the block currently selected in the Journeys view, and
+        open the association dialog."""
         if agent is None:
             agent = self._select_agent("Associate Agent with Block")
         if agent is None:
@@ -1210,7 +1251,9 @@ class MainWindow(QMainWindow):
         return dialog.get_selected_relationship()
 
     def _new_relationship(self):
-        """FN034: create a relationship (creation dialog)."""
+        """FN034: create a relationship (creation dialog). TSK39 (1.10): switch
+        to the "Relationships" view when triggered from another view."""
+        self.tab_bar.setCurrentTab("Relationships")  # TSK39 (1.10)
         self._new_relationship_prefilled()
 
     def _new_relationship_prefilled(self, agent_1_id=None, agent_2_id=None):
@@ -1292,22 +1335,34 @@ class MainWindow(QMainWindow):
     # ---------------------------------------------------------------------
     def _edit_selected_block(self):
         """FN015: edit the selected block (label, note, content, journey
-        attachments RG042, structured condition FN035 for Condition blocks)."""
+        attachments RG042) + the participating agents (FN030, TSK39 3.1: same
+        principle as the journey attachments)."""
         item = self._get_selected_item()
         if not isinstance(item, BlockNode):
             return
         nm = self._current_narrative_map()
+        project = self.project_service.current_project
         attached = JourneyService.attachment_journey_ids(nm, item.entity.id)
-        artefacts = [a for a in self.project_service.current_project.agent if a.typ == "Artefact"]
-        dialog = BlockDialog(item.entity, nm.journey, attached, artefacts, parent=self)
+        dialog = BlockDialog(item.entity, nm.journey, attached,
+                             agents=project.agent,
+                             participating_agent_ids=self._participating_agent_ids(item.entity.id),
+                             parent=self)
         if dialog.exec() != QDialog.DialogCode.Accepted:
             return
         values = dialog.get_values()
         self.update_block_usecase.execute(
             item.entity, lb=values['lb'], note=values['note'], content=values['content'],
-            condition=values['condition'], journey_ids=values['journey_ids'])
+            journey_ids=values['journey_ids'])
+        # TSK39 (3.1): apply the participation set chosen in the dialog (FN030)
+        wanted = set(values['agent_ids'])
+        current = self._participating_agent_ids(item.entity.id)
+        for agent_id in wanted - current:
+            self.associate_participation_usecase.execute(agent_id, item.entity.id)
+        for agent_id in current - wanted:
+            self.dissociate_participation_usecase.execute(agent_id, item.entity.id)
         item.update_entity_data()  # type label + tooltip refresh
         self.journeys_workspace.apply_filters()
+        self._refresh_participation_badges()
         self._update_menu_state()
 
     def _edit_selected_transition(self):
@@ -1365,13 +1420,14 @@ class MainWindow(QMainWindow):
         if isinstance(item, BlockNode):
             for key in ('blocks_edit', 'blocks_copy', 'blocks_delete'):
                 menu.addAction(self.menu_actions[key])
-            # FN030 (TSK19b): context-menu label on a block, same handler as
-            # Project > Agents > Associate with Block...
+            # FN030 (TSK19b) + TSK39 (1.3): context-menu label on a block,
+            # normalized like the application menu entry ("Add Participation"),
+            # same handler as Project > Agents > Add Participation
             project = self.project_service.current_project
             has_agents = project is not None and bool(project.agent)
             associate_action = menu.addAction(
-                "Associate agents...", lambda: self._open_association_dialog(item.entity))
-            associate_action.setEnabled(has_agents)
+                "Add Participation", lambda: self._open_association_dialog(item.entity))
+            associate_action.setEnabled(has_agents and self.menu_actions['agents_associate'].isEnabled())
         elif isinstance(item, Connection):
             for key in ('transitions_edit', 'transitions_delete'):
                 menu.addAction(self.menu_actions[key])
@@ -1417,6 +1473,7 @@ class MainWindow(QMainWindow):
                 new_action.setEnabled(False)
         menu.addSeparator()
         view_action = menu.addAction("View in Journeys view")
+        view_action.setEnabled(rel is not None)  # TSK39 (2.1): greyed on an empty cell
         action = menu.exec(global_pos)
         if action is view_action:
             self._view_relationship_anchor_in_journeys(row, col)
@@ -1480,7 +1537,9 @@ class MainWindow(QMainWindow):
             rel = RelationshipService.pair_state_at_block(nm, a_row, a_col, block_id)
             if rel is not None:
                 block_id = rel.block_id
-        self.tab_bar.forceCurrentTab("Journeys")
+        # TSK39 (2.2): setCurrentTab (emits currentChanged -> the page really
+        # switches); forceCurrentTab only checks the tab button without switching
+        self.tab_bar.setCurrentTab("Journeys")
         if self.journeys_workspace is not None and block_id is not None:
             self.journeys_workspace.focus_block(block_id)
 

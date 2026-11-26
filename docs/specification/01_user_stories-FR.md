@@ -153,7 +153,7 @@
     - Un agent est un élément du projet, de type Personnage ou Artefact. Un bloc appartient à une carte narrative. La participation relie un agent à un bloc.
     - La participation est non orientée ; il ne peut en exister qu'une seule par couple (agent, bloc).
     - Appartenance aux parcours dérivée : une participation appartient à un parcours si et seulement si son bloc y appartient.
-    - Deux points d'entrée persistants : le menu contextuel d'un bloc dans la vue « Journeys » (« Associate agents... ») et l'entrée « Project › Agents › Associate with Block... » — cocher associe, décocher dissocie ; les deux points d'entrée modifient la même donnée et se répercutent immédiatement l'un sur l'autre.
+    - Deux points d'entrée persistants : le menu contextuel d'un bloc dans la vue « Journeys » (« Add Participation ») et l'entrée « Project › Agents › Add Participation » (libellé normalisé séance 12, TSK39 1.3), ainsi que la liste « Agents » du dialogue d'édition du bloc (TSK39 3.1) — cocher associe, décocher dissocie ; les deux points d'entrée modifient la même donnée et se répercutent immédiatement l'un sur l'autre.
     - Les agents participants d'un bloc sont représentés par des badges affichés sur le bloc dans la vue « Parcours ».
     - La suppression d'un agent ou d'un bloc entraîne la suppression en cascade de ses participations.
 - **Critères d'acceptation** :

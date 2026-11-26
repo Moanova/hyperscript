@@ -68,12 +68,12 @@
 | RG | Summary | Status | Code (file · symbol) | Unit test | Notes |
 | --- | --- | --- | --- | --- | --- |
 | RG037 | When a narrative map is created, a default journey is automatically created. | implemented | usecases/project_management/create_project_usecase.py | tests/test_project/test_project_service.py | parcours par défaut créé et activé |
-| RG038 | Duplicating a journey does not change the active one when the journey filter is… | implemented | usecases/journey_management/duplicate_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | copy not activated |
+| RG038 | Duplicating a journey does not change the active one when the journey filter is… | **removed** (TSK39 session 12, 1.9) | — | — |
 | RG039 | There is always a default journey, and only one; if the default journey is… | implemented | core/services/journey_service.py; delete/set_default use cases | tests/test_journeys/test_journey_usecases.py | single default; default/active fallback on deletion |
 | RG040 | No orphan block: every block belongs to at least one journey; at creation, a… | implemented | core/services/journey_service.py (attach_new_block); create/duplicate block use cases | tests/test_blocks/test_block_usecases.py | active journey if filter on, default otherwise |
 | RG041 | Journey membership is derived and never stored: a transition belongs to a… | implemented | core/services/journey_filter_service.py; core/services/journey_sequence_service.py | tests/test_journeys/test_journey_filter_service.py; test_journey_sequence_service.py | derived membership (never stored) |
 | RG042 | The journeys a block is attached to are edited through the journey list shown… | not-started | — | — | — |
-| RG043 | Duplicating a journey copies the attachments of its blocks. | implemented | usecases/journey_management/duplicate_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | block attachments copied |
+| RG043 | Duplicating a journey copies the attachments of its blocks. | **removed** (TSK39 session 12, 1.9) | — | — |
 | RG044 | A journey's reading sequence is computed depth-first from the Start block,… | implemented | core/services/journey_sequence_service.py | tests/test_journeys/test_journey_sequence_service.py | DFS from Start, branches by increasing transition id, memoized cycles, deterministic fallback |
 
 ### 4. Visualization and interaction
@@ -174,7 +174,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | FN023 | Create a journey | implemented | Project › Journeys › New | usecases/journey_management/create_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN024 | Rename and describe a journey | implemented | — | usecases/journey_management/update_journey_usecase.py; ui/dialogs/journey_dialog.py | — | — | tests/test_journeys/test_journey_usecases.py |
-| FN025 | Duplicate a journey | implemented | — | usecases/journey_management/duplicate_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
+| FN025 | Duplicate a journey | **removed** (TSK39 session 12, 1.9) | — | — (use case deleted) | — | — | — |
 | FN026 | Activate a journey | implemented | — | usecases/journey_management/activate_journey_usecase.py; ui/main_window.py (_activate_journey, Display > Journey) | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN027 | Delete a journey | implemented | — | usecases/journey_management/delete_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN038 | Set the default journey | not-started | Project › Journeys › Set as Default... | — | — | — | — |
@@ -191,8 +191,8 @@
 
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN030 | Associate agents with a block | implemented | Associate agents... (block context menu, Journeys view, TSK19b); Associate with Block... (Project > Agents) | usecases/participation_management/ (associate/dissociate); core/services/participation_service.py; ui/dialogs/agent_association_dialog.py; ui/main_window.py (_open_association_dialog, _show_workspace_context_menu) | — | — | tests/test_agents/test_participation_usecases.py |
-| FN031 | Manage the project's agents | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Associate with Block...) | usecases/agent_management/ (create/update/duplicate/delete); ui/dialogs/agent_dialog.py, agent_selection_dialog.py; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
+| FN030 | Associate agents with a block | implemented | Add Participation (block context menu, Journeys view); Add Participation (Project > Agents) - normalized label TSK39 session 12 1.3; "Agents" list of the block edit dialog (TSK39 3.1) | usecases/participation_management/ (associate/dissociate); core/services/participation_service.py; ui/dialogs/agent_association_dialog.py; ui/main_window.py (_open_association_dialog, _show_workspace_context_menu) | — | — | tests/test_agents/test_participation_usecases.py; tests/test_tsk39/ |
+| FN031 | Manage the project's agents | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Add Participation) | usecases/agent_management/ (create/update/duplicate/delete); ui/dialogs/agent_dialog.py, agent_selection_dialog.py; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
 | FN032 | Cross-view navigation | not-started | — | — | — | — | — |
 | FN033 | Reading preview ("Preview" view) | implemented | View › Preview ("Preview" tab) | core/services/preview_service.py ; ui/views/preview_workspace.py ; ui/main_window.py (tab + side panel + view_preview) ; ui/widgets/tab_bar.py ; config.json (link_color) | — | — | tests/test_preview/ (18 tests: service + offscreen) ; design docs/conception/05_preview-EN.md (TSK37), implemented TSK38 session 11 |
 
@@ -206,7 +206,7 @@
 
 | FN | Title | Status | UI entry point (menu) | Use case / service | Model | App test (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN035 | Manage a Condition block's condition | implemented | — | usecases/view_management/update_block_usecase.py (condition); ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
+| FN035 | Manage a Condition block's condition | **removed** (TSK39 session 12, 3.2: structured condition removed from the model) | — | — | — | — | — |
 
 ### "Relationships" view
 
@@ -263,7 +263,7 @@
 | Project › Agents › Edit... | Edit... |  | implemented | main_window._edit_agent (optional agent = card of the context menu, TSK19b) |
 | Project › Agents › Copy | Copy |  | implemented | main_window._copy_agent |
 | Project › Agents › Delete... | Delete... |  | implemented | main_window._delete_agent (counted RG033 confirmation, card removed TSK19b) |
-| Project › Agents › Associate with Block... | Associate with Block... |  | implemented | main_window._associate_agent_with_block → _open_association_dialog (FN030) |
+| Project › Agents › Add Participation | Add Participation |  | implemented | main_window._associate_agent_with_block → _open_association_dialog (FN030); greyed unless Journeys view active + block selected (TSK39 1.3) |
 | Project › Blocks | Blocks |  | implemented | menu_actions['blocks_*'] |
 | Project › Blocks › New | New |  | implemented | menu_actions['blocks_new'] |
 | Project › Blocks › New › Scene | Scene |  | implemented | menu_actions['blocks_new_scene'] |
@@ -280,7 +280,7 @@
 | Project › Journeys | Journeys |  | implemented | menu_actions['journeys_*'] |
 | Project › Journeys › New | New |  | implemented | menu_actions['journeys_new'] (FN023) |
 | Project › Journeys › Edit... | Edit... |  | implemented | menu_actions['journeys_edit'] (JourneyDialog, FN024) |
-| Project › Journeys › Copy | Copy |  | implemented | menu_actions['journeys_copy'] (FN025) |
+| Project › Journeys › Copy | Copy |  | **removed** (TSK39 session 12, 1.9) | — |
 | Project › Journeys › Set as Default... | Set as Default... |  | implemented | menu_actions['journeys_set_default'] (FN038) |
 | Project › Journeys › Delete... | Delete... |  | implemented | menu_actions['journeys_delete'] (FN027) |
 | Project › Relationships | Relationships |  | implemented | menu_actions['relationships_*'] (TSK20 ; the "Relationships" view remains TSK27) |
@@ -297,9 +297,9 @@
 | --- | --- | --- | --- |
 | SU001 | Manage a Narrative Project | FN001, FN002, FN005, FN006, FN007, FN008, FN009, FN010, FN011 | not-started |
 | SU002 | Manage a Narrative Map | FN012, FN013 | not-started |
-| SU003 | Manage a Narrative Block | FN014, FN015, FN016, FN017, FN018, FN019, FN035 | partial |
-| SU004 | Manage a Transition Between Blocks | FN020, FN021, FN022, FN035 | implemented |
-| SU005 | Manage a Journey | FN019, FN023, FN024, FN025, FN026, FN027, FN038 | implemented |
+| SU003 | Manage a Narrative Block | FN014, FN015, FN016, FN017, FN018, FN019 | partial |
+| SU004 | Manage a Transition Between Blocks | FN020, FN021, FN022 | implemented |
+| SU005 | Manage a Journey | FN019, FN023, FN024, FN026, FN027, FN038 | implemented |
 | SU006 | Visualize the Narrative Map (view "Journeys") | FN017, FN028, FN029 | partial |
 | SU007 | Export the Narrative Map | FN013, FN033 | not-started |
 | SU008 | Manage agent-block Participations | FN030, FN031 | implemented |

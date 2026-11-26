@@ -22,6 +22,7 @@ items outside the journey filter (RG048), right-click selects the item under
 the cursor before the menu opens (RG055).
 """
 import logging
+from typing import Dict
 
 from PySide6.QtWidgets import (
     QGraphicsView, QGraphicsScene,
@@ -96,6 +97,9 @@ class JourneysWorkspace(QGraphicsView, QObject):
         self.scene.setBackgroundBrush(QBrush(QColor(_BG_PRIMARY)))
 
         self.grid_lines = []
+
+        self._block_nodes: Dict[int, BlockNode] = {}
+        self._connections: Dict[int, Connection] = {}
 
         self.setStyleSheet(theme.WORKSPACE_STYLESHEET)
         # A plain QWidget subclass does not paint its stylesheet
@@ -501,6 +505,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
             )
 
         self.add_item_at(layout.x, layout.y, node)
+        self._block_nodes[block.id] = node
         # moving this block re-routes the transitions it is not part of (RG052)
         node.register_position_observer(lambda n=node: self._on_node_moved(n))
         if select:
@@ -534,6 +539,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
         )
         connection = Connection(connection_layout, source_node, target_node, transition)
         self.scene.addItem(connection)
+        self._connections[transition.id] = connection
         connection.update_path()
         if select:
             self._select_item_only(connection)
@@ -542,6 +548,9 @@ class JourneysWorkspace(QGraphicsView, QObject):
 
     def find_block_node(self, block_id: int):
         """Find the BlockNode of a business block id."""
+        node = self._block_nodes.get(block_id)
+        if node is not None:
+            return node
         for item in self.scene.items():
             if isinstance(item, BlockNode) and item.entity.id == block_id:
                 return item
@@ -557,6 +566,9 @@ class JourneysWorkspace(QGraphicsView, QObject):
 
     def find_connection(self, transition_id: int):
         """Find the Connection of a business transition id."""
+        connection = self._connections.get(transition_id)
+        if connection is not None:
+            return connection
         for item in self.scene.items():
             if isinstance(item, Connection) and item.get_relation_id() == transition_id:
                 return item
@@ -584,12 +596,39 @@ class JourneysWorkspace(QGraphicsView, QObject):
         return LayoutService.snap_to_grid(x), LayoutService.snap_to_grid(y)
 
     def next_free_creation_position(self):
-        """First free position for a user-created block (TSK16, option B):
-        anchored on the Start block - one node width plus one major grid step
-        to its right, on the same row - so new blocks appear next to the
-        Start instead of at the scene center. Falls back to the scene center
-        when no Start block exists (defensive; RG025 guarantees exactly one
-        Start block per map)."""
+        """First free position for a user-created block.
+
+        TSK39 (3.3): anchored on the CURRENTLY VISIBLE area (follows the
+        scrollbars) - the first free grid cell scanned row by row from the
+        top-left of the visible rect, so a new block appears where the user is
+        looking. Falls back to the Start-anchored position (TSK16, option B:
+        one node width plus one major grid step to the right of the Start
+        block, same row) when the visible area has no free cell, and to the
+        scene center when no Start block exists (defensive; RG025 guarantees
+        exactly one Start block per map)."""
+        w = _get_config("node_default_width", 80.0)
+        h = _get_config("node_default_height", 40.0)
+        existing_rects = []
+        for item in self.scene.items():
+            if isinstance(item, BlockNode):
+                r = item.rect()
+                pos = item.pos()
+                existing_rects.append((pos.x(), pos.y(), r.width(), r.height()))
+        visible = self.mapToScene(self.viewport().rect()).boundingRect()
+        left = LayoutService.snap_to_grid(visible.left())
+        top = LayoutService.snap_to_grid(visible.top())
+        x, y = LayoutService.find_first_free_cell(
+            left, top, w, h, existing_rects,
+            _GRID_MAJOR_SIZE, _GRID_MAJOR_SIZE,
+            bounds=(visible.left(), visible.top(), visible.right(), visible.bottom()))
+        fits_visible = (left <= x and x + w <= visible.right()
+                        and top <= y and y + h <= visible.bottom())
+        is_free = not any(
+            LayoutService._rects_overlap(x, y, w, h, ex, ey, ew, eh)
+            for ex, ey, ew, eh in existing_rects)
+        if fits_visible and is_free:
+            return x, y
+        # Fallback: anchored on the Start block (TSK16, option B)
         start_node = next(
             (item for item in self.scene.items()
              if isinstance(item, BlockNode) and item.entity.typ == "Start"),
@@ -597,9 +636,8 @@ class JourneysWorkspace(QGraphicsView, QObject):
         )
         if start_node is None:
             return self.next_free_position()
-        node_width = _get_config("node_default_width", 80.0)
         return self.next_free_position(
-            start_node.pos().x() + node_width + _GRID_MAJOR_SIZE,
+            start_node.pos().x() + w + _GRID_MAJOR_SIZE,
             start_node.pos().y(),
         )
 
@@ -642,6 +680,7 @@ class JourneysWorkspace(QGraphicsView, QObject):
         """Remove a transition visual item from the scene."""
         if connection is None:
             return False
+        self._connections.pop(connection.get_relation_id(), None)
         self.scene.removeItem(connection)
         self.apply_filters()
         return True
@@ -656,7 +695,9 @@ class JourneysWorkspace(QGraphicsView, QObject):
             and (item.source_node is node or item.target_node is node)
         ]
         for connection in connections_to_remove:
+            self._connections.pop(connection.get_relation_id(), None)
             self.scene.removeItem(connection)
+        self._block_nodes.pop(node.entity.id, None)
         self.scene.removeItem(node)
         self.apply_filters()
         return True

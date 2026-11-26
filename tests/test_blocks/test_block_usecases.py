@@ -8,7 +8,8 @@
 # ---------------------------------------------------------------------
 """Unit tests for the block use cases of view_management (TSK08).
 
-Covers FN014/FN015/FN016/FN018 and RG025/RG029/RG040/RG042/RG044: creation
+Covers FN014/FN015/FN016/FN018 and RG025/RG029/RG040/RG042/RG044 (TSK39 session
+12: FN035 removed - no structured condition anymore): creation
 with type chosen (Start not creatable), attachment to the active journey when
 the filter is active / to the default journey otherwise, immutable type,
 duplication ('(copy)', Start not duplicable), deletion cascade with Start
@@ -61,21 +62,17 @@ def test_rg025_start_not_creatable_and_invalid_type_refused():
         CreateBlockUseCase(service).execute("Bogus")  # RG029/BLOCK_TYPES
 
 
-def test_fn015_update_attributes_and_condition_only_on_condition():
+def test_fn015_update_attributes():
+    # TSK39 (3.2): the structured condition was removed from the model - a
+    # block (incl. Condition) only carries lb/note/content + journey attachments
     service = make_service()
-    nm = service.current_project.narrative_maps[0]
     scene = CreateBlockUseCase(service).execute("Scene", lb="S1")
     cond = CreateBlockUseCase(service).execute("Condition", lb="C1")
     uc = UpdateBlockUseCase(service)
     uc.execute(scene, lb="S1 renamed", note="a note", content="text")
     assert (scene.lb, scene.note, scene.content) == ("S1 renamed", "a note", "text")
     assert scene.typ == "Scene"  # RG029: the type is immutable, edition never changes it
-    with pytest.raises(ValueError):
-        uc.execute(scene, condition={"kind": "Flag", "label": "x"})  # condition only on Condition blocks
-    uc.execute(cond, condition={"kind": "Artefact", "ref_agent_id": 3, "label": "has key"})  # FN035
-    assert cond.condition["kind"] == "Artefact"
-    with pytest.raises(ValueError):
-        uc.execute(cond, condition={"kind": "Bogus"})
+    assert not hasattr(cond, "condition")  # TSK39 (3.2): no condition attribute anymore
 
 
 def test_rg042_journey_list_cannot_be_emptied():

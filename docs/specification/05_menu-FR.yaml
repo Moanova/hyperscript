@@ -90,13 +90,13 @@ menu:
         - name: Vue
           items:
             - name: Agents
-              note: "Stub - vue activée via la barre d'onglets ; ordre d'affichage inversé séance 09 (TSK28 : Agents avant Parcours dans la barre d'onglets)"
+              note: "Active séance 12 (TSK39 1.1) : bascule vers la vue (onglet + page) ; ordre d'affichage inversé séance 09 (TSK28 : Agents avant Parcours dans la barre d'onglets)"
             - name: Parcours
-              note: "Stub - la vue est activée via la barre d'onglets ; vue principale, active par défaut (inchangé, TSK28)"
+              note: "Active séance 12 (TSK39 1.1) : bascule vers la vue ; vue principale (inchangé, TSK28)"
             - name: Relations
-              note: "Stub - vue activée via la barre d'onglets ; maquette à définir en phase de conception (FN036, SU012)"
+              note: "Active séance 12 (TSK39 1.1) : bascule vers la vue (FN036, SU012)"
             - name: Preview
-              note: "Stub - vue activée via la barre d'onglets ; fait partie du MVP minimal (TSK37 séance 11 : renommée depuis « Export »)"
+              note: "Active séance 12 (TSK39 1.1) : bascule vers la vue ; fait partie du MVP minimal (TSK37 séance 11 : renommée depuis « Export »)"
         - name: Agents
           items:
             - name: Nouveau...
@@ -108,9 +108,9 @@ menu:
               note: "« Copier » est le terme retenu pour la duplication sur tous les sous-menus"
             - name: Supprimer...
               references: "FN031, SU008"
-            - name: Associer à un bloc...
+            - name: Ajouter une participation...
               references: "FN030, SU008"
-              note: "Crée/modifie les participations (agent présent dans un bloc) ; remplace l'ancienne formulation « Lier à un bloc ». Cette entrée de menu garde le libellé « Associate with Block... » ; le menu contextuel du bloc dans la vue « Journeys » porte le libellé « Associate agents... » (FN030, TSK19)"
+              note: "Crée/modifie les participations (agent présent dans un bloc). Libellé normalisé « Add Participation » séance 12 (TSK39 1.3) : même libellé pour cette entrée et pour l'entrée équivalente du menu contextuel du bloc dans la vue « Journeys » ; grisée hors vue « Journeys » active + bloc sélectionné (TSK39 1.3)"
         - name: Blocs
           items:
             - name: Nouveau
@@ -139,10 +139,9 @@ menu:
           items:
             - name: Nouveau
               references: "FN023, SU005"
+              note: "Ouvre un dialogue d'édition (libellé, note) séance 12 (TSK39 1.8) ; « Copier » (FN025) supprimé séance 12 (TSK39 1.9)"
             - name: Éditer...
               references: "FN024, SU005"
-            - name: Copier
-              references: "FN025, SU005"
             - name: Définir par défaut...
               references: "FN038, SU005"
             - name: Supprimer...
@@ -164,7 +163,7 @@ menu:
           references: "FN004"
 
   context_menu:
-    description: "Le menu contextuel doit rester aligné dynamiquement sur le menu applicatif (mêmes actions et gestionnaires), selon la vue active et les objets graphiques sélectionnés. Sur la grille vide de la vue « Parcours », les entrées de création portent des libellés propres au menu contextuel : « New Block » (sous-menu Scène / Pivot / Condition / Fin, comme Projet > Blocs > Nouveau) et « New Transition » (comme Projet > Transitions > Nouvelle) — acté séance 04 (TSK16) ; dans la vue « Relationships », le menu contextuel d'une cellule de la matrice reprend `Project › Relationships` (New.../Edit.../Delete...) et ajoute « View in Journeys view » (FN032 : bascule vers « Journeys » avec le focus sur le bloc d'ancrage de la relation) — acté séance 06 (TSK27)."
+    description: "Le menu contextuel doit rester aligné dynamiquement sur le menu applicatif (mêmes actions et gestionnaires), selon la vue active et les objets graphiques sélectionnés. Sur la grille vide de la vue « Parcours », les entrées de création portent des libellés propres au menu contextuel : « New Block » (sous-menu Scène / Pivot / Condition / Fin, comme Projet > Blocs > Nouveau) et « New Transition » (comme Projet > Transitions > Nouvelle) — acté séance 04 (TSK16) ; dans la vue « Relationships », le menu contextuel d'une cellule de la matrice reprend `Project › Relationships` (New.../Edit.../Delete...) et ajoute « View in Journeys view » (FN032 : bascule effective vers « Journeys » avec le focus sur le bloc d'ancrage de la relation ; grisée sur une case vide — TSK39 séance 12, 2.1/2.2) — acté séance 06 (TSK27)."
 
   legend:
     description: |

@@ -90,13 +90,13 @@ menu:
         - name: View
           items:
             - name: Agents
-              note: "Stub - view activated via the tab bar; display order swapped session 09 (TSK28: Agents before Journeys in the tab bar)"
+              note: "Active session 12 (TSK39 1.1): switches to the view (tab + page); display order swapped session 09 (TSK28: Agents before Journeys in the tab bar)"
             - name: Journeys
-              note: "Stub - the view is activated via the tab bar; main view, default active (unchanged, TSK28)"
+              note: "Active session 12 (TSK39 1.1): switches to the view; main view (unchanged, TSK28)"
             - name: Relationships
-              note: "Stub - view activated via the tab bar; mockup to be defined during the design phase (FN036, SU012)"
+              note: "Active session 12 (TSK39 1.1): switches to the view (FN036, SU012)"
             - name: Preview
-              note: "Stub - view activated via the tab bar; part of the minimal MVP (TSK37 session 11: renamed from \"Export\")"
+              note: "Active session 12 (TSK39 1.1): switches to the view; part of the minimal MVP (TSK37 session 11: renamed from \"Export\")"
         - name: Agents
           items:
             - name: New...
@@ -108,9 +108,9 @@ menu:
               note: "'Copy' is the term used for duplication on all submenus"
             - name: Delete...
               references: "FN031, SU008"
-            - name: Associate with Block...
+            - name: Add Participation
               references: "FN030, SU008"
-              note: "Creates/edits participations (agent present in a block); replaces the former 'Link to Block' wording. This menu entry keeps the label 'Associate with Block...'; the block context menu in the Journeys view carries the label 'Associate agents...' (FN030, TSK19)"
+              note: "Creates/edits participations (agent present in a block). Label normalized to 'Add Participation' session 12 (TSK39 1.3): same label for this entry and for the equivalent block context-menu entry in the Journeys view; greyed out unless the Journeys view is active with a block selected (TSK39 1.3)"
         - name: Blocks
           items:
             - name: New
@@ -139,10 +139,9 @@ menu:
           items:
             - name: New
               references: "FN023, SU005"
+              note: "Opens an edition dialog (label, note) session 12 (TSK39 1.8); 'Copy' (FN025) removed session 12 (TSK39 1.9)"
             - name: Edit...
               references: "FN024, SU005"
-            - name: Copy
-              references: "FN025, SU005"
             - name: Set as Default...
               references: "FN038, SU005"
             - name: Delete...
@@ -164,7 +163,7 @@ menu:
           references: "FN004"
 
   context_menu:
-    description: "The context menu must remain dynamically aligned with the application menu (same actions and handlers), according to the active view and the selected graphical objects. On the empty grid of the Journeys view, the creation entries carry context-menu-specific labels: 'New Block' (submenu Scene / Pivot / Condition / Ending, as in Project > Blocks > New) and 'New Transition' (as in Project > Transitions > New) - adopted session 04 (TSK16); in the 'Relationships' view, a matrix cell's context menu reuses `Project › Relationships` (New.../Edit.../Delete...) and adds 'View in Journeys view' (FN032: switch to 'Journeys' with the focus on the relationship's anchor block) - adopted session 06 (TSK27)."
+    description: "The context menu must remain dynamically aligned with the application menu (same actions and handlers), according to the active view and the selected graphical objects. On the empty grid of the Journeys view, the creation entries carry context-menu-specific labels: 'New Block' (submenu Scene / Pivot / Condition / Ending, as in Project > Blocks > New) and 'New Transition' (as in Project > Transitions > New) - adopted session 04 (TSK16); in the 'Relationships' view, a matrix cell's context menu reuses `Project › Relationships` (New.../Edit.../Delete...) and adds 'View in Journeys view' (FN032: actually switches to 'Journeys' with the focus on the relationship's anchor block; greyed out on an empty cell - TSK39 session 12, 2.1/2.2) - adopted session 06 (TSK27)."
 
   legend:
     description: |

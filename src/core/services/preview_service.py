@@ -12,15 +12,15 @@
 The preview is rendered read-only in the "Preview" view (PreviewWorkspace,
 QTextBrowser). Decisions (docs/conception/05_preview-FR/EN.md, TSK37):
 
-- sections, in order: a) project label, b) agent list (links to g), c) map
-  label, d) journey list (links to e), e) per journey the blocks from Start in
-  reading-sequence order (RG044) with label/type/content (note as tooltip),
-  transitions inline, conditions on their branch, and the relationships
-  anchored on each block (agent labels 1 and 2, type, content, note) - the
-  "state of relationships" is rendered under each anchor block, with no
-  separate final section; f) orphan blocks (no incoming nor outgoing
-  transition) of the current journey; g) all project agents (label, type,
-  content, note);
+- sections, in order: a) project label, b) agent list "label (type)" (links
+  to g), c) map label, d) journey list (links to e), e) per journey the blocks
+  from Start in reading-sequence order (RG044) with label/type, content, the
+  participating agents (TSK39 4.1), transitions inline, and the relationships
+  anchored on each block (agent labels 1 and 2, type, content, note - TSK39
+  4.2: under the agents list) - the "state of relationships" is rendered
+  under each anchor block, with no separate final section; f) orphan blocks
+  (no incoming nor outgoing transition) of the current journey; g) all project
+  agents "label (type)" (TSK39 4.4), content, note;
 - branches of the journey not connected to the Start block are rendered after
   the main flow, grouped by chain and marked (RG044 already appends unreachable
   attached blocks after the reachable ones; nothing is omitted);
@@ -44,6 +44,7 @@ if TYPE_CHECKING:
 
 from core.services.agent_filter_service import AgentFilterService
 from core.services.journey_filter_service import JourneyFilterService
+from core.services.participation_service import ParticipationService
 from core.services.relationship_service import RelationshipService
 
 
@@ -111,7 +112,8 @@ class PreviewService:
         parts.append("<h2>Agents</h2>")
         parts.append("<ul>")
         for a in agents:
-            parts.append(f'<li><a href="#agent-{a.id}">{_esc(a.lb)}</a></li>')
+            # TSK39 (4.4): the agent type in parentheses after the label
+            parts.append(f'<li><a href="#agent-{a.id}">{_esc(a.lb)} ({_esc(a.typ)})</a></li>')
         parts.append("</ul>")
         # c) map label
         parts.append(f"<h2>{_esc(narrative_map.lb)}</h2>")
@@ -130,8 +132,8 @@ class PreviewService:
         # g) agents detail
         parts.append('<h2 id="agents">Agents</h2>')
         for a in agents:
-            parts.append(f'<h3 id="agent-{a.id}">{_label_anchor("agent", a, a.lb)}</h3>')
-            parts.append(f"<p><em>{_esc(a.typ)}</em></p>")
+            # TSK39 (4.4): the agent type in parentheses after the label
+            parts.append(f'<h3 id="agent-{a.id}">{_label_anchor("agent", a, f"{a.lb} ({a.typ})")}</h3>')
             parts.append(_body(a.content))
         return "\n".join(parts)
 
@@ -211,11 +213,14 @@ class PreviewService:
         parts = [f'<h3 id="block-{block_id}">'
                  f'{_label_anchor("block", b, f"{b.lb} ({b.typ})")}</h3>']
         parts.append(_body(b.content))
-        if b.typ == "Condition" and b.condition:
-            kind = b.condition.get("kind", "")
-            details = ", ".join(f"{k}={_esc(str(v))}" for k, v in b.condition.items() if k != "kind")
-            suffix = f": {details}" if details else ""
-            parts.append(f"<p><em>Condition {kind}{suffix}</em></p>")
+        # TSK39 (4.1): the participating agents, under the block content
+        # (TSK39 4.3: the structured condition fields were removed in session 12)
+        participants = sorted(
+            agent_by_id[p.agent_id].lb
+            for p in ParticipationService.get_block_participations(nm, block_id)
+            if p.agent_id in agent_by_id)
+        if participants:
+            parts.append(f"<p><em>Agents: {', '.join(_esc(lb) for lb in participants)}</em></p>")
         # transitions rendered inline (outgoing, within the journey, visible)
         for t in sorted(nm.transition, key=lambda t: t.id):
             if t.from_block_id == block_id and t.to_block_id in attached and t.to_block_id in visible:

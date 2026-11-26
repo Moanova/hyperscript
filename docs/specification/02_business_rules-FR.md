@@ -143,7 +143,7 @@
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG031
-- **Description** : Un bloc Condition ne peut recevoir de transitions entrantes que de blocs Pivot, et n'émettre de transitions sortantes que vers des blocs Scène ou Fin (matrice RG028) ; il porte une condition structurée (nature : choix / artefact / compétence / flag ; référence éventuelle vers un agent Artefact ; libellé) — unique support de celle-ci. Chaîner des blocs Condition (Condition → Condition) n'est pas autorisé : le ET n'est pas exprimable ; deux blocs Condition issus d'un même Pivot valent OU (RG030).
+- **Description** : Un bloc Condition ne peut recevoir de transitions entrantes que de blocs Pivot, et n'émettre de transitions sortantes que vers des blocs Scène ou Fin (matrice RG028). La condition structurée a été **retirée du modèle** séance 12 (TSK39 3.2) : le bloc Condition ne porte plus que libellé, note et contenu. Chaîener des blocs Condition (Condition → Condition) n'est pas autorisé : le ET n'est pas exprimable ; deux blocs Condition issus d'un même Pivot valent OU (RG030).
 - **Classification** : 2. Structure de la carte narrative
 
 ## RG032
@@ -169,7 +169,7 @@
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG038
-- **Description** : La copie d'un parcours ne modifie pas le parcours activé quanf le filtre de parcours est actif.
+- **Description** : la duplication de parcours (FN025) ayant été retirée séance 12 (TSK39 1.9), cette règle n'a plus d'objet (numéro conservé pour la traçabilité).
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG039
@@ -189,7 +189,7 @@
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG043
-- **Description** : La copie d'un parcours reprend les rattachements de ses blocs.
+- **Description** : la duplication de parcours (FN025) ayant été retirée séance 12 (TSK39 1.9), cette règle n'a plus d'objet (numéro conservé pour la traçabilité).
 - **Classification** : 3. Logique des parcours et appartenance
 
 ## RG044

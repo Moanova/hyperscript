@@ -203,30 +203,6 @@
                "default_value": "Scene",
                "description": "Block type: Start, Scene, Pivot, Condition, End - chosen at creation and immutable afterwards"
             },
-            "condition": {
-               "type": "object",
-               "description": "Structured condition - only set for typ = Condition (sole carrier of the condition)",
-               "properties": {
-                  "kind": {
-                     "type": "string",
-                     "enum": [
-                        "Choice",
-                        "Artefact",
-                        "Skill",
-                        "Flag"
-                     ],
-                     "description": "Kind of condition: choice / artefact / skill / flag"
-                  },
-                  "ref_agent_id": {
-                     "type": "integer",
-                     "description": "Reference to an Artefact agent (reference to Agent.id); null if none"
-                  },
-                  "label": {
-                     "type": "string",
-                     "description": "Condition label"
-                  }
-               }
-            },
             "creation_date_time": {
                "type": "string",
                "format": "date-time",

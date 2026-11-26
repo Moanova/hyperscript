@@ -27,7 +27,6 @@ FORMAT_VERSION = "1.0"
 
 BLOCK_TYPES = ["Start", "Scene", "Pivot", "Condition", "End"]
 AGENT_TYPES = ["Character", "Artefact"]
-CONDITION_KINDS = ["Choice", "Artefact", "Skill", "Flag"]
 
 
 def _to_iso(value):
@@ -87,14 +86,15 @@ class Agent:
 
 @dataclass
 class Block:
-    """Narrative block; the structured condition is only carried by Condition blocks."""
+    """Narrative block (TSK39 session 12: the structured condition fields were
+    removed from the model to simplify it - a Condition block carries only its
+    type, label, note and content)."""
 
     id: int
     lb: str
     typ: str = "Scene"  # BLOCK_TYPES, chosen at creation and immutable afterwards
     note: Optional[str] = None
     content: Optional[str] = None
-    condition: Optional[Dict[str, Any]] = None  # only when typ == "Condition"
     creation_date_time: datetime = field(default_factory=datetime.now)
     modification_date_time: Optional[datetime] = None
 
@@ -102,12 +102,6 @@ class Block:
         _check_int_id(self, ["id"])
         if self.typ not in BLOCK_TYPES:
             raise ValueError(f"Invalid Block.typ: {self.typ}. Must be one of: {BLOCK_TYPES}")
-        if self.condition is not None:
-            if self.typ != "Condition":
-                raise ValueError("Block.condition is only allowed when typ == 'Condition'")
-            kind = self.condition.get("kind")
-            if kind not in CONDITION_KINDS:
-                raise ValueError(f"Invalid condition kind: {kind}. Must be one of: {CONDITION_KINDS}")
 
     def to_dict(self) -> Dict[str, Any]:
         return _entity_to_dict(self)

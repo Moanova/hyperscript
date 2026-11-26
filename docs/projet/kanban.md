@@ -1,6 +1,6 @@
 # Hyperscript ::: Tableau kanban du projet
 
-- **Date de dernière modification** : 26-11-2026 (TSK01–TSK38 Done ; **TSK39 retours de test séance 12 en Doing** — plan d'implémentation établi, fiche `tasks/TSK39_tsc_feedback_session12.md`) ; To do vide)
+- **Date de dernière modification** : 26-11-2026 (TSK01–TSK38 Done ; **TSK39 retours de test séance 12 implémentée et passée en Review**) ; To do et Doing vides)
 - **Description** : Suivi de l'avancement des tâches du projet.
   - Les chantiers majeurs sont des **épics** (EPCnn) découpés en **tâches** (TSKnn).
   - Le détail de chaque tâche (analyse, décisions, journal des travaux) est consigné dans un fichier markdown dédié du sous-dossier `tasks/`, nommé d'après le code de la tâche.
@@ -76,6 +76,8 @@
 - 26-11-2026 (séance 12, validation TSC) : **TSK37 et TSK38 validées TSC et passées en Done**.
 - 26-11-2026 (séance 12) : **TSK39 passée en Doing** (→ #TSK37, #TSK38, Done) — fiche `tasks/TSK39_tsc_feedback_session12.md` (analyse des 24 retours, causes racines, décisions actées, plan d'implémentation) ; décisions TSC : 3.2 = retrait complet de la condition structurée hors du modèle (`Block.condition`/`CONDITION_KINDS`) ; 2.4 confirmé TSC = parcours entre parenthèses à la place du type quand un parcours précis est filtré, type conservé sur « All journeys ».
 
+- 26-11-2026 (séance 12, feu vert TSC) : **TSK39 implémentée et passée en Review** — 24 retours traités (menus + bascules de vue + grisement, dialogues parcours, suppression de Journeys>Copy et de la condition structurée, matrice Relationships, panneau latéral, dialogue bloc + participations, position des nouveaux blocs dans la zone visible, vue Preview) ; py_compile OK, pyflakes clean, **190 tests passed + 3 failed pré-existants** (`test_block_drag_offscreen.py`, reproductibles arbre propre) ; specs FR/EN + matrices mises à jour ; fiche `tasks/TSK39_tsc_feedback_session12.md` ; commit+push demandés.
+
 ---
 
 ## Tableau du kanban
@@ -85,10 +87,10 @@
 
 ### Doing
 
-- [ ] TSK39 — Retours de test TSC (séance 12, 26-11-2026, 24 points) : menu général (1.1) bascule `Project > View` ; (1.2/1.4/1.10) bascule vers la vue cible après New/Copy agent, bloc, relation ; (1.3) « Add Participation » grisé hors vue Journeys + bloc sélectionné, libellé normalisé menu général + menu contextuel ; (1.5/1.6/1.7) grisement de `Project > Blocks`/`Transitions` selon vue Journeys active et sélection (bloc/transition) ; (1.8) fenêtres d'édition pour Journeys New/Edit/Delete ; (1.9) suppression de `Project > Journeys > Copy` ; (1.11) parcours (au lieu du type) dans les fenêtres Edit/Delete de relation ; vue Relationships (2.1) « View in Journeys view » grisé sur cellule vide, (2.2) bascule effective vers Journeys, (2.3) carte d'agent supprimé retirée de la matrice, (2.4) panneau latéral : parcours du bloc entre parenthèses à la place du type quand un parcours est filtré (type conservé sur « All journeys ») ; vue Journeys (3.1) ajout des participations dans le dialogue Edit des blocs, (3.2) suppression des champs Condition kind/Artefact ref/Condition label (modèle compris), (3.3) position des nouveaux blocs dans la zone visible courante ; vue Preview (4.1) agents participants sous le Content, (4.2) relations sous la liste des agents, (4.3) suppression des champs de condition, (4.4) type de l'agent entre parenthèses après son nom → #TSK37, #TSK38 — **passée en Doing 26-11-2026 (séance 12)** : analyse + plan d'implémentation dans la fiche `tasks/TSK39_tsc_feedback_session12.md`
-
 
 ### Review
+
+- [ ] TSK39 — Retours de test TSC (séance 12, 26-11-2026, 24 points) : menu général (1.1) bascule `Project > View` ; (1.2/1.4/1.10) bascule vers la vue cible après New/Copy agent, bloc, relation ; (1.3) « Add Participation » grisé hors vue Journeys + bloc sélectionné, libellé normalisé menu général + menu contextuel ; (1.5/1.6/1.7) grisement de `Project > Blocks`/`Transitions` selon vue Journeys active et sélection (bloc/transition) ; (1.8) fenêtres d'édition pour Journeys New/Edit/Delete ; (1.9) suppression de `Project > Journeys > Copy` ; (1.11) parcours (au lieu du type) dans les fenêtres Edit/Delete de relation ; vue Relationships (2.1) « View in Journeys view » grisé sur cellule vide, (2.2) bascule effective vers Journeys, (2.3) carte d'agent supprimé retirée de la matrice, (2.4) panneau latéral : parcours du bloc entre parenthèses à la place du type quand un parcours est filtré (type conservé sur « All journeys ») ; vue Journeys (3.1) ajout des participations dans le dialogue Edit des blocs, (3.2) suppression des champs Condition kind/Artefact ref/Condition label (modèle compris), (3.3) position des nouveaux blocs dans la zone visible courante ; vue Preview (4.1) agents participants sous le Content, (4.2) relations sous la liste des agents, (4.3) suppression des champs de condition, (4.4) type de l'agent entre parenthèses après son nom → #TSK37, #TSK38 — **implémentée et passée en Review 26-11-2026** (py_compile OK, 190 tests passed + 3 pré-existants hors scope ; specs FR/EN à jour) — fiche `tasks/TSK39_tsc_feedback_session12.md`
 
 
 ### Done

@@ -153,7 +153,7 @@
 - **Expected behavior**:
     - In the MVP, creation is done exclusively from the menu (no toolbar).
     - The block is created with an identifier unique within the map, the default label of its type, and the visual rendering corresponding to its type.
-    - In the MVP (creation from the menu), it is positioned automatically at the first free spot to the right of the Start block (anchored on its current position), snapped to the alignment grid (always visible and active) - adopted session 04 (TSK16, option B).
+    - In the MVP (creation from the menu), it is positioned automatically at the first free spot in the **currently visible area** (follows the scrollbars), snapped to the alignment grid (always visible and active) - revised session 12 (TSK39 3.3); falls back to the first free spot to the right of the Start block (anchored on its current position, TSK16 option B) when the visible area is full. Creation from another view first switches to the "Journeys" view (TSK39 1.4).
     - It has two active attachment ports: incoming (left) and outgoing (right).
     - It is not resizable.
     - No orphan block: the newly created block is attached to the active journey if the journey filter is enabled, to the default journey otherwise.
@@ -165,7 +165,8 @@
 - **References**: SU003 ; menu "Project › Blocks › Edit...".
 - **Expected behavior**:
     - The edit dialog presents the editable attributes: label, note (annotation) and narrative content. The type is not editable.
-    - For a Condition block, the dialog also presents the structured condition: kind (choice / artefact / skill / flag), optional reference to an Artefact agent, label.
+    - The dialog also presents the "Agents" list of the project with the current participants checked - same principle as the journey attachments (TSK39 session 12, 3.1).
+    - The structured condition fields (kind / Artefact reference / label, ex-FN035) were **removed from the model** session 12 (TSK39 3.2): a Condition block only carries label, note and content.
     - The label is not subject to uniqueness within the map.
     - Any attribute change marks the map, and therefore the project, as modified.
 
@@ -229,7 +230,7 @@
 - **Expected behavior**:
     - Annotation is done via the transition's edit dialog ("Note" field).
     - The transition's note is shown in a tooltip on hover over the representative line.
-    - A transition carries no condition: the structured condition is carried by the Condition block (FN035).
+    - A transition carries no condition (the structured condition was removed from the model, TSK39 session 12).
     - Any modification marks the map, and therefore the project, as modified.
 
 ## FN022: Delete a transition
@@ -249,7 +250,8 @@
 - **Description**: Create a journey in the map.
 - **References**: SU005 ; menu "Project › Journeys › New" ; journey list in "Display › Journey".
 - **Expected behavior**:
-    - The new journey receives a unique identifier, a default label and an empty note.
+    - Creation is done via an edit dialog opened by "Project › Journeys › New" (label and note entered, label proposed by default) - TSK39 session 12 (1.8).
+    - The new journey receives a unique identifier, the entered label and the entered note.
     - The new journey is not activated: the active journey remains unchanged (if the journey filter is disabled, all journeys are active).
     - Any creation marks the map, and therefore the project, as modified.
 
@@ -260,13 +262,8 @@
     - Editing is done via an edit dialog.
     - Any modification marks the map, and therefore the project, as modified.
 
-## FN025: Duplicate a journey
-- **Description**: Duplicate an existing journey.
-- **References**: SU005.
-- **Expected behavior**:
-    - The copy carries a distinct name and a new identifier.
-    - The block attachments of the source journey are also attached to the copy.
-    - Any duplication marks the map, and therefore the project, as modified.
+## FN025: Duplicate a journey - **removed session 12 (TSK39 1.9)**
+- **Description**: journey duplication was removed (menu entry "Project › Journeys › Copy", use case and rule RG043 deleted). The number is kept for traceability.
 
 ## FN026: Activate a journey
 - **Description**: Activate a journey as the active journey.
@@ -281,7 +278,7 @@
 - **References**: SU005.
 - **Expected behavior**:
     - Deleting the last journey of the map is impossible: the application shows an explanatory message.
-    - Otherwise, a confirmation is requested.
+    - Deletion is done via a journey selection dialog, then a confirmation - TSK39 session 12 (1.8).
     - **The block attachments of the deleted journey are reassigned to the default journey**.
     - If the deleted journey was the default one, the oldest remaining journey becomes the default; if it was the active one, the default journey becomes the active one.
     - Any deletion marks the map, and therefore the project, as modified.
@@ -339,9 +336,10 @@
 
 ## FN030: Associate agents with a block
 - **Description**: Associate or dissociate one or more agents with a block of the narrative map.
-- **References**: SU008 ; block context menu "Associate agents..." ("Journeys" view) ; menu "Project > Agents > Associate with Block...".
+- **References**: SU008 ; block context menu "Add Participation" ("Journeys" view) ; menu "Project > Agents > Add Participation" (normalized label session 12, TSK39 1.3) ; "Agents" list of the block edit dialog (FN015).
 - **Expected behavior**:
-    - From the "Journeys" view, a block's context menu opens a dialog listing all the project's agents with their current participation status for this block (checked/unchecked). Checking associates, unchecking dissociates.
+    - From the "Journeys" view, a block's context menu ("Add Participation") opens a dialog listing all the project's agents with their current participation status for this block (checked/unchecked). Checking associates, unchecking dissociates. Same from the "Agents" list of the block edit dialog (FN015, TSK39 session 12 3.1).
+    - The entry is greyed out unless the "Journeys" view is active with a block selected (TSK39 session 12 1.3).
     - The dialog allows creating a new agent and associating it in a single operation (rules of FN031).
     - The application prevents a duplicate participation (agent, block).
     - The participating agents of a block are represented by badges on the block in the "Journeys" view.
@@ -371,12 +369,12 @@
 - **Description**: Display in the "Preview" view a read-only reading preview of the current narrative map.
 - **References**: SU010, SU007 (file export, out of MVP) ; "Preview" tab of the tab bar ; Journey/Agent filters (FN029, FN039, RG048/RG063/RG064) ; design `docs/conception/05_preview-EN.md` (TSK37).
 - **Expected behavior**:
-    - The "Preview" tab is present in the tab bar next to the "Agents", "Journeys" and "Relationships" views; menu entry "View > Preview" (stub renamed from "Export").
+    - The "Preview" tab is present in the tab bar next to the "Agents", "Journeys" and "Relationships" views; menu entry "View > Preview" active (switches to the view, TSK39 session 12 1.1; renamed from "Export", TSK37).
     - The view hosts the filter side panel (same `FiltersSidePanel` as the "Journeys" view, without the block list), mirrors of the "Display" menu and of the other views.
     - The preview is read-only: no interaction on the content; internal hypertext links are anchors with passive scroll only.
     - The preview is regenerated on each switch to the "Preview" tab, **and** after each model change when the view is already active; never in the background.
     - Rendering is dynamic according to the active filters (RG048/RG063/RG064): active journey filter → active journey only ("All journeys" → all journeys); agent filter → the blocks the agent participates in, transitions whose both blocks are visible, relationships whose anchor block is visible; elements outside the filters are **omitted from the rendering**.
-    - Rendered sections: a) project (`lb`); b) agent list (links to g); c) map (`lb`); d) journey list (links to e); e) journey: sequence of blocks from Start in reading-sequence order (RG044), each block with `lb`, `typ`, `content` (note as a tooltip on hover), transitions rendered inline, conditions rendered on their branch, then **the relationships anchored on that block** (labels of agents 1 and 2, `typ`, `content`, note as a tooltip) — the "state of relationships" is thus rendered under each anchor block, with no separate final section; branches not connected to Start are rendered marked after the flow; f) orphans: blocks with no incoming nor outgoing transition; g) project agents (`lb`, `typ`, `content`, note as a tooltip). Label as title, content as body text (label only if empty).
+    - Rendered sections: a) project (`lb`); b) agent list `lb (typ)` (links to g); c) map (`lb`); d) journey list (links to e); e) journey: sequence of blocks from Start in reading-sequence order (RG044), each block with `lb`, `typ`, `content` (note as a tooltip on hover), **the participating agents under the content** (TSK39 4.1), transitions rendered inline, then **the relationships anchored under the agents list** (labels of agents 1 and 2, `typ`, `content`, note as a tooltip — TSK39 4.2) — the "state of relationships" is thus rendered under each anchor block, with no separate final section; branches not connected to Start are rendered marked after the flow; f) orphans: blocks with no incoming nor outgoing transition; g) project agents `lb (typ)` (TSK39 4.4), `content`, note as a tooltip. No condition fields anymore (removed from the model, TSK39 3.2/4.3). Label as title, content as body text (label only if empty).
     - Viewing the preview and applying filters mark neither the map nor the project as modified.
 - **Note**: view renamed "Preview" (TSK37, session 11); the file export "Files > Export Map..." (FN013/SU007) remains post-MVP and greyed out — the coexistence "Preview" (in-app view) / "Export Map" (file) is assumed.
 
@@ -406,15 +404,8 @@
 
 # Conditions
 
-## FN035: Manage a Condition block's condition
-- **Description**: Edit the structured condition of a Condition block.
-- **References**: SU003, SU004.
-- **Expected behavior**:
-    - The structured condition of a Condition block is edited via the block's edit dialog (FN015): kind (choice / artefact / skill / flag), optional reference to an Artefact agent, label.
-    - A Pivot block can only receive incoming transitions from Start or Scene blocks and only emit outgoing transitions to Condition blocks; several Condition blocks from the same Pivot equal an OR.
-    - A Condition block can only receive incoming transitions from Pivot blocks and only emit outgoing transitions to Scene or End blocks. Two Condition blocks from the same Pivot equal an OR; chaining Condition blocks (Condition → Condition) is not allowed.
-    - An End block cannot receive an outgoing transition.
-    - Any modification marks the map, and therefore the project, as modified.
+## FN035: Manage a Condition block's condition - **removed session 12 (TSK39 3.2)**
+- **Description**: the structured condition was **removed from the model** to simplify it (kind / Artefact reference / label fields deleted from the edit dialog, the model and the preview). The number is kept for traceability. The block-type matrix (Pivot/Condition/End, RG028/RG030/RG031) is unchanged.
 
 
 ---

@@ -33,9 +33,10 @@ def make_project():
     return service, project, project.narrative_maps[0]
 
 
-def add_block(nm, typ, lb=None, journey_id=None, note=None, content=None, condition=None):
+def add_block(nm, typ, lb=None, journey_id=None, note=None, content=None):
+    # TSK39 (3.2/4.3): the structured condition was removed from the model
     block = Block(id=nm.get_next_id('block'), lb=lb or typ, typ=typ,
-                  note=note, content=content, condition=condition)
+                  note=note, content=content)
     nm.block.append(block)
     JourneyService.attach_block(nm, block.id, journey_id or nm.journey[0].id)
     return block
@@ -58,11 +59,11 @@ def test_sections_a_to_g_in_order():
     i_orphans = html.index("<h2>Orphan blocks</h2>")                   # f) orphans
     i_agents_sec = html.index('<h2 id="agents">')                      # g) agents detail
     assert i_h1 < i_agents_list < i_map < i_journeys < i_journey_sec < i_orphans < i_agents_sec
-    # b) links to g), d) links to e)
-    assert f'<a href="#agent-{a.id}">Alice</a>' in html
+    # b) links to g), d) links to e) - TSK39 (4.4): agent "label (type)"
+    assert f'<a href="#agent-{a.id}">Alice (Character)</a>' in html
     assert f'<a href="#journey-{j.id}">' in html
-    # g) agent detail with type and anchor
-    assert f'<h3 id="agent-{a.id}">' in html
+    # g) agent detail with anchor, "label (type)"
+    assert f'<h3 id="agent-{a.id}">Alice (Character)</h3>' in html
 
 
 def test_flow_follows_rg044_order_and_renders_block_fields():
@@ -100,12 +101,44 @@ def test_transition_rendered_inline_with_note_anchor():
     assert f'#note-transition-{t.id}' in seg
 
 
-def test_condition_block_renders_its_condition():
+def test_condition_block_renders_without_condition_fields():
+    # TSK39 (4.3): a Condition block renders label (type) + content only - no
+    # condition kind/ref/label anymore (removed from the model, 3.2)
     service, project, nm = make_project()
-    add_block(nm, "Condition", "C1", condition={"kind": "Choice", "options": "A, B"})
+    add_block(nm, "Condition", "C1", content="branch body")
     html = PreviewService.build_preview_html(project, nm)
-    assert "Condition Choice" in html
-    assert "options=A, B" in html
+    assert "C1 (Condition)" in html
+    assert "branch body" in html
+    assert "kind=" not in html and "ref_agent_id" not in html
+
+
+def test_participating_agents_rendered_under_block_content():
+    # TSK39 (4.1): the agents participating in a block are listed under its
+    # content, above the anchored relationships (4.2)
+    service, project, nm = make_project()
+    alice = CreateAgentUseCase(service).execute(lb="Alice", typ="Character")
+    bob = CreateAgentUseCase(service).execute(lb="Bob", typ="Artefact")
+    s1 = add_block(nm, "Scene", "S1", content="scene text")
+    nm.participation.append(Participation(id=nm.get_next_id('participation'), agent_id=alice.id, block_id=s1.id))
+    nm.participation.append(Participation(id=nm.get_next_id('participation'), agent_id=bob.id, block_id=s1.id))
+    r = CreateRelationshipUseCase(service).execute(alice.id, bob.id, "friend", s1.id)
+    assert r is not None
+    html = PreviewService.build_preview_html(project, nm)
+    i_content = html.index("scene text")
+    i_agents = html.index("Agents: Alice, Bob")
+    i_rel = html.index("Alice — Bob : friend")
+    assert i_content < i_agents < i_rel  # content -> agents -> relations
+
+
+def test_agent_type_in_parentheses_after_label():
+    # TSK39 (4.4): sections b) and g) show "label (type)"
+    service, project, nm = make_project()
+    CreateAgentUseCase(service).execute(lb="Alice", typ="Character")
+    CreateAgentUseCase(service).execute(lb="Key", typ="Artefact")
+    html = PreviewService.build_preview_html(project, nm)
+    assert '<li><a href="#agent-' in html and "Alice (Character)</a></li>" in html
+    assert "Key (Artefact)" in html
+    assert '<h3 id="agent-' in html and ">Key (Artefact)</h3>" in html
 
 
 def test_relationships_rendered_under_their_anchor_block():

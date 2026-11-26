@@ -16,7 +16,7 @@
    b) Agent list: hypertext links to the project agents (anchors to g)
    c) Map: narrative map label (`lb`)
    d) Journey list: hypertext links to the map's journeys (anchors to e)
-   e) Journey: sequence of narrative blocks from Start to End for the current journey, in reading-sequence order (RG044) — each block with `lb`, `typ`, `content`, note as a tooltip on hover; transitions rendered inline; conditions rendered on their branch; **after each block, the relationships anchored on it** (labels of agents 1 and 2, `typ`, `content`, note as a tooltip) — the "state of relationships" is thus rendered under each anchor block, with **no separate final section** (validated by TSC)
+   e) Journey: sequence of narrative blocks from Start to End for the current journey, in reading-sequence order (RG044) — each block with `lb`, `typ`, `content`, note as a tooltip on hover; **the participating agents under the block content** (TSK39 4.1); transitions rendered inline; then **the relationships anchored under the agents list** (TSK39 4.2); no condition fields anymore (removed from the model, TSK39 3.2/4.3) (labels of agents 1 and 2, `typ`, `content`, note as a tooltip) — the "state of relationships" is thus rendered under each anchor block, with **no separate final section** (validated by TSC)
    f) Orphans: blocks with **no incoming and no outgoing transition** (adopted definition), for the current journey
    g) Agents: all project agents (`lb`, `typ`, `content`, note as a tooltip)
 

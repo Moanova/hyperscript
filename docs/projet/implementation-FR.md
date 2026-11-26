@@ -68,12 +68,12 @@
 | RG | Résumé | Statut | Code (fichier · symbole) | Test unitaire | Notes |
 | --- | --- | --- | --- | --- | --- |
 | RG037 | À la création d'une carte narrative, un parcours par défaut est automatiquement… | implemented | usecases/project_management/create_project_usecase.py | tests/test_project/test_project_service.py | parcours par défaut créé et activé |
-| RG038 | La copie d'un parcours ne modifie pas le parcours activé quanf le filtre de… | implemented | usecases/journey_management/duplicate_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | copie non activée |
+| RG038 | La copie d'un parcours ne modifie pas le parcours activé quanf le filtre de… | **removed** (TSK39 séance 12, 1.9) | — | — |
 | RG039 | Il existe toujours un parcours par défaut, et un seul ; si le parcours par… | implemented | core/services/journey_service.py; delete/set_default use cases | tests/test_journeys/test_journey_usecases.py | un seul default ; repli default/actif à la suppression |
 | RG040 | Aucun bloc orphelin : tout bloc appartient à au moins un parcours ; à sa… | implemented | core/services/journey_service.py (attach_new_block); create/duplicate block use cases | tests/test_blocks/test_block_usecases.py | parcours actif si filtre activé, défaut sinon |
 | RG041 | L'appartenance à un parcours est dérivée et jamais stockée : une transition… | implemented | core/services/journey_filter_service.py; core/services/journey_sequence_service.py | tests/test_journeys/test_journey_filter_service.py; test_journey_sequence_service.py | appartenance dérivée (jamais stockée) |
 | RG042 | Les parcours auxquels un bloc est rattaché se modifient via la liste des… | not-started | — | — | — |
-| RG043 | La copie d'un parcours reprend les rattachements de ses blocs. | implemented | usecases/journey_management/duplicate_journey_usecase.py | tests/test_journeys/test_journey_usecases.py | rattachements des blocs copiés |
+| RG043 | La copie d'un parcours reprend les rattachements de ses blocs. | **removed** (TSK39 séance 12, 1.9) | — | — |
 | RG044 | La séquence de lecture d'un parcours est calculée en profondeur depuis le bloc… | implemented | core/services/journey_sequence_service.py | tests/test_journeys/test_journey_sequence_service.py | DFS depuis Start, branches par id de transition croissant, cycles mémoïsés, repli déterministe |
 
 ### 4. Visualisation et interaction
@@ -174,7 +174,7 @@
 | --- | --- | --- | --- | --- | --- | --- | --- |
 | FN023 | Créer un parcours | implemented | Project › Journeys › New | usecases/journey_management/create_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN024 | Renommer et décrire un parcours | implemented | — | usecases/journey_management/update_journey_usecase.py; ui/dialogs/journey_dialog.py | — | — | tests/test_journeys/test_journey_usecases.py |
-| FN025 | Dupliquer un parcours | implemented | — | usecases/journey_management/duplicate_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
+| FN025 | Dupliquer un parcours | **removed** (TSK39 séance 12, 1.9) | — | — (use case supprimé) | — | — | — |
 | FN026 | Activer un parcours | implemented | — | usecases/journey_management/activate_journey_usecase.py; ui/main_window.py (_activate_journey, Display > Journey) | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN027 | Supprimer un parcours | implemented | — | usecases/journey_management/delete_journey_usecase.py | — | — | tests/test_journeys/test_journey_usecases.py |
 | FN038 | Définir le parcours par défaut | not-started | Project › Journeys › Set as Default... | — | — | — | — |
@@ -191,8 +191,8 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN030 | Associer des agents à un bloc | implemented | Associate agents... (menu contextuel du bloc, vue « Journeys », TSK19b) ; Associate with Block... (Projet › Agents) | usecases/participation_management/ (associate/dissociate) ; core/services/participation_service.py ; ui/dialogs/agent_association_dialog.py ; ui/main_window.py (_open_association_dialog, _show_workspace_context_menu) | — | — | tests/test_agents/test_participation_usecases.py |
-| FN031 | Gérer les agents du projet | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Associate with Block...) | usecases/agent_management/ (create/update/duplicate/delete) ; ui/dialogs/agent_dialog.py, agent_selection_dialog.py ; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
+| FN030 | Associer des agents à un bloc | implemented | Add Participation (menu contextuel du bloc, vue « Journeys ») ; Add Participation (Projet › Agents) — libellé normalisé TSK39 séance 12 1.3 ; liste « Agents » du dialogue d'édition du bloc (TSK39 3.1) | usecases/participation_management/ (associate/dissociate) ; core/services/participation_service.py ; ui/dialogs/agent_association_dialog.py ; ui/main_window.py (_open_association_dialog, _show_workspace_context_menu) | — | — | tests/test_agents/test_participation_usecases.py ; tests/test_tsk39/ |
+| FN031 | Gérer les agents du projet | implemented | Project › Agents (New.../Edit.../Copy/Delete.../Add Participation) | usecases/agent_management/ (create/update/duplicate/delete) ; ui/dialogs/agent_dialog.py, agent_selection_dialog.py ; ui/main_window.py | — | — | tests/test_agents/test_agent_usecases.py |
 | FN032 | Naviguer entre les vues (navigation croisée) | not-started | — | — | — | — | — |
 | FN033 | Aperçu de lecture (vue « Preview ») | implemented | View › Preview (onglet « Preview ») | core/services/preview_service.py ; ui/views/preview_workspace.py ; ui/main_window.py (onglet + panneau latéral + view_preview) ; ui/widgets/tab_bar.py ; config.json (link_color) | — | — | tests/test_preview/ (18 tests : service + offscreen) ; conception docs/conception/05_preview-FR.md (TSK37), implémentée TSK38 séance 11 |
 
@@ -206,7 +206,7 @@
 
 | FN | Titre | Statut | Point d'entrée UI (menu) | Use case / service | Modèle | Test appli (T-xxx) | Notes |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| FN035 | Gérer la condition d'un bloc Condition | implemented | — | usecases/view_management/update_block_usecase.py (condition); ui/dialogs/block_dialog.py | — | — | tests/test_blocks/test_block_usecases.py |
+| FN035 | Gérer la condition d'un bloc Condition | **removed** (TSK39 séance 12, 3.2 : condition structurée retirée du modèle) | — | — | — | — | — |
 
 ### Vue « Relations »
 
@@ -263,7 +263,7 @@
 | Projet › Agents › Éditer... | Éditer... |  | implemented | main_window._edit_agent (agent optionnel = carte du menu contextuel, TSK19b) |
 | Projet › Agents › Copier | Copier |  | implemented | main_window._copy_agent |
 | Projet › Agents › Supprimer... | Supprimer... |  | implemented | main_window._delete_agent (confirmation RG033 comptée, carte retirée TSK19b) |
-| Projet › Agents › Associer à un bloc... | Associer à un bloc... |  | implemented | main_window._associate_agent_with_block → _open_association_dialog (FN030) |
+| Projet › Agents › Add Participation | Add Participation |  | implemented | main_window._associate_agent_with_block → _open_association_dialog (FN030) ; grisée hors vue « Journeys » + bloc sélectionné (TSK39 1.3) |
 | Projet › Blocs | Blocs |  | implemented | menu_actions['blocks_*'] |
 | Projet › Blocs › Nouveau | Nouveau |  | implemented | menu_actions['blocks_new'] |
 | Projet › Blocs › Nouveau › Scène | Scène |  | implemented | menu_actions['blocks_new_scene'] |
@@ -280,7 +280,7 @@
 | Projet › Parcours | Parcours |  | implemented | menu_actions['journeys_*'] |
 | Projet › Parcours › Nouveau | Nouveau |  | implemented | menu_actions['journeys_new'] (FN023) |
 | Projet › Parcours › Éditer... | Éditer... |  | implemented | menu_actions['journeys_edit'] (JourneyDialog, FN024) |
-| Projet › Parcours › Copier | Copier |  | implemented | menu_actions['journeys_copy'] (FN025) |
+| Projet › Parcours › Copier | Copier |  | **removed** (TSK39 séance 12, 1.9) | — |
 | Projet › Parcours › Définir par défaut... | Définir par défaut... |  | implemented | menu_actions['journeys_set_default'] (FN038) |
 | Projet › Parcours › Supprimer... | Supprimer... |  | implemented | menu_actions['journeys_delete'] (FN027) |
 | Projet › Relations | Relations |  | implemented | menu_actions['relationships_*'] (TSK20 ; la vue « Relationships » reste TSK27) |
@@ -297,9 +297,9 @@
 | --- | --- | --- | --- |
 | SU001 | Gérer un projet narratif | FN001, FN002, FN005, FN006, FN007, FN008, FN009, FN010, FN011 | not-started |
 | SU002 | Gérer une carte narrative | FN012, FN013 | not-started |
-| SU003 | Gérer un bloc narratif | FN014, FN015, FN016, FN017, FN018, FN019, FN035 | partial |
-| SU004 | Gérer une transition entre blocs | FN020, FN021, FN022, FN035 | implemented |
-| SU005 | Gérer un parcours | FN019, FN023, FN024, FN025, FN026, FN027, FN038 | implemented |
+| SU003 | Gérer un bloc narratif | FN014, FN015, FN016, FN017, FN018, FN019 | partial |
+| SU004 | Gérer une transition entre blocs | FN020, FN021, FN022 | implemented |
+| SU005 | Gérer un parcours | FN019, FN023, FN024, FN026, FN027, FN038 | implemented |
 | SU006 | Visualiser la carte narrative (vue « Parcours ») | FN017, FN028, FN029 | partial |
 | SU007 | Exporter la carte narrative | FN013, FN033 | not-started |
 | SU008 | Gérer les participations agent-bloc | FN030, FN031 | implemented |

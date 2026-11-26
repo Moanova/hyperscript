@@ -50,7 +50,7 @@ class AgentAssociationDialog(QDialog):
         self._refresh_list()
 
     def _setup_ui(self):
-        self.setWindowTitle(f"Associate agents with '{self._block.lb}'")
+        self.setWindowTitle(f"Add Participation with '{self._block.lb}'")  # TSK39 (1.3): libellé normalisé
         self.setModal(True)
         self.setMinimumSize(400, 400)
         self.layout = QVBoxLayout(self)

@@ -98,12 +98,8 @@ def test_load_missing_file_keeps_current_project(tmp_path):
     assert service.current_project is before
 
 
-def test_block_condition_only_on_condition_type():
-    # the structured condition is the sole carrier, only on Condition blocks
-    Block(id=1, lb="c", typ="Condition", condition={"kind": "Choice", "lb": "has key"})
-    with pytest.raises(ValueError):
-        Block(id=2, lb="s", typ="Scene", condition={"kind": "Choice"})
+def test_block_invalid_type_refused():
+    # TSK39 (3.2): the structured condition was removed from the model
+    Block(id=1, lb="c", typ="Condition")
     with pytest.raises(ValueError):
         Block(id=3, lb="x", typ="Nope")
-    with pytest.raises(ValueError):
-        Block(id=4, lb="c", typ="Condition", condition={"kind": "Nope"})

@@ -8,7 +8,9 @@
 # ---------------------------------------------------------------------
 """Relationship selection dialog (TSK20, FN034).
 
-Lists the relationships of the narrative map ("A <-> B @ block (type)"); Ok
+Lists the relationships of the narrative map ("A <-> B @ block (journeys of
+the anchor block)" - TSK39 1.11: the journey(s) in which the relationship
+exists are shown in parentheses instead of the relationship type); Ok
 returns the selected relationship (Ok disabled until a selection is made).
 Used by the Edit.../Delete... entries of "Project > Relationships". Same
 pattern as AgentSelectionDialog (TSK18). Use get_selected_relationship()
@@ -21,6 +23,7 @@ from PySide6.QtWidgets import (
 )
 
 from core.models.data_model import NarrativeMap, Project, Relationship
+from core.services.journey_service import JourneyService
 from core.services.participation_service import ParticipationService
 from ui.utils import theme
 
@@ -70,7 +73,12 @@ class RelationshipSelectionDialog(QDialog):
             a_lb = a.lb if a else f"#{rel.agent_1_id}"
             b_lb = b.lb if b else f"#{rel.agent_2_id}"
             block_lb = block.lb if block else f"#{rel.block_id}"
-            self.list_widget.addItem(f"{a_lb} <-> {b_lb} @ {block_lb} ({rel.typ})")
+            # TSK39 (1.11): the journey(s) of the anchor block in parentheses,
+            # instead of the relationship type
+            journeys = {j.id: j for j in self._narrative_map.journey}
+            journey_ids = JourneyService.attachment_journey_ids(self._narrative_map, rel.block_id)
+            journey_lbs = ", ".join(journeys[jid].lb for jid in journey_ids if jid in journeys)
+            self.list_widget.addItem(f"{a_lb} <-> {b_lb} @ {block_lb} ({journey_lbs})")
 
     def _selection_changed(self, current_row):
         self.ok_button.setEnabled(0 <= current_row < len(self._relationships))

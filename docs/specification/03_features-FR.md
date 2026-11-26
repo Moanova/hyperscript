@@ -154,7 +154,7 @@
 - **Comportement attendu** :
     - En MVP, la création s'effectue exclusivement depuis le menu (pas de barre d'outils).
     - Le bloc est créé avec un identifiant unique dans la carte, le libellé par défaut de son type, et le rendu visuel correspondant à son type.
-    - En MVP (création depuis le menu), il est positionné automatiquement au premier emplacement libre à droite du bloc Début (ancré sur sa position courante), aligné sur la grille d'alignement (toujours visible et active) — acté séance 04 (TSK16, option B).
+    - En MVP (création depuis le menu), il est positionné automatiquement au premier emplacement libre de la **zone visible courante** (suit les barres de défilement), aligné sur la grille d'alignement (toujours visible et active) — révisé séance 12 (TSK39 3.3) ; repli au premier emplacement libre à droite du bloc Début (ancré sur sa position courante, TSK16 option B) si la zone visible est pleine. La création depuis une autre vue bascule d'abord vers la vue « Journeys » (TSK39 1.4).
     - Il présente deux ports d'attachement actifs : entrant (gauche) et sortant (droite).
     - Il n'est pas redimensionnable.
     - Aucun bloc orphelin : le bloc nouvellement créé est rattaché au parcours actif si le filtre de parcours est activé, au parcours par défaut sinon.
@@ -166,7 +166,8 @@
 - **Références** : SU003 ; menu « Project › Blocks › Edit... ».
 - **Comportement attendu** :
     - Le dialogue d'édition présente les attributs éditables : libellé, note (annotation) et contenu narratif. Le type n'est pas modifiable.
-    - Pour un bloc Condition, le dialogue présente en outre la condition structurée : nature (choix / artefact / compétence / flag), référence éventuelle vers un agent Artefact, libellé.
+    - Le dialogue présente en outre la liste « Agents » du projet avec les participants actuels cochés — même principe que le rattachement aux parcours (TSK39 séance 12, 3.1).
+    - Les champs de condition structurée (nature / référence Artefact / libellé, ex-FN035) ont été **retirés du modèle** séance 12 (TSK39 3.2) : un bloc Condition ne porte plus que libellé, note et contenu.
     - Le libellé n'est pas contraint à l'unicité au sein de la carte.
     - Toute modification d'attribut marque la carte, et donc le projet, comme modifié.
 
@@ -230,7 +231,7 @@
 - **Comportement attendu** :
     - L'annotation s'effectue via le dialogue d'édition de la transition (champ « Note »).
     - La note de la transition est affichée dans une infobulle au survol de la ligne représentative.
-    - Une transition ne porte pas de condition : la condition structurée est portée par le bloc Condition (FN035).
+    - Une transition ne porte pas de condition (la condition structurée a été retirée du modèle, TSK39 séance 12).
     - Toute modification marque la carte, et donc le projet, comme modifié.
 
 ## FN022 : Supprimer une transition
@@ -250,7 +251,8 @@
 - **Description** : Créer un parcours dans la carte.
 - **Références** : SU005 ; menu « Project › Journeys › New » ; liste des parcours dans « Display › Journey ».
 - **Comportement attendu** :
-    - Le nouveau parcours reçoit un identifiant unique, un libellé par défaut et une note vide.
+    - La création s'effectue via un dialogue d'édition ouvert par « Project › Journeys › New » (libellé et note saisis, libellé proposé par défaut) — TSK39 séance 12 (1.8).
+    - Le nouveau parcours reçoit un identifiant unique, le libellé saisi et la note saisie.
     - Le nouveau parcours n'est pas activé : le parcours actif reste inchangé (si le filtre de parcours est désactivé, tous les parcours sont actifs).
     - Toute création marque la carte, et donc le projet, comme modifié.
 
@@ -261,13 +263,8 @@
     - La modification s'effectue via un dialogue d'édition.
     - Toute modification marque la carte, et donc le projet, comme modifié.
 
-## FN025 : Dupliquer un parcours
-- **Description** : Dupliquer un parcours existant.
-- **Références** : SU005.
-- **Comportement attendu** :
-    - La copie porte un nom distinct et un nouvel identifiant.
-    - Les rattachements des blocs du parcours source sont également rattachés à la copie.
-    - Toute duplication marque la carte, et donc le projet, comme modifié.
+## FN025 : Dupliquer un parcours — **supprimée séance 12 (TSK39 1.9)**
+- **Description** : la duplication d'un parcours a été retirée (entrée « Project › Journeys › Copy », use case et règle RG043 supprimés). Le numéro est conservé pour la traçabilité.
 
 ## FN026 : Activer un parcours
 - **Description** : Activer un parcours comme parcours actif.
@@ -282,7 +279,7 @@
 - **Références** : SU005.
 - **Comportement attendu** :
     - La suppression du dernier parcours de la carte est impossible : l'application affiche un message explicatif.
-    - Dans les autres cas, une confirmation est demandée.
+    - La suppression s'effectue via un dialogue de sélection du parcours à supprimer, puis une confirmation — TSK39 séance 12 (1.8).
     - **Les rattachements des blocs du parcours supprimé sont réaffectés au parcours par défaut**.
     - Si le parcours supprimé était le parcours par défaut, le plus ancien parcours restant devient le parcours par défaut ; si c'était le parcours activé, le parcours par défaut devient le parcours activé.
     - Toute suppression marque la carte, et donc le projet, comme modifié.
@@ -340,9 +337,10 @@
 
 ## FN030 : Associer des agents à un bloc
 - **Description** : Associer ou dissocier un ou plusieurs agents à un bloc de la carte narrative.
-- **Références** : SU008 ; menu contextuel d'un bloc « Associate agents... » (vue « Journeys ») ; menu « Project › Agents › Associate with Block... ».
+- **Références** : SU008 ; menu contextuel d'un bloc « Add Participation » (vue « Journeys ») ; menu « Project › Agents › Add Participation » (libellé normalisé séance 12, TSK39 1.3) ; liste « Agents » du dialogue d'édition du bloc (FN015).
 - **Comportement attendu** :
-    - Depuis la vue « Parcours », le menu contextuel d'un bloc ouvre un dialogue listant tous les agents du projet avec leur statut de participation courant pour ce bloc (coché/décoché). Cocher associe, décocher dissocie.
+    - Depuis la vue « Parcours », le menu contextuel d'un bloc (« Add Participation ») ouvre un dialogue listant tous les agents du projet avec leur statut de participation courant pour ce bloc (coché/décoché). Cocher associe, décocher dissocie. Idem depuis la liste « Agents » du dialogue d'édition du bloc (FN015, TSK39 séance 12 3.1).
+    - L'entrée est grisée hors vue « Journeys » active + bloc sélectionné (TSK39 séance 12 1.3).
     - Le dialogue permet de créer un nouvel agent et de l'associer en une seule opération (règles de FN031).
     - L'application empêche la création d'une participation en double (agent, bloc).
     - Les agents participants d'un bloc sont représentés par des badges sur le bloc dans la vue « Parcours ».
@@ -372,12 +370,12 @@
 - **Description** : Afficher dans la vue « Preview » un aperçu de lecture de la carte narrative courante, en lecture seule.
 - **Références** : SU010, SU007 (export fichier, hors MVP) ; onglet « Preview » de la barre d'onglets ; filtres Journey/Agent (FN029, FN039, RG048/RG063/RG064) ; conception `docs/conception/05_preview-FR.md` (TSK37).
 - **Comportement attendu** :
-    - L'onglet « Preview » est présent dans la barre d'onglets à côté des vues « Agents », « Journeys », « Relationships » ; entrée « View › Preview » (stub renommé depuis « Export »).
+    - L'onglet « Preview » est présent dans la barre d'onglets à côté des vues « Agents », « Journeys », « Relationships » ; entrée « View › Preview » active (bascule vers la vue, TSK39 séance 12 1.1 ; renommée depuis « Export », TSK37).
     - La vue héberge le panneau latéral de filtres (même `FiltersSidePanel` que la vue « Journeys », sans liste de blocs), miroirs du menu « Display » et des autres vues.
     - L'aperçu est en lecture seule : aucune interaction sur le contenu ; les liens hypertexte internes sont des ancres à scroll passif uniquement.
     - L'aperçu est régénéré à chaque bascule sur l'onglet « Preview », **et** après chaque modification du modèle lorsque la vue est déjà active ; jamais en arrière-plan.
     - Rendu dynamique selon les filtres actifs (RG048/RG063/RG064) : filtre de parcours actif → parcours actif seul (« Tous les parcours » → tous les parcours) ; filtre agent → blocs auxquels l'agent participe, transitions dont les deux blocs sont visibles, relations dont le bloc d'ancrage est visible ; les éléments hors filtre sont **omis du rendu**.
-    - Sections restituées : a) projet (`lb`) ; b) liste des agents (liens vers g) ; c) carte (`lb`) ; d) liste des parcours (liens vers e) ; e) parcours : séquence des blocs depuis Start dans l'ordre de la séquence de lecture (RG044), chaque bloc avec `lb`, `typ`, `content` (note en infobulle au survol), transitions rendues en ligne, conditions rendues sur leur branche, puis **les relations ancrées sous ce bloc** (lb agents 1 et 2, `typ`, `content`, note en infobulle) — l'« état des relations » est restitué sous chaque bloc d'ancrage, sans section finale séparée ; les branches non jointes au Start sont restituées marquées après le flux ; f) orphelins : blocs sans aucune transition entrante ni sortante ; g) agents du projet (`lb`, `typ`, `content`, note en infobulle). Libellé en titre, contenu en corps de texte (libellé seul si vide).
+    - Sections restituées : a) projet (`lb`) ; b) liste des agents `lb (typ)` (liens vers g) ; c) carte (`lb`) ; d) liste des parcours (liens vers e) ; e) parcours : séquence des blocs depuis Start dans l'ordre de la séquence de lecture (RG044), chaque bloc avec `lb`, `typ`, `content` (note en infobulle au survol), **les agents participants sous le contenu** (TSK39 4.1), transitions rendues en ligne, puis **les relations ancrées sous la liste des agents** (lb agents 1 et 2, `typ`, `content`, note en infobulle — TSK39 4.2) — l'« état des relations » est restitué sous chaque bloc d'ancrage, sans section finale séparée ; les branches non jointes au Start sont restituées marquées après le flux ; f) orphelins : blocs sans aucune transition entrante ni sortante ; g) agents du projet `lb (typ)` (TSK39 4.4), `content`, note en infobulle. Plus de champs de condition (retirés du modèle, TSK39 3.2/4.3). Libellé en titre, contenu en corps de texte (libellé seul si vide).
     - La visualisation de l'aperçu et l'application des filtres ne marquent ni la carte ni le projet comme modifiés.
 - **Note** : vue renommée « Preview » (TSK37, séance 11) ; l'export sur fichier « Files › Export Map... » (FN013/SU007) reste post-MVP et grisé — coexistence « Preview » (vue in-app) / « Export Map » (fichier) assumée.
 
@@ -407,15 +405,8 @@
 
 # Conditions
 
-## FN035 : Gérer la condition d'un bloc Condition
-- **Description** : Éditer la condition structurée d'un bloc Condition.
-- **Références** : SU003, SU004.
-- **Comportement attendu** :
-    - La condition structurée d'un bloc Condition est éditée via le dialogue d'édition du bloc (FN015) : nature (choix / artefact / compétence / flag), référence éventuelle vers un agent Artefact, libellé.
-    - Un bloc Pivot ne reçoit de transitions entrantes que de blocs Début ou Scène et n'en émet que vers des blocs Condition ; plusieurs blocs Condition issus d'un même Pivot équivalent à un OU.
-    - Un bloc Condition ne reçoit de transitions entrantes que de blocs Pivot et n'en émet que vers des blocs Scène ou Fin. Deux blocs Condition issus d'un même Pivot équivalent à un OU ; chaîner des blocs Condition (Condition → Condition) n'est pas autorisé.
-    - Un bloc Fin ne peut pas recevoir de transition sortante.
-    - Toute modification marque la carte, et donc le projet, comme modifié.
+## FN035 : Gérer la condition d'un bloc Condition — **supprimée séance 12 (TSK39 3.2)**
+- **Description** : la condition structurée a été **retirée du modèle** pour le simplifier (champs nature / référence Artefact / libellé supprimés du dialogue d'édition, du modèle et de l'aperçu). Le numéro est conservé pour la traçabilité. La matrice des types de blocs (Pivot/Condition/Fin, RG028/RG030/RG031) est inchangée.
 
 
 ---

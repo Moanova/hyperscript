@@ -34,6 +34,7 @@ from PySide6.QtGui import QPainter, QPen, QColor
 
 from core.models.data_model import NarrativeMap, Project
 from core.services.journey_filter_service import JourneyFilterService
+from core.services.journey_service import JourneyService
 from core.services.agent_filter_service import AgentFilterService
 from core.services.relationship_service import RelationshipService
 from config.config_loader import get as _get_config
@@ -214,9 +215,19 @@ class FiltersSidePanel(QWidget):
             self._block_ids = [bid for bid in RelationshipService.ordered_anchor_block_ids(nm)
                                if bid in visible]
             self.block_list.clear()
+            journeys = {j.id: j for j in nm.journey}
             for bid in self._block_ids:
                 b = blocks[bid]
-                item = QListWidgetItem(f"{b.lb} ({b.typ})")
+                if self.journey_filter_active:
+                    # TSK39 (2.4, confirmed TSC session 12): a specific journey
+                    # filtered -> the journey(s) the block is attached to in
+                    # parentheses, instead of the block type
+                    journey_ids = JourneyService.attachment_journey_ids(nm, bid)
+                    label = f"{b.lb} ({', '.join(journeys[jid].lb for jid in journey_ids if jid in journeys)})"
+                else:
+                    # "All journeys": the block type stays (unchanged behavior)
+                    label = f"{b.lb} ({b.typ})"
+                item = QListWidgetItem(label)
                 item.setData(Qt.UserRole, bid)
                 self.block_list.addItem(item)
         finally:

@@ -467,8 +467,26 @@ class RelationshipsWorkspace(QWidget):
 
     def _relayout(self):
         """(Re)create and position header cards and cells from the single
-        shared order (TSK32: rows and columns carry the same agents)."""
+        shared order (TSK32: rows and columns carry the same agents).
+        TSK39 (2.3): also REMOVE the cards/cells of agents that are no longer
+        in the order (e.g. deleted agent) - refresh() prunes the order but the
+        scene must be pruned too, otherwise a ghost card stays visible and
+        draggable."""
         agents = {a.id: a for a in self.project.agent}
+        # TSK39 (2.3): remove the header cards of agents no longer in the order
+        order_set = set(self._order)
+        for cards in (self._row_cards, self._col_cards):
+            for aid in [aid for aid in cards if aid not in order_set]:
+                self.scene.removeItem(cards[aid])
+                del cards[aid]
+        # TSK39 (2.3): remove the cells outside the current order
+        n = len(self._order)
+        for key in [k for k in self._cells if k[0] >= n or k[1] >= n]:
+            cell = self._cells.pop(key)
+            if cell.card is not None:
+                self.scene.removeItem(cell.card)
+                cell.card = None
+            self.scene.removeItem(cell)
         # row header cards (left column)
         for i, aid in enumerate(self._order):
             card = self._row_cards.get(aid)
@@ -609,6 +627,11 @@ class RelationshipsWorkspace(QWidget):
             card.setPos(_CARD_OFF_X, scene_pos.y() - _CARD_H / 2)
 
     def _on_card_released(self, card: MatrixAgentCard, scene_pos: QPointF):
+        # TSK39 (2.3): a card whose agent is no longer in the order (deleted
+        # agent) is not reorderable - ignore the release (avoids ValueError
+        # in _reorder's order.index)
+        if card.entity.id not in self._order:
+            return
         # TSK32: one shared order - the row and the column axes follow together
         if card.kind == 'column':
             target = round((scene_pos.x() - _CELLS_LEFT - _CARD_OFF_X) / _CELL_SIZE)

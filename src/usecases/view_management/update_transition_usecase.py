@@ -13,9 +13,7 @@ from core.services.project_service import ProjectService
 
 
 class UpdateTransitionUseCase:
-    """FN021: edit a transition's editable attribute (the note only - a
-    transition carries no condition, the structured condition is carried by
-    the Condition block, FN035)."""
+    """FN021: edit a transition's editable attribute (the note only)."""
 
     def __init__(self, project_service: ProjectService):
         self.project_service = project_service
