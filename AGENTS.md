@@ -16,16 +16,24 @@ MVP :
 
 ## Commandes
 
-- Lancer l'application : `python src/main.py` (depuis la racine du dépôt).
-- Lancer les tests : `QT_QPA_PLATFORM=offscreen python -m pytest tests/ -q`
+- Mettre en place l'environnement (une fois, depuis la racine du dépôt) : `uv venv` puis `uv sync --no-install-project` — installe tout ce qui est verrouillé dans `uv.lock` (voir README §Installation pour la procédure complète, y compris pour un tiers).
+- Lancer l'application : `.venv/bin/python src/main.py` (depuis la racine du dépôt ; `python src/main.py` si le venv est activé).
+- Lancer les tests : `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -q`
   - `tests/test_application/` (pywinauto, FNxxx) est automatiquement skipped sans session GUI.
-- Vérifier la syntaxe : `python -m py_compile <fichiers modifiés>`.
+- Vérifier la syntaxe : `.venv/bin/python -m py_compile <fichiers modifiés>`.
+
+## Environnement reproductible (uv)
+
+- Environnement de référence : venv uv `.venv/` (git-ignoré), créé par `uv venv` avec l'interpréteur épinglé dans `.python-version` (3.14) et les dépendances verrouillées dans `uv.lock` (commité) — identique pour tout le monde.
+- Nouvelle dépendance : l'ajouter dans `pyproject.toml` (`[project.dependencies]` pour le runtime, `[dependency-groups] dev` pour les outils de test/lint), puis `uv lock`, et **commiter `uv.lock` dans le même commit** (la CI échoue sinon, `--locked`). Ne jamais recréer de `requirements*.txt` ni éditer `uv.lock` à la main.
+- `.pytest_cache/` est git-ignoré.
 
 ## Pièges connus
 
 - **Single-instance** : `src/main.py` contient un garde `QLocalServer`. Si une instance tourne déjà, un nouveau lancement **se termine silencieusement**.
   Toujours fermer complètement l'instance en cours avant de tester une modification (sinon on teste l'ancien code).
-- Le working tree contient fréquemment du travail non commité : jamais de reset/checkout destructif, et pas de commit, ni d'envoi vers les dépôt sans instruction explicite de l'utilisateur.
+- Le working tree contient fréquemment du travail non commité : jamais de reset/checkout destructif. Les commits locaux sont possibles à tout moment, mais **aucun push ni aucune PR sans instruction explicite** de l'utilisateur (voir « Méthode de travail »).
+- **Projet non installable comme package** : `uv sync` ou `pip install -e .` sans `--no-install-project` échoue (hatchling ne trouve pas de package, layout `src/` plat) — lancer l'application par `python src/main.py`. Ne lancer `uv venv` que depuis la racine du dépôt : c'est seulement là que `pyproject.toml` (`requires-python = ">=3.10"`) et `.python-version` sont pris en compte.
 
 ## Architecture
 
@@ -69,6 +77,35 @@ Au début de chaque séance de travail, recharger dans le contexte (sans que cel
 - Le détail d'une tâche TSKnn (analyse, décisions, journal) est consigné dans `docs/project/tasks/TSKnn_*.md`, créé au passage en Doing.
 - Une tâche ne passe en Doing que si ses dépendances sont en Review ou en Done.
 
+## Méthode de travail (types de séances)
+
+Règle générale : toute action qui met à jour la base de code (séance d'implémentation ou non) peut être **commitée localement**, mais seuls les **push** (directement sur `dev`, sans PR) et les **PR** (passage `dev` → `main`, avec CI) sont effectués sur **instruction explicite** de l'utilisateur. Le merge de la PR reste à la charge de l'utilisateur.
+
+### Conception / re-conception
+- Échange conversationnel : analyse, propositions, décisions actées.
+- Livrables : notes de conception dans `docs/conception/` (FR/EN) et mises à jour des specs `docs/specification/` (FR/EN) si décision actée ; tâche créée dans `docs/project/kanban.md` si besoin.
+
+### Implémentation
+- 1/ Établir le plan d'implémentation avec l'utilisateur ; 2/ implémenter la tâche sélectionnée ; 3/ implémenter et exécuter les tests de validation.
+- Tout se fait sur la branche `dev`. Si la boucle implémentation/test dépasse 3 itérations sans satisfaire 100 % des tests : arrêter et établir l'état des lieux pour décision utilisateur. En cas d'ambiguïté, demander les compléments nécessaires.
+- Livrables : code + tests + docstrings, fiche `docs/project/tasks/TSKnn_*.md`, kanban (Doing → Review après implémentation + tests, → Done après validation utilisateur).
+
+### Validation
+- Exécution des tests et revue des tâches en Review ; retours de l'utilisateur.
+- Livrables : résultats des tests consignés, kanban (Review → Done), correctifs éventuels.
+
+### Explication / appropriation de la base de code
+- Réponses et explications pour le concepteur (celui qui veut s'approprier la base de code) : architecture, flux, patterns.
+- Livrable : aucun fichier modifié.
+
+### Re-documentation
+- Mise à jour de la documentation existante (`README.md`, `AGENTS.md`, `docs/`, `SESSIONS.md`) et création de nouveaux documents si nécessaire (ex. rétro-spécification technique).
+- Livrables : documents mis à jour ou créés.
+
+### Fin de séance (tous types)
+- `SESSIONS.md` renseigné : contenu des travaux, problèmes rencontrés, choix actés.
+- Tout blocage non résolu en séance est consigné dans `BLOCKERS.md` (créé à la racine si absent).
+
 ## Conventions
 
 - Aucune valeur codée en dur pour l'UI : passer par config.json (`config.config_loader.get` avec valeur par défaut) ou par une constante de classe (ex. `HIT_AREA_WIDTH`).
@@ -86,7 +123,14 @@ Au début de chaque séance de travail, recharger dans le contexte (sans que cel
 
 ## Vérifications attendues après chaque modification
 
-1. `python -m py_compile` sur chaque fichier modifié.
-2. Suite de tests complète (commande ci-dessus).
-3. Pour l'UI Qt : test ciblé offscreen (script jetable, non commité), instancier le composant réel, simuler les événements Qt, vérifier par rendu `QImage` si le point à valider est visuel.
-4. Ne pas lancer l'application en tâche de fond pour tester : préférer les tests offscreen (voir single-instance).
+1. `.venv/bin/python -m py_compile` sur chaque fichier modifié.
+2. `.venv/bin/python -m pyflakes src` (doit rester clean ; vérifié aussi en CI).
+3. Suite de tests complète (commande ci-dessus).
+4. Pour l'UI Qt : test ciblé offscreen (script jetable, non commité), instancier le composant réel, simuler les événements Qt, vérifier par rendu `QImage` si le point à valider est visuel.
+5. Ne pas lancer l'application en tâche de fond pour tester : préférer les tests offscreen (voir single-instance).
+
+## CI (GitHub Actions)
+
+- Workflow : `.github/workflows/ci.yml`, déclenché sur `push` et `pull_request` vers `main` (plus `workflow_dispatch` pour un lancement manuel).
+- Étapes : `uv venv` + `uv sync --no-install-project --locked` (échoue si `uv.lock` est périmé : régénérer le lock avec `uv lock` à chaque changement de `pyproject.toml`), libs système Qt (apt), `compileall -q src`, `pyflakes src`, `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -q`.
+- Le lint porte sur `src/` uniquement (`tests/` a des warnings pyflakes pré-existants, hors scope). Les tests Qt offscreen se skippent proprement si les libs Qt sont absentes.
