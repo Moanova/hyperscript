@@ -6,7 +6,7 @@ Structure your stories **without code**, manage branching paths and export your 
 ![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)
 ![Status: In development](https://img.shields.io/badge/Statut-En%20développement-orange)
 ![Python: 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
-![PySide6](https://img.shields.io/badge/PySide6-6.4.0-green.svg)
+![PySide6](https://img.shields.io/badge/PySide6-6.12.0-green.svg)
 
 
 ---
@@ -14,9 +14,9 @@ Structure your stories **without code**, manage branching paths and export your 
 ## Features
 - **Visual authoring**: Create narrative maps by adding narrative blocks via the menus and linking them with connections (rubber-band mode).
 - **Agents**: Manage agents (characters or artefacts) and associate them with narrative blocks.
-- **Two synchronized views**: an **Events** view (graph of states and events) and an **Agents** view (agents × states association matrix), with cross-view navigation.
-- **Informative badges**: blocks display the number of associated agents (Events view) and of incoming/outgoing events (Agents view).
-- **Branch management**: Visualise and organise the connections between all elements of your narrative (transitions from block to blck and relations between agents).
+- **Four synchronized workspaces**: **Agents** (default view — agents × blocks association with cards), **Journeys** (graph of narrative blocks and transitions), **Relationships** (agent × agent relationship matrix) and **Preview** (in-app reading preview), with cross-view navigation.
+- **Informative badges**: blocks display the number of associated agents and of incoming/outgoing transitions (Journeys view).
+- **Branch management**: Visualise and organise the connections between all elements of your narrative (transitions from block to block and relations between agents).
 - **Readable export**: Share your work as hypertext pages to share it with your team (developers, filmmakers, etc.).
 - **Under development**: MVP beta version in progress.
 
@@ -26,8 +26,8 @@ Structure your stories **without code**, manage branching paths and export your 
 ## Usage
 ### Example workflow
 1. **Create a new narrative map**:
-   - Add narrative blocks (scenes, branches and conditions) with basc click operations.
-   - connect them and attach them to paths to form narrative arcs within a given narrative map (journeys).
+   - Add narrative blocks (Start, Scene, Pivot, Condition, End) with basic click operations.
+   - Connect them and attach them to journeys to form narrative arcs within a given narrative map.
 2. **Export your work**:
    - Export your project’s narrative maps to read them directly in a browser.
 
