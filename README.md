@@ -3,7 +3,7 @@
 **Hyperscript** is a **visual narrative map editor** designed for modern fiction writers (video game scriptwriters or micro-series creators).
 Structure your stories **without code**, manage branching paths and export your work in a readable format to collaborate easily with your team.
 
-![Licence: MIT](https://img.shields.io/badge/Licence-MIT-yellow.svg)
+![Licence: AGPL-3.0](https://img.shields.io/badge/Licence-AGPL--3.0-blue.svg)
 ![Status: In development](https://img.shields.io/badge/Statut-En%20développement-orange)
 ![Python: 3.10+](https://img.shields.io/badge/Python-3.10+-blue.svg?logo=python)
 ![PySide6](https://img.shields.io/badge/PySide6-6.12.0-green.svg)
@@ -72,7 +72,7 @@ With plain `venv` + `pip` there is no lockfile, so dependency versions are not p
 ---
 
 ## Licence
-This project is licensed under the **[MIT](LICENSE)** licence.
+This project is licensed under the **[GNU Affero General Public License v3.0 (AGPL-3.0)](https://www.gnu.org/licenses/agpl-3.0.html)** — see [LICENSE](LICENSE).
 
 
 ---
