@@ -2,10 +2,46 @@
 
 Journal de session :
 - informations structurants échangées lors des séances de réalisation sous Vibe Code avec le concepteur produit (TSC), décisions prises et anomalies traitées.
-Complément de `AGENTS.md` (règles de travail) et de `docs/project/kanban.md` (suivi des tâches).
+Complément de `AGENTS.md` (règles de travail) et de `docs/projet/kanban.md` (suivi des tâches).
 
 Les entrées sont ajoutées dans l'ordre antechronologique.
 
+
+---
+
+## Séance n°13 (2026-11-27)
+
+Séance de méthodologie / outillage (hors kanban) : environnement virtuel reproductible, CI, documentation des règles de travail, restructuration du kanban, licence.
+
+### Travaux
+- **Environnement virtuel reproductible (uv)** : `.python-version` (branche 3.14) + `uv.lock` ajoutés et poussés par TSC (commit `1c32c7a`) ; README §Installation rédigé (procédure canonique : `uv venv` depuis la racine du dépôt + `uv sync --no-install-project`, lancement `.venv/bin/python src/main.py`, tests `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -q`, variante 100 % stdlib `venv`+pip sans lockfile) ; `.gitignore` + `.pytest_cache/` — commit `823da29`.
+- **Migration des dépendances de test** : `requirements-test.txt` supprimé, déplacé dans `[dependency-groups] dev` du `pyproject.toml` (pytest, pywinauto, pytest-xvfb, Pillow, puis pyflakes) ; `uv.lock` régénéré (27 paquets, `uv lock --check` OK) — commits `b4f2e9a`, `06ed459`. Procédure validée de bout en bout dans le sandbox : `uv venv` (Python 3.14.3 lu depuis `.python-version`) + `uv sync --no-install-project --locked` + pytest offscreen → **117 passed + 9 skipped**.
+- **CI GitHub Actions** : `.github/workflows/ci.yml` créé — déclencheurs `push` + `pull_request` vers `main` + `workflow_dispatch` ; `ubuntu-latest` ; `actions/checkout@v7` + `astral-sh/setup-uv@v10` (cache) ; libs Qt système par apt ; `uv venv` + `uv sync --no-install-project --locked` (échoue si lock périmé) ; `compileall -q src` ; `pyflakes src` ; `QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -q` — commit `06ed459`. Workflow enregistré « active » côté GitHub ; chaque étape exécutée et validée localement dans l'ordre.
+- **AGENTS.md** : nouvelle section « Méthode de travail (types de séances) » (conception/re-conception, implémentation, validation, explication/appropriation, re-documentation, fin de séance ; règle : commit local libre, **push sur dev et PR dev→main uniquement sur instruction explicite**, merge à la charge de l'utilisateur ; `SESSIONS.md` en fin de séance, `BLOCKERS.md` si blocage) ; section « Environnement reproductible (uv) » (règles de gestion des dépendances : `uv lock` + commit du lock avec chaque changement, jamais de `requirements*.txt`) ; section « CI » ; commandes via `.venv/bin` ; piège documenté : `--no-install-project` obligatoire (hatchling, layout `src/` plat — projet non installable comme package) et `uv venv` uniquement depuis la racine du dépôt ; `pyflakes src` ajouté aux vérifications attendues ; chemins `docs/project/` → `docs/projet/` corrigés — commits `6dae355`, `224baa9`.
+- **Kanban restructuré** (`docs/projet/kanban.md`) : nouvelle section « Structure du kanban » + règles de mise à jour (tableau To do/Doing/Review/Done en **id+nom uniquement**, `[x]` en Done ; « Description des tâches » = id+nom+résumé+dépendances+lien fiche ; détail et **historique (dont date de passage en Done) uniquement dans les fiches** `tasks/TSKnn_*.md`) ; les 53 tâches migrées d'un coup, triées par id (état : To do 1 · Doing 1 · Review 12 · Done 39) ; « Chaîne critique » remplacée par 5 jalons ; en-tête = date + compteurs ; epics retirés — commit `224baa9`.
+- **README** : corrections vocabulaire/typos — 4 workspaces (Agents par défaut, Journeys, Relationships, Preview) au lieu de « Events view », « transitions » au lieu de « events », types de blocs réels (Start/Scene/Pivot/Condition/End), « journeys » au lieu de « paths », typos (`basc`, `blck`, casse), badge PySide6 6.12.0 (uv.lock) — commit `79797db`.
+- **Licence MIT → AGPLv3** (choix TSC) : `LICENSE` = copyright + texte officiel AGPL-3.0 (`/usr/share/common-licenses/AGPL-3.0`) ; README badge `Licence: AGPL-3.0` + section Licence (lien gnu.org) ; `pyproject.toml` `license = "AGPL-3.0-only"` ; `uv.lock` inchangé (vérifié) — commit `999348f`.
+- **Contexte projet Mistral Vibe Code** (hors dépôt, modifié par TSC) : allégé, pointe désormais vers `AGENTS.md` ; la règle « sans PR » précisée : push direct sur `dev` au quotidien, PR uniquement pour le passage `dev` → `main` (déclenche la CI), merge à la charge de TSC.
+
+### Choix actés
+- Environnement : **uv + `.python-version` (3.14) + `uv.lock` commité** ; `.venv/` git-ignoré ; Python 3.14 retenu plutôt que 3.10 car 3.10 est EOL depuis le 2026-10-01 (PEP 619, plus de correctifs de sécurité) ; `requires-python = ">=3.10"` conservé comme borne de compatibilité.
+- Dépendances de test dans `[dependency-groups] dev` (groupe inclus par défaut dans `uv sync`) ; pyflakes dans ce groupe (lint CI + local).
+- CI déclenchée sur `main` (push + PR) et manuellement (`workflow_dispatch`) ; lint = `pyflakes src` uniquement ; les tests Qt offscreen se skippent proprement sans libs Qt.
+- Kanban : tableau en id+nom, résumés en « Description des tâches », historique centralisé dans les fiches `tasks/`, jalons courts, epics retirés (à réintroduire si besoin), date de passage en Done renseignée dans la fiche.
+- Passage `dev` → `main` : PR sur demande explicite (déclenche la CI), merge à la charge de TSC ; 71 commits d'écart dev/main à ce jour, merge en fast-forward attendu sans conflit.
+- Licence **AGPLv3** (aucun tiers n'a encore touché au code).
+
+### État en fin de séance
+- 8 commits poussés sur `dev` le 2026-11-27 : `1c32c7a` (.python-version + uv.lock, par TSC), `823da29` (README installation + .gitignore), `b4f2e9a` (migration deps de test), `06ed459` (CI + pyflakes dev group), `6dae355` (AGENTS.md), `224baa9` (kanban restructuré + AGENTS.md chemins), `79797db` (README corrections), `999348f` (licence AGPLv3), + ce commit (SESSIONS.md).
+- Kanban : inchangé en substance (To do 1 · Doing 1 TSK43 · Review 12 · Done 39) — restructuré en format uniquement.
+- Tests : 117 passed + 9 skipped (inchangé — aucun changement de code applicatif cette séance).
+- Prochaine séance : **validation des modifications de code de la séance 12** (TSK39–TSK42, TSK44–TSK51 en Review).
+
+### Problèmes rencontrés
+- Dispatch manuel du workflow CI non testable depuis le sandbox (token `gh` en lecture seule, HTTP 403 sur `/actions/workflows/*/dispatches`) : à valider via « Run workflow » sur le poste TSC, ou automatiquement au prochain push/PR sur `main`.
+- Étape `apt-get` (libs Qt) non testable sans root dans le sandbox ; si une lib manque en CI, les tests Qt offscreen se skippent proprement (dégradation gracieuse prévue, pas d'échec).
+- 7 warnings pyflakes **pré-existants** dans `tests/` (imports/variables inutilisés) — hors scope ; le lint CI porte sur `src/` uniquement.
+- `src/config/user_state.json` embarqué dans le commit `1c32c7a` (état local du poste TSC) — à surveiller.
 
 ---
 
