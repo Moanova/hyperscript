@@ -68,13 +68,14 @@ src/
 
 Au début de chaque séance de travail, recharger dans le contexte (sans que cela dispense de relire la section ciblée au moment d'une modification) :
 - Tous les documents de `docs/specification/` (versions FR ou EN au choix, le contenu est identique) : user stories, règles de gestion, features, interface, menu, data model, périmètre MVP.
-- `docs/project/kanban.md` (état des tâches, dépendances, fichier de détail de la tâche en cours dans `docs/project/tasks/`).
+- `docs/projet/kanban.md` (état des tâches, dépendances, fichier de détail de la tâche en cours dans `docs/projet/tasks/`).
 
 ## Suivi de projet
 
-- L'avancement est suivi dans `docs/project/kanban.md` (épiques EPCnn, tâches TSKnn, dépendances `→ #TSKnn` déclarées uniquement sur la tâche dépendante).
-- `docs/project/kanban.md` est la source unique de vérité.
-- Le détail d'une tâche TSKnn (analyse, décisions, journal) est consigné dans `docs/project/tasks/TSKnn_*.md`, créé au passage en Doing.
+- L'avancement est suivi dans `docs/projet/kanban.md` (tâches TSKnn, dépendances `→ #TSKnn` déclarées uniquement sur la tâche dépendante).
+- `docs/projet/kanban.md` est la source unique de vérité.
+- Format du kanban et règles de mise à jour (colonnes en id+nom uniquement, résumés en « Description des tâches », historique et **date de passage en Done** consignés uniquement dans la fiche) : section « Structure du kanban » de `docs/projet/kanban.md`.
+- Le détail d'une tâche TSKnn (analyse, décisions, journal) est consigné dans `docs/projet/tasks/TSKnn_*.md`, créé au passage en Doing.
 - Une tâche ne passe en Doing que si ses dépendances sont en Review ou en Done.
 
 ## Méthode de travail (types de séances)
@@ -83,12 +84,12 @@ Règle générale : toute action qui met à jour la base de code (séance d'impl
 
 ### Conception / re-conception
 - Échange conversationnel : analyse, propositions, décisions actées.
-- Livrables : notes de conception dans `docs/conception/` (FR/EN) et mises à jour des specs `docs/specification/` (FR/EN) si décision actée ; tâche créée dans `docs/project/kanban.md` si besoin.
+- Livrables : notes de conception dans `docs/conception/` (FR/EN) et mises à jour des specs `docs/specification/` (FR/EN) si décision actée ; tâche créée dans `docs/projet/kanban.md` si besoin.
 
 ### Implémentation
 - 1/ Établir le plan d'implémentation avec l'utilisateur ; 2/ implémenter la tâche sélectionnée ; 3/ implémenter et exécuter les tests de validation.
 - Tout se fait sur la branche `dev`. Si la boucle implémentation/test dépasse 3 itérations sans satisfaire 100 % des tests : arrêter et établir l'état des lieux pour décision utilisateur. En cas d'ambiguïté, demander les compléments nécessaires.
-- Livrables : code + tests + docstrings, fiche `docs/project/tasks/TSKnn_*.md`, kanban (Doing → Review après implémentation + tests, → Done après validation utilisateur).
+- Livrables : code + tests + docstrings, fiche `docs/projet/tasks/TSKnn_*.md`, kanban (Doing → Review après implémentation + tests, → Done après validation utilisateur).
 
 ### Validation
 - Exécution des tests et revue des tâches en Review ; retours de l'utilisateur.
