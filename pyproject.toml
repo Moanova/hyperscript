@@ -17,5 +17,10 @@ dependencies = [
 requires = ["hatchling"]
 build-backend = "hatchling.build"
 
-[tool.uv]
-dev-dependencies = []
+[dependency-groups]
+dev = [
+    "pytest>=7.4.0",
+    "pywinauto>=0.6.8",
+    "pytest-xvfb",
+    "Pillow>=9.0.0",
+]

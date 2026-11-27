@@ -45,14 +45,13 @@ From the **root of the cloned repository** (the folder containing `pyproject.tom
 
 ```bash
 uv venv                        # create .venv/ with the pinned Python (.python-version), downloaded automatically if needed
-uv sync --no-install-project   # install the runtime dependencies exactly as locked in uv.lock (PySide6)
+uv sync --no-install-project   # install all dependencies locked in uv.lock (PySide6 + the "dev" test group)
 .venv/bin/python src/main.py   # run the application (Windows: .venv\Scripts\python src\main.py)
 ```
 
-Run the test suite headless:
+Run the test suite headless (test dependencies are part of the locked `dev` group, installed by `uv sync`):
 
 ```bash
-uv pip install -r requirements-test.txt   # test dependencies (not covered by uv.lock)
 QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -q   # Windows: .venv\Scripts\python -m pytest tests/ -q
 ```
 
@@ -64,7 +63,7 @@ Notes:
 ### Without uv (standard library only)
 ```bash
 python3 -m venv .venv        # check first that `python3 --version` reports 3.10 or newer
-.venv/bin/pip install "PySide6>=6.4.0" -r requirements-test.txt
+.venv/bin/pip install "PySide6>=6.4.0" pytest pywinauto pytest-xvfb Pillow
 .venv/bin/python src/main.py
 ```
 With plain `venv` + `pip` there is no lockfile, so dependency versions are not pinned — prefer uv for a reproducible environment.
