@@ -35,7 +35,39 @@ Structure your stories **without code**, manage branching paths and export your 
 ---
 
 ## Installation
-*When the beta version of the MVP is ready.*
+
+### Prerequisites
+- **[uv](https://docs.astral.sh/uv/)** (recommended) — Windows: `winget install astral.uv`, Linux/macOS: `curl -LsSf https://astral.sh/uv/install.sh | sh`.
+- Or any **Python 3.10+** with pip (see *Without uv* below).
+
+### Quick start (with uv)
+From the **root of the cloned repository** (the folder containing `pyproject.toml`):
+
+```bash
+uv venv                        # create .venv/ with the pinned Python (.python-version), downloaded automatically if needed
+uv sync --no-install-project   # install the runtime dependencies exactly as locked in uv.lock (PySide6)
+.venv/bin/python src/main.py   # run the application (Windows: .venv\Scripts\python src\main.py)
+```
+
+Run the test suite headless:
+
+```bash
+uv pip install -r requirements-test.txt   # test dependencies (not covered by uv.lock)
+QT_QPA_PLATFORM=offscreen .venv/bin/python -m pytest tests/ -q   # Windows: .venv\Scripts\python -m pytest tests/ -q
+```
+
+Notes:
+- Always run `uv venv` from the repository root: uv reads `requires-python = ">=3.10"` from `pyproject.toml` and the pinned interpreter from `.python-version`, so the environment is guaranteed compatible and identical for everyone (both files are committed). Outside the project folder, no version check is performed.
+- The application is not installed as a package — it runs from source with `python src/main.py`.
+- `.venv/` is git-ignored.
+
+### Without uv (standard library only)
+```bash
+python3 -m venv .venv        # check first that `python3 --version` reports 3.10 or newer
+.venv/bin/pip install "PySide6>=6.4.0" -r requirements-test.txt
+.venv/bin/python src/main.py
+```
+With plain `venv` + `pip` there is no lockfile, so dependency versions are not pinned — prefer uv for a reproducible environment.
 
 
 ---
